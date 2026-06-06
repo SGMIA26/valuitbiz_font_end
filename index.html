@@ -343,7 +343,7 @@ footer{text-align:center;padding:28px 20px;border-top:1px solid var(--gl);margin
   <!-- S3: Result -->
   <div class="scr" id="s-res">
     <div class="rh">
-      <div class="rl" data-t="res_l">Kết quả định giá sơ bộ</div>
+      <div class="rl" id="rl" data-t="res_l">Kết quả định giá sơ bộ</div>
       <div class="rv" id="rval">—</div>
       <div class="rr" id="rrange"></div>
       <div class="ru" id="rusd"></div>
@@ -694,7 +694,7 @@ const QS={
         {v:'0',l:'Just me, no industry experience'},{v:'1',l:'2-3 people, relevant background'},
         {v:'2',l:'Full team, prior startup experience'},{v:'3',l:'Serial founder or domain expert'},
       ]},
-      {id:'tam',type:'number',label:'Total Addressable Market (TAM)',hint:'Estimate total market in USD millions',placeholder:'200',unit:'M USD'},
+      {id:'tam',type:'number',label:'Total Addressable Market (TAM)',hint:'Total market size in USD millions. Example: Market of $200M → enter 200 | $1B market → enter 1000',placeholder:'200',unit:'M USD'},
       {id:'ip_score',type:'options',label:'IP / Core technology protection',opts:[
         {v:'0',l:'None — easily replicable'},{v:'1',l:'Proprietary know-how, unregistered'},
         {v:'2',l:'Patent filing in progress'},{v:'3',l:'Granted patent or exclusive technology'},
@@ -793,10 +793,12 @@ const QS={
         {v:'B',l:'Tier B — Internal books only, unaudited (50% discount)'},
         {v:'C',l:'Tier C — Preliminary / incomplete data (75% discount)'},
       ]},
-      {id:'revenue',type:'number',label:'Revenue (last 12 months)',placeholder:'1000',unit:'K USD'},
-      {id:'net_profit',type:'number',label:'Net profit after tax',hint:'Enter negative if loss-making',placeholder:'120',unit:'K USD'},
-      {id:'equity',type:'number',label:'Shareholders equity (Book Value)',hint:'Per latest financial statement',placeholder:'600',unit:'K USD'},
-      {id:'total_shares',type:'number',label:'Total shares outstanding',placeholder:'1000000',unit:'Shares'},
+      {id:'rev_y2',type:'number',label:'Revenue Year N-2 (2 years ago)',hint:'Enter in thousands USD. Example: $800K → enter 800',placeholder:'800',unit:'K USD'},
+      {id:'rev_y1',type:'number',label:'Revenue Year N-1 (last year)',hint:'Example: Revenue $900K → enter 900',placeholder:'900',unit:'K USD'},
+      {id:'revenue',type:'number',label:'Revenue Year N (last 12 months)',hint:'Enter in thousands USD. Example: Revenue $1M → enter 1000 | Revenue $500K → enter 500',placeholder:'1000',unit:'K USD'},
+      {id:'net_profit',type:'number',label:'Net profit after tax (Year N)',hint:'Enter negative if loss-making. Example: Profit $120K → enter 120 | Loss $50K → enter -50',placeholder:'120',unit:'K USD'},
+      {id:'equity',type:'number',label:'Shareholders Equity (Book Value)',hint:'Total equity per latest balance sheet. Example: Equity $600K → enter 600',placeholder:'600',unit:'K USD'},
+      {id:'total_shares',type:'number',label:'Total shares outstanding',hint:'LLC: enter charter capital in $K | JSC: enter number of issued shares. Example: 1,000,000 shares → enter 1000000',placeholder:'1000000',unit:'Shares / K USD'},
       {id:'dividend_pct',type:'options',label:'Annual dividend payout ratio',opts:[
         {v:'0',l:'0% — Full reinvestment'},{v:'5',l:'5-10% — Small distribution'},
         {v:'15',l:'10-20% — Moderate payout'},{v:'25',l:'>20% — High payout'},
@@ -835,8 +837,10 @@ const QS={
       {id:'total_shares',type:'number',label:'Tổng cổ phần lưu hành',placeholder:'10000000',unit:'Cổ phần'},
     ],
     en:[
-      {id:'industry',type:'text',label:'Industry / Sector',placeholder:'e.g. Manufacturing, Tech, Industrial RE...'},
-      {id:'ebitda',type:'number',label:'EBITDA (last 12 months)',hint:'Earnings before interest, tax, depreciation & amortization',placeholder:'3200',unit:'K USD'},
+      {id:'industry',type:'text',label:'Industry / Sector',hint:'No matching option? Describe your business model in your own words',placeholder:'e.g. Manufacturing, Tech, Industrial RE... or describe your own'},
+      {id:'rev_y2',type:'number',label:'Revenue Year N-2 (2 years ago)',hint:'In thousands USD. Example: $16M → enter 16000',placeholder:'16000',unit:'K USD'},
+      {id:'rev_y1',type:'number',label:'Revenue Year N-1 (last year)',hint:'Example: $18M → enter 18000',placeholder:'18000',unit:'K USD'},
+      {id:'ebitda',type:'number',label:'EBITDA (last 12 months)',hint:'Earnings before interest, tax, depreciation & amortization. Example: EBITDA $3.2M → enter 3200',placeholder:'3200',unit:'K USD'},
       {id:'da',type:'number',label:'Depreciation & Amortization (D&A)',hint:'Used to derive EBIT and auto-calculate FCFF',placeholder:'600',unit:'K USD'},
       {id:'capex',type:'number',label:'Annual Capital Expenditure (CapEx)',placeholder:'800',unit:'K USD'},
       {id:'total_debt',type:'number',label:'Total interest-bearing debt',hint:'Bank loans + bonds + finance leases',placeholder:'4000',unit:'K USD'},
@@ -860,54 +864,8 @@ const QS={
     ],
   },
   realestate:{
-    vn:[
-      {id:'country',type:'country',label:'Chọn quốc gia / thị trường BĐS'},
-      {id:'re_type',type:'options',label:'Loại bất động sản',opts:[
-        {v:'apartment',l:'🏢 Căn hộ / Chung cư'},{v:'house',l:'🏠 Nhà phố / Biệt thự'},
-        {v:'land',l:'🌳 Đất nền'},{v:'commercial',l:'🏪 BĐS thương mại / VP'},
-        {v:'industrial',l:'🏭 BĐS công nghiệp / Kho'},{v:'resort',l:'🏖️ BĐS nghỉ dưỡng'},
-      ]},
-      {id:'land_area',type:'number',label:'Diện tích đất (m²)',placeholder:'120',unit:'m²'},
-      {id:'floor_area',type:'number',label:'Diện tích sàn xây dựng (m²)',hint:'Bỏ trống nếu là đất trống',placeholder:'80',unit:'m²'},
-      {id:'year_built',type:'number',label:'Năm xây dựng / hoàn công',placeholder:'2018',unit:'Năm'},
-      {id:'legal_status',type:'options',label:'Tình trạng pháp lý',opts:[
-        {v:'full',l:'✅ Sổ đỏ / Sổ hồng đầy đủ'},{v:'pending',l:'⏳ Đang chờ cấp sổ'},
-        {v:'contract',l:'📄 HĐMB (chưa có sổ)'},{v:'dispute',l:'⚠️ Đang có tranh chấp'},
-      ]},
-      {id:'usage',type:'options',label:'Mục đích sử dụng hiện tại',opts:[
-        {v:'owner',l:'Tự sử dụng / Ở'},{v:'rent',l:'Cho thuê'},
-        {v:'vacant',l:'Bỏ trống'},{v:'develop',l:'Đang xây dựng / phát triển'},
-      ]},
-      {id:'monthly_rent',type:'number',label:'Doanh thu cho thuê hàng tháng',hint:'Bỏ trống nếu không cho thuê',placeholder:'0',unit:'Triệu VND'},
-      {id:'purpose',type:'options',label:'Mục đích định giá',opts:[
-        {v:'sell',l:'Bán / Chuyển nhượng'},{v:'mortgage',l:'Thế chấp ngân hàng'},
-        {v:'invest',l:'Góp vốn / Đầu tư'},{v:'reference',l:'Tham khảo cá nhân'},
-      ]},
-    ],
-    en:[
-      {id:'country',type:'country',label:'Select country / market'},
-      {id:'re_type',type:'options',label:'Property type',opts:[
-        {v:'apartment',l:'🏢 Apartment / Condo'},{v:'house',l:'🏠 House / Villa'},
-        {v:'land',l:'🌳 Land plot'},{v:'commercial',l:'🏪 Commercial / Office'},
-        {v:'industrial',l:'🏭 Industrial / Warehouse'},{v:'resort',l:'🏖️ Resort / Hospitality'},
-      ]},
-      {id:'land_area',type:'number',label:'Land area (sqm)',placeholder:'120',unit:'sqm'},
-      {id:'floor_area',type:'number',label:'Built-up floor area (sqm)',hint:'Leave blank if bare land',placeholder:'80',unit:'sqm'},
-      {id:'year_built',type:'number',label:'Year built / completed',placeholder:'2018',unit:'Year'},
-      {id:'legal_status',type:'options',label:'Legal / title status',opts:[
-        {v:'full',l:'✅ Full title / freehold'},{v:'pending',l:'⏳ Title pending'},
-        {v:'contract',l:'📄 SPA only (no title yet)'},{v:'dispute',l:'⚠️ Title dispute'},
-      ]},
-      {id:'usage',type:'options',label:'Current usage',opts:[
-        {v:'owner',l:'Owner-occupied'},{v:'rent',l:'Tenanted / rented out'},
-        {v:'vacant',l:'Vacant'},{v:'develop',l:'Under development'},
-      ]},
-      {id:'monthly_rent',type:'number',label:'Monthly rental income (if any)',hint:'Leave blank if not rented',placeholder:'0',unit:'USD/mo'},
-      {id:'purpose',type:'options',label:'Purpose of valuation',opts:[
-        {v:'sell',l:'Sale / transfer'},{v:'mortgage',l:'Bank mortgage'},
-        {v:'invest',l:'Investment / JV'},{v:'reference',l:'Personal reference'},
-      ]},
-    ],
+    // Questions are DYNAMIC per country — rendered by renderREQuestions()
+    vn:[],en:[],
   },
 };
 
@@ -915,37 +873,427 @@ const QS={
 // RE COUNTRIES CONFIG
 // ════════════════════════════════════════════════
 const REC={
-  vn:{flag:'🇻🇳',name:{vn:'Việt Nam',en:'Vietnam'},cur:'VND',
-    cap:{apartment:5.5,house:4.5,land:0,commercial:7,industrial:8,resort:6},
-    std:'TT36/2024',bldCost:7,basePrice:{hcm:80,hn:60,other:25},fxKey:'USDVND'},
-  sg:{flag:'🇸🇬',name:{vn:'Singapore',en:'Singapore'},cur:'SGD',
-    cap:{apartment:3.5,house:2.5,land:0,commercial:5,industrial:6,resort:4},
-    std:'SISV · URA',bldCost:250,basePrice:{cbd:20000,fringe:12000,other:8000},fxKey:'USDSGD'},
-  my:{flag:'🇲🇾',name:{vn:'Malaysia',en:'Malaysia'},cur:'MYR',
-    cap:{apartment:5,house:4,land:0,commercial:6.5,industrial:7.5,resort:5.5},
-    std:'BOVAEA · JPPH',bldCost:50,basePrice:{kl:3500,penang:2500,other:1200},fxKey:'USDMYR'},
-  th:{flag:'🇹🇭',name:{vn:'Thái Lan',en:'Thailand'},cur:'THB',
-    cap:{apartment:5.5,house:4.5,land:0,commercial:7,industrial:8,resort:6.5},
-    std:'AREA Thailand',bldCost:1200,basePrice:{bkk:120000,phuket:100000,other:50000},fxKey:'USDTHB'},
-  id:{flag:'🇮🇩',name:{vn:'Indonesia',en:'Indonesia'},cur:'IDR',
+  vn:{flag:'🇻🇳',name:{vn:'Việt Nam',en:'Vietnam'},cur:'VND',altCurs:['VND'],
+    cap:{apartment:5.5,house:4.5,land:3,commercial:7,industrial:8,resort:6},
+    std:'TT36/2024 · TĐGVN',
+    // Giá triệu VND/m² theo tier tỉnh thành
+    priceTier:{
+      t1:{label:{vn:'TP.HCM / Hà Nội (Nội thành)',en:'HCMC / Hanoi (Inner city)'},
+        price:{apartment:60,house:120,land:150,commercial:80,industrial:25,resort:50}},
+      t2:{label:{vn:'Đà Nẵng / Bình Dương / Đồng Nai / Hải Phòng',en:'Da Nang / Binh Duong / Dong Nai / Hai Phong'},
+        price:{apartment:35,house:70,land:60,commercial:45,industrial:18,resort:30}},
+      t3:{label:{vn:'Khánh Hòa / Quảng Ninh / Long An / Bà Rịa – Vũng Tàu',en:'Khanh Hoa / Quang Ninh / Long An / Ba Ria-VT'},
+        price:{apartment:22,house:45,land:35,commercial:28,industrial:12,resort:20}},
+      t4:{label:{vn:'Tỉnh lẻ / Vùng ven / Các tỉnh khác',en:'Provincial / Rural / Other provinces'},
+        price:{apartment:10,house:20,land:8,commercial:12,industrial:5,resort:8}},
+    },
+    bldCost:{apartment:8,house:7,commercial:10,industrial:5,resort:12,land:0}, // triệu VND/m²
+    fxKey:'USDVND'},
+
+  sg:{flag:'🇸🇬',name:{vn:'Singapore',en:'Singapore'},cur:'SGD',altCurs:['SGD','USD'],
+    cap:{apartment:3,house:2.5,land:0,commercial:5,industrial:5.5,resort:3.5},
+    std:'SISV · URA · CEA',
+    priceTier:{
+      ccr:{label:{vn:'CCR — Core Central Region (D1-D11, D21)',en:'CCR — Core Central Region (D1-D11, D21)'},
+        price:{apartment:2800,house:4000,land:0,commercial:2500,industrial:1200,resort:2000}}, // SGD/sqft
+      rcr:{label:{vn:'RCR — Rest of Central Region (D12-D20)',en:'RCR — Rest of Central Region (D12-D20)'},
+        price:{apartment:1800,house:2800,land:0,commercial:1600,industrial:900,resort:1400}},
+      ocr:{label:{vn:'OCR — Outside Central Region (Jurong, Woodlands...)',en:'OCR — Outside Central Region (Jurong, Woodlands...)'},
+        price:{apartment:1200,house:1800,land:0,commercial:1000,industrial:700,resort:900}},
+    },
+    bldCost:{apartment:350,house:400,commercial:450,industrial:280,resort:500,land:0}, // SGD/sqft
+    fxKey:'USDSGD', sqftMode:true}, // SG dùng sqft
+
+  my:{flag:'🇲🇾',name:{vn:'Malaysia',en:'Malaysia'},cur:'MYR',altCurs:['MYR','USD'],
+    cap:{apartment:5,house:4,land:0,commercial:6.5,industrial:7,resort:5.5},
+    std:'BOVAEA · NAPIC · JPPH',
+    priceTier:{
+      kl:{label:{vn:'Kuala Lumpur / Mont Kiara / KLCC',en:'Kuala Lumpur / Mont Kiara / KLCC'},
+        price:{apartment:800,house:1200,land:600,commercial:900,industrial:350,resort:700}}, // MYR/sqft
+      penang:{label:{vn:'Penang / George Town',en:'Penang / George Town'},
+        price:{apartment:600,house:900,land:400,commercial:650,industrial:280,resort:500}},
+      johor:{label:{vn:'Johor Bahru / Iskandar',en:'Johor Bahru / Iskandar'},
+        price:{apartment:450,house:650,land:280,commercial:500,industrial:220,resort:380}},
+      other:{label:{vn:'Selangor / Sabah / Sarawak / Tỉnh khác',en:'Selangor / Sabah / Sarawak / Other'},
+        price:{apartment:350,house:500,land:180,commercial:380,industrial:180,resort:300}},
+    },
+    bldCost:{apartment:180,house:200,commercial:220,industrial:120,resort:250,land:0}, // MYR/sqft
+    fxKey:'USDMYR', sqftMode:true,
+    bumiDiscount:0.07}, // Bumi lot discount 7%
+
+  th:{flag:'🇹🇭',name:{vn:'Thái Lan',en:'Thailand'},cur:'THB',altCurs:['THB','USD'],
+    cap:{apartment:5,house:4.5,land:0,commercial:7,industrial:8,resort:6},
+    std:'AREA Thailand · REIC',
+    priceTier:{
+      bkk_prime:{label:{vn:'Bangkok — Sukhumvit / Silom / Sathorn (Prime)',en:'Bangkok — Sukhumvit / Silom / Sathorn (Prime)'},
+        price:{apartment:180000,house:220000,land:250000,commercial:160000,industrial:30000,resort:140000}}, // THB/sqm
+      bkk_mid:{label:{vn:'Bangkok — Lat Phrao / Bangna / Ramkhamhaeng',en:'Bangkok — Lat Phrao / Bangna / Ramkhamhaeng'},
+        price:{apartment:80000,house:100000,land:80000,commercial:70000,industrial:18000,resort:60000}},
+      phuket:{label:{vn:'Phuket / Samui / Koh Chang',en:'Phuket / Samui / Koh Chang'},
+        price:{apartment:90000,house:120000,land:100000,commercial:80000,industrial:20000,resort:110000}},
+      other:{label:{vn:'Chiang Mai / Pattaya / Tỉnh khác',en:'Chiang Mai / Pattaya / Other provinces'},
+        price:{apartment:40000,house:55000,land:30000,commercial:35000,industrial:10000,resort:45000}},
+    },
+    bldCost:{apartment:25000,house:22000,commercial:30000,industrial:12000,resort:35000,land:0}, // THB/sqm
+    fxKey:'USDTHB',
+    foreignQuota:0.49}, // Max 49% foreign ownership in condo
+
+  id:{flag:'🇮🇩',name:{vn:'Indonesia',en:'Indonesia'},cur:'IDR',altCurs:['IDR','USD'],
     cap:{apartment:6,house:5,land:0,commercial:7.5,industrial:9,resort:7},
-    std:'MAPPI · SPI',bldCost:7e6,basePrice:{jkt:30e6,bali:25e6,other:10e6},fxKey:'USDIDR'},
-  kh:{flag:'🇰🇭',name:{vn:'Campuchia',en:'Cambodia'},cur:'USD',
+    std:'MAPPI · SPI · KJPP',
+    priceTier:{
+      jkt_prime:{label:{vn:'Jakarta Pusat / Selatan — CBD / SCBD / Sudirman',en:'Jakarta Pusat / Selatan — CBD / SCBD / Sudirman'},
+        price:{apartment:35e6,house:50e6,land:60e6,commercial:40e6,industrial:8e6,resort:30e6}}, // IDR/m²
+      jkt_other:{label:{vn:'Jakarta Timur / Barat / Utara / Tangerang / Bekasi',en:'Jakarta East/West/North / Tangerang / Bekasi'},
+        price:{apartment:18e6,house:25e6,land:20e6,commercial:20e6,industrial:5e6,resort:15e6}},
+      bali:{label:{vn:'Bali — Seminyak / Canggu / Ubud / Uluwatu',en:'Bali — Seminyak / Canggu / Ubud / Uluwatu'},
+        price:{apartment:25e6,house:35e6,land:40e6,commercial:28e6,industrial:0,resort:45e6}},
+      other:{label:{vn:'Surabaya / Medan / Yogyakarta / Tỉnh khác',en:'Surabaya / Medan / Yogyakarta / Other'},
+        price:{apartment:10e6,house:15e6,land:8e6,commercial:12e6,industrial:3e6,resort:10e6}},
+    },
+    bldCost:{apartment:7e6,house:6e6,commercial:9e6,industrial:4e6,resort:10e6,land:0}, // IDR/m²
+    fxKey:'USDIDR'},
+
+  kh:{flag:'🇰🇭',name:{vn:'Campuchia',en:'Cambodia'},cur:'USD',altCurs:['USD','KHR'],
     cap:{apartment:6.5,house:5.5,land:0,commercial:8,industrial:10,resort:7},
-    std:'CVEA',bldCost:500,basePrice:{pp:2500,sr:1500,other:800},fxKey:'USDVND'},
+    std:'CVEA · VPMAS',
+    priceTier:{
+      pp_prime:{label:{vn:'Phnom Penh — BKK1 / Daun Penh / Toul Tom Pong (Prime)',en:'Phnom Penh — BKK1 / Daun Penh / Toul Tom Pong (Prime)'},
+        price:{apartment:3500,house:5000,land:6000,commercial:4000,industrial:800,resort:3000}}, // USD/m²
+      pp_mid:{label:{vn:'Phnom Penh — Sen Sok / Meanchey / Chroy Changva',en:'Phnom Penh — Sen Sok / Meanchey / Chroy Changva'},
+        price:{apartment:1800,house:2500,land:2500,commercial:2000,industrial:500,resort:1500}},
+      sr:{label:{vn:'Siem Reap (Angkor / Centre)',en:'Siem Reap (Angkor / Centre)'},
+        price:{apartment:1200,house:1800,land:1500,commercial:1400,industrial:300,resort:2000}},
+      other:{label:{vn:'Sihanoukville / Kampot / Tỉnh khác',en:'Sihanoukville / Kampot / Other'},
+        price:{apartment:800,house:1200,land:600,commercial:900,industrial:200,resort:900}},
+    },
+    bldCost:{apartment:450,house:400,commercial:500,industrial:250,resort:600,land:0}, // USD/m²
+    fxKey:'USDVND'}, // KH dùng USD nên convert = USDVND
 };
 
 function renderCountry(){
-  return `<div class="cg">${Object.entries(REC).map(([k,c])=>`
+  return `<div class="cg">${Object.entries(REC).map(([k,cfg])=>`
     <div class="cc ${ST.ans.country===k?'sel':''}" onclick="selCtry('${k}')">
-      <div class="cfl">${c.flag}</div>
-      <div class="cn">${c.name[LANG]}</div>
-      <div class="ccur">${c.cur} · ${c.std}</div>
+      <div class="cfl">${cfg.flag}</div>
+      <div class="cn">${cfg.name[LANG]}</div>
+      <div class="ccur">${cfg.cur} · ${cfg.std.split('·')[0].trim()}</div>
     </div>`).join('')}</div>`;
 }
 function selCtry(k){
   ST.ans.country=k;
-  document.querySelectorAll('.cc').forEach(el=>el.classList.toggle('sel',el.onclick&&el.getAttribute('onclick').includes("'"+k+"'")));
+  ST.ans.inputCur=REC[k]?.altCurs?.[0]||REC[k]?.cur||'USD';
+  document.querySelectorAll('.cc').forEach(el=>el.classList.toggle('sel',
+    el.onclick&&el.getAttribute('onclick').includes("'"+k+"'")));
+  // Re-render câu hỏi theo quốc gia sau khi chọn
+  setTimeout(()=>{
+    const qcon=document.getElementById('qcon');
+    if(qcon) {
+      renderREQuestions(k);
+    }
+  },50);
+}
+
+// ── Render câu hỏi BĐS động theo quốc gia đã chọn ──────────────────
+function renderREQuestions(ctry){
+  const cfg=REC[ctry]||REC.vn;
+  const cur=ST.ans.inputCur||cfg.cur;
+  const isSqft=cfg.sqftMode||false;
+  const areaUnit=isSqft?'sqft':'m²';
+  const tierOpts=Object.entries(cfg.priceTier).map(([k,t])=>
+    `<label class="qopt ${ST.ans.re_location_tier===k?'sel':''}">
+      <input type="radio" name="q_re_location_tier" value="${k}"
+        onchange="ST.ans.re_location_tier='${k}';
+          this.closest('.qo').querySelectorAll('.qopt').forEach(e=>e.classList.remove('sel'));
+          this.closest('.qopt').classList.add('sel');autoP()"/>
+      <div class="qdot"></div><span class="qot">${t.label[LANG]}</span>
+    </label>`).join('');
+
+  // Currency selector cho non-VN
+  const curSelect = ctry!=='vn' ? `
+    <div class="qb">
+      <label class="ql">💱 ${LANG==='vn'?'Tiền tệ bạn muốn nhập liệu':'Currency for data entry'}
+        <span style="color:var(--tm);font-weight:400;font-size:11px"> (${LANG==='vn'?'hệ thống tự quy đổi':'auto-converted'})</span>
+      </label>
+      <div class="qh">${LANG==='vn'
+        ?'Chọn tiền tệ quen thuộc với bạn — kết quả sẽ hiển thị cả tiền địa phương và USD'
+        :'Choose your familiar currency — results shown in both local currency and USD'}</div>
+      <div class="qo c2" style="flex-wrap:wrap">
+        ${(cfg.altCurs||[cur]).map(cu=>`
+        <label class="qopt ${(ST.ans.inputCur||cfg.altCurs?.[0])===cu?'sel':''}">
+          <input type="radio" name="q_inputCur" value="${cu}"
+            onchange="ST.ans.inputCur='${cu}';
+              this.closest('.qo').querySelectorAll('.qopt').forEach(e=>e.classList.remove('sel'));
+              this.closest('.qopt').classList.add('sel');
+              renderREQuestions('${ctry}')"/>
+          <div class="qdot"></div>
+          <span class="qot">${cu} ${getCurFlag(cu)}</span>
+        </label>`).join('')}
+      </div>
+    </div>` : '';
+
+  // PSF vs benchmark choice (cho SG và KH)
+  const psfChoice = (ctry==='sg'||ctry==='kh') ? `
+    <div class="qb">
+      <label class="ql">${LANG==='vn'?'Giá tham chiếu thị trường':'Market price reference'}</label>
+      <div class="qh">${LANG==='vn'
+        ?'Bạn có thể dùng benchmark hệ thống hoặc tự nhập giá thị trường bạn biết'
+        :'Use system benchmark or enter your own known market price'}</div>
+      <div class="qo c2">
+        <label class="qopt ${ST.ans.priceMode!=='custom'?'sel':''}">
+          <input type="radio" name="q_priceMode" value="auto"
+            onchange="ST.ans.priceMode='auto';this.closest('.qo').querySelectorAll('.qopt').forEach(e=>e.classList.remove('sel'));this.closest('.qopt').classList.add('sel');renderREQuestions('${ctry}')"/>
+          <div class="qdot"></div>
+          <span class="qot">🌐 ${LANG==='vn'?'Dùng benchmark hệ thống (khuyến nghị)':'Use system benchmark (recommended)'}</span>
+        </label>
+        <label class="qopt ${ST.ans.priceMode==='custom'?'sel':''}">
+          <input type="radio" name="q_priceMode" value="custom"
+            onchange="ST.ans.priceMode='custom';this.closest('.qo').querySelectorAll('.qopt').forEach(e=>e.classList.remove('sel'));this.closest('.qopt').classList.add('sel');renderREQuestions('${ctry}')"/>
+          <div class="qdot"></div>
+          <span class="qot">✏️ ${LANG==='vn'?'Tôi biết giá thị trường khu vực':'I know the local market price'}</span>
+        </label>
+      </div>
+    </div>
+    ${ST.ans.priceMode==='custom'?`
+    <div class="qb">
+      <label class="ql">${LANG==='vn'?'Giá thị trường bạn biết':'Known market price'}</label>
+      <div class="qh">${ctry==='sg'
+        ?'Nhập giá SGD/sqft. VD: căn hộ CCR giá 2,500 SGD/sqft → gõ 2500'
+        :'Enter price in USD/m². VD: $3,000/m² → enter 3000'}</div>
+      <div class="qiw"><input class="qi" type="number" id="q_custom_price"
+        placeholder="${ctry==='sg'?'2500':'3000'}" value="${ST.ans.custom_price||''}"
+        oninput="ST.ans.custom_price=this.value;autoP()"/>
+        <span class="qu">${ctry==='sg'?'SGD/sqft':'USD/m²'}</span></div>
+    </div>` : ''}` : '';
+
+  // Country-specific legal options
+  const legalOpts = {
+    vn:[{v:'full',l:'✅ Sổ đỏ / Sổ hồng đầy đủ (100%)'},{v:'pending',l:'⏳ Đang chờ cấp sổ (85%)'},{v:'contract',l:'📄 HĐMB chưa có sổ (75%)'},{v:'dispute',l:'⚠️ Đang tranh chấp (50%)'}],
+    sg:[{v:'full',l:'✅ Freehold — Sở hữu vĩnh viễn (100%)'},{v:'lease999',l:'🏛️ Leasehold 999 năm (98%)'},{v:'lease99',l:'📅 Leasehold 99 năm (90%)'},{v:'pending',l:'⏳ Đang chờ Strata Title (85%)'}],
+    my:[{v:'full',l:'✅ Freehold — Sở hữu vĩnh viễn (100%)'},{v:'lease99',l:'📅 Leasehold 99 năm (88%)'},{v:'bumi',l:'🏷️ Bumi lot — giảm 7% (93%)'},{v:'pending',l:'⏳ Đang chờ Strata Title (82%)'}],
+    th:[{v:'chanote',l:'✅ Chanote Title — đầy đủ (100%)'},{v:'ns4',l:'📄 NS4 / NorSor4 (88%)'},{v:'ns3',l:'📋 NS3 / NorSor3 (75%)'},{v:'foreign',l:'🌍 Foreign quota condo (95%)'}],
+    id:[{v:'shm',l:'✅ SHM — Sertifikat Hak Milik (100%)'},{v:'hgb',l:'📅 HGB — Hak Guna Bangunan (85%)'},{v:'shmsrs',l:'🏢 SHMSRS — Strata (90%)'},{v:'girik',l:'📄 Girik / AJB (70%)'}],
+    kh:[{v:'full',l:'✅ Hard Title — LMAP đầy đủ (100%)'},{v:'soft',l:'📄 Soft Title (75%)'},{v:'possessory',l:'📋 Possessory Right (60%)'},{v:'dispute',l:'⚠️ Đang tranh chấp (45%)'}],
+  };
+  const lglOpts=(legalOpts[ctry]||legalOpts.vn).map(o=>`
+    <label class="qopt ${ST.ans.legal_status===o.v?'sel':''}">
+      <input type="radio" name="q_legal_status" value="${o.v}"
+        onchange="ST.ans.legal_status='${o.v}';
+          this.closest('.qo').querySelectorAll('.qopt').forEach(e=>e.classList.remove('sel'));
+          this.closest('.qopt').classList.add('sel');autoP()"/>
+      <div class="qdot"></div><span class="qot">${o.l}</span>
+    </label>`).join('');
+
+  // VN specific: tỉnh thành dropdown
+  const vnProvince = ctry==='vn' ? `
+    <div class="qb">
+      <label class="ql">📍 ${LANG==='vn'?'Tỉnh / Thành phố':'Province / City'} <span style="color:var(--tm);font-size:11px">(ảnh hưởng giá tham chiếu)</span></label>
+      <div class="qh">${LANG==='vn'?'Chọn tỉnh thành — hệ thống tự phân loại tier giá phù hợp':'Select province — system auto-assigns price tier'}</div>
+      <select class="qi" id="q_vn_province" onchange="ST.ans.vn_province=this.value;autoVNTier();autoP()" style="cursor:pointer">
+        <option value="">${LANG==='vn'?'-- Chọn tỉnh/thành phố --':'-- Select province/city --'}</option>
+        <optgroup label="🏙️ Tier 1 — Đô thị lớn nhất">
+          ${['Hà Nội','TP. Hồ Chí Minh'].map(p=>`<option value="${p}" ${ST.ans.vn_province===p?'selected':''}>${p}</option>`).join('')}
+        </optgroup>
+        <optgroup label="🏘️ Tier 2 — Đô thị phát triển">
+          ${['Đà Nẵng','Bình Dương','Đồng Nai','Hải Phòng','Cần Thơ','Bà Rịa - Vũng Tàu','Long An'].map(p=>`<option value="${p}" ${ST.ans.vn_province===p?'selected':''}>${p}</option>`).join('')}
+        </optgroup>
+        <optgroup label="🌆 Tier 3 — Tỉnh thành lớn">
+          ${['Khánh Hòa','Quảng Ninh','Thừa Thiên Huế','Lâm Đồng','Bình Thuận','Quảng Nam','Nghệ An','Thanh Hóa','Hải Dương','Hưng Yên','Bắc Ninh','Thái Nguyên'].map(p=>`<option value="${p}" ${ST.ans.vn_province===p?'selected':''}>${p}</option>`).join('')}
+        </optgroup>
+        <optgroup label="🌿 Tier 4 — Tỉnh lẻ / Vùng ven">
+          ${['An Giang','Bắc Giang','Bắc Kạn','Bạc Liêu','Bến Tre','Bình Định','Bình Phước','Cà Mau','Cao Bằng','Đắk Lắk','Đắk Nông','Điện Biên','Đồng Tháp','Gia Lai','Hà Giang','Hà Nam','Hà Tĩnh','Hậu Giang','Hòa Bình','Kiên Giang','Kon Tum','Lai Châu','Lào Cai','Lạng Sơn','Nam Định','Ninh Bình','Ninh Thuận','Phú Thọ','Phú Yên','Quảng Bình','Quảng Ngãi','Quảng Trị','Sóc Trăng','Sơn La','Tây Ninh','Tiền Giang','Trà Vinh','Tuyên Quang','Vĩnh Long','Vĩnh Phúc','Yên Bái'].map(p=>`<option value="${p}" ${ST.ans.vn_province===p?'selected':''}>${p}</option>`).join('')}
+        </optgroup>
+      </select>
+    </div>` : `
+    <div class="qb">
+      <label class="ql">📍 ${LANG==='vn'?'Khu vực cụ thể (nếu biết)':'Specific area / district (if known)'}</label>
+      <div class="qh">${LANG==='vn'?'Nhập tên quận/khu vực — hệ thống dùng để diễn giải trong báo cáo. Không biết có thể bỏ qua.':'Enter district/area name for report context. Optional.'}</div>
+      <div class="qiw"><input class="qi" type="text" id="q_area_name"
+        placeholder="${LANG==='vn'?'VD: Jurong East, Siem Reap Centre...':'e.g. Jurong East, Siem Reap Centre...'}"
+        value="${ST.ans.area_name||''}" oninput="ST.ans.area_name=this.value;autoP()"/></div>
+    </div>`;
+
+  // Số tầng / hướng (VN + SG quan trọng)
+  const floorHint = (ctry==='vn'||ctry==='sg') ? `
+    <div class="qb">
+      <label class="ql">${LANG==='vn'?'Tầng số / Hướng bất động sản':'Floor level / Orientation'}</label>
+      <div class="qh">${ctry==='vn'
+        ?'Tầng cao + hướng Đông Nam tăng giá 5-15%. Tầng trệt thương mại = giá cao nhất'
+        :'SG: High floor +10-20%. Low floor discount applied automatically'}</div>
+      <div class="qo c2">
+        <label class="qopt ${ST.ans.floor_tier==='low'?'sel':''}">
+          <input type="radio" name="q_floor_tier" value="low" onchange="ST.ans.floor_tier='low';this.closest('.qo').querySelectorAll('.qopt').forEach(e=>e.classList.remove('sel'));this.closest('.qopt').classList.add('sel');autoP()"/>
+          <div class="qdot"></div><span class="qot">${ctry==='vn'?'Tầng thấp / Tầng trệt':'Low floor (1-5F)'}</span>
+        </label>
+        <label class="qopt ${ST.ans.floor_tier==='mid'?'sel':''}">
+          <input type="radio" name="q_floor_tier" value="mid" onchange="ST.ans.floor_tier='mid';this.closest('.qo').querySelectorAll('.qopt').forEach(e=>e.classList.remove('sel'));this.closest('.qopt').classList.add('sel');autoP()"/>
+          <div class="qdot"></div><span class="qot">${ctry==='vn'?'Tầng giữa (6-15F)':'Mid floor (6-20F)'}</span>
+        </label>
+        <label class="qopt ${ST.ans.floor_tier==='high'?'sel':''}">
+          <input type="radio" name="q_floor_tier" value="high" onchange="ST.ans.floor_tier='high';this.closest('.qo').querySelectorAll('.qopt').forEach(e=>e.classList.remove('sel'));this.closest('.qopt').classList.add('sel');autoP()"/>
+          <div class="qdot"></div><span class="qot">${ctry==='vn'?'Tầng cao (>15F)':'High floor (>20F)'}</span>
+        </label>
+        ${ctry==='vn'?`<label class="qopt ${ST.ans.floor_tier==='pent'?'sel':''}">
+          <input type="radio" name="q_floor_tier" value="pent" onchange="ST.ans.floor_tier='pent';this.closest('.qo').querySelectorAll('.qopt').forEach(e=>e.classList.remove('sel'));this.closest('.qopt').classList.add('sel');autoP()"/>
+          <div class="qdot"></div><span class="qot">🏆 Penthouse / Rooftop</span>
+        </label>`:''}
+      </div>
+    </div>` : '';
+
+  // Malaysia: Bumi/Non-Bumi
+  const bumiNote = ctry==='my' ? `
+    <div class="qb">
+      <label class="ql">🏷️ ${LANG==='vn'?'Phân loại lô đất':'Lot classification'}</label>
+      <div class="qh">${LANG==='vn'?'Bumi lot: giảm giá ~7% so với non-Bumi, nhưng chỉ người Malay/Bumiputera mua được':'Bumi lot: ~7% discount vs non-Bumi, restricted to Bumiputera buyers'}</div>
+      <div class="qo c2">
+        <label class="qopt ${ST.ans.bumi!=='yes'?'sel':''}">
+          <input type="radio" name="q_bumi" value="no" onchange="ST.ans.bumi='no';this.closest('.qo').querySelectorAll('.qopt').forEach(e=>e.classList.remove('sel'));this.closest('.qopt').classList.add('sel');autoP()"/>
+          <div class="qdot"></div><span class="qot">Non-Bumiputera lot (Standard)</span>
+        </label>
+        <label class="qopt ${ST.ans.bumi==='yes'?'sel':''}">
+          <input type="radio" name="q_bumi" value="yes" onchange="ST.ans.bumi='yes';this.closest('.qo').querySelectorAll('.qopt').forEach(e=>e.classList.remove('sel'));this.closest('.qopt').classList.add('sel');autoP()"/>
+          <div class="qdot"></div><span class="qot">Bumiputera lot (Restricted)</span>
+        </label>
+      </div>
+    </div>` : '';
+
+  // Thailand: Foreign quota
+  const thaiQuota = ctry==='th' ? `
+    <div class="qb">
+      <label class="ql">🌍 ${LANG==='vn'?'Quyền sở hữu':'Ownership type'}</label>
+      <div class="qh">${LANG==='vn'?'Thái Lan: người nước ngoài chỉ được mua tối đa 49% tổng số căn trong 1 tòa nhà condo (Foreign Quota)':'Thailand: foreigners can own max 49% of units in a condo project (Foreign Quota)'}</div>
+      <div class="qo c2">
+        <label class="qopt ${ST.ans.th_ownership!=='foreign'?'sel':''}">
+          <input type="radio" name="q_th_ownership" value="thai" onchange="ST.ans.th_ownership='thai';this.closest('.qo').querySelectorAll('.qopt').forEach(e=>e.classList.remove('sel'));this.closest('.qopt').classList.add('sel');autoP()"/>
+          <div class="qdot"></div><span class="qot">Thai name / Thai company</span>
+        </label>
+        <label class="qopt ${ST.ans.th_ownership==='foreign'?'sel':''}">
+          <input type="radio" name="q_th_ownership" value="foreign" onchange="ST.ans.th_ownership='foreign';this.closest('.qo').querySelectorAll('.qopt').forEach(e=>e.classList.remove('sel'));this.closest('.qopt').classList.add('sel');autoP()"/>
+          <div class="qdot"></div><span class="qot">Foreign quota condo unit</span>
+        </label>
+      </div>
+    </div>` : '';
+
+  const curLabel=cur==='VND'?'triệu VND/tháng':cur+'/month';
+  const rentHint=ctry==='vn'
+    ?`VD: cho thuê 15 triệu/tháng → gõ 15 | 5 triệu → gõ 5 | Không cho thuê → gõ 0`
+    :ctry==='sg'?`Enter in ${cur}. E.g. SGD 4,000/mo → enter 4000 | Not rented → enter 0`
+    :ctry==='id'?`Enter in Juta IDR. E.g. Rp 10 juta/bulan → enter 10 | Not rented → enter 0`
+    :`Enter in ${cur}. E.g. 15,000 ${cur}/mo → enter 15000 | Not rented → enter 0`;
+  const areaHint=ctry==='sg'||ctry==='my'
+    ?`Enter in sqft. E.g. 1,200 sqft → enter 1200`
+    :ctry==='vn'?`VD: 120m² → gõ 120 | 500m² → gõ 500`
+    :`Enter in sqm. E.g. 120 sqm → enter 120`;
+
+  const html=`
+    ${curSelect}
+    ${vnProvince}
+    <div class="qb">
+      <label class="ql">${LANG==='vn'?'Vị trí / Khu vực':'Location / Area'} <span style="color:var(--tm);font-size:11px">(1/${LANG==='vn'?'câu hỏi':'question'})</span></label>
+      <div class="qh">${LANG==='vn'?'Vị trí ảnh hưởng lớn nhất đến định giá BĐS':'Location is the #1 factor in property valuation'}</div>
+      <div class="qo">${tierOpts}</div>
+    </div>
+    <div class="qb">
+      <label class="ql">${LANG==='vn'?'Loại bất động sản':'Property type'}</label>
+      <div class="qo" style="grid-template-columns:repeat(3,1fr)">
+        ${[
+          {v:'apartment',l:LANG==='vn'?'🏢 Căn hộ / Chung cư':'🏢 Apartment / Condo'},
+          {v:'house',l:LANG==='vn'?'🏠 Nhà phố / Biệt thự':'🏠 House / Villa'},
+          {v:'land',l:LANG==='vn'?'🌳 Đất nền':'🌳 Land plot'},
+          {v:'commercial',l:LANG==='vn'?'🏪 Thương mại / VP':'🏪 Commercial / Office'},
+          {v:'industrial',l:LANG==='vn'?'🏭 Công nghiệp / Kho':'🏭 Industrial / Warehouse'},
+          {v:'resort',l:LANG==='vn'?'🏖️ Nghỉ dưỡng':'🏖️ Resort / Hospitality'},
+        ].map(o=>`<label class="qopt ${ST.ans.re_type===o.v?'sel':''}">
+          <input type="radio" name="q_re_type" value="${o.v}"
+            onchange="ST.ans.re_type='${o.v}';this.closest('.qo').querySelectorAll('.qopt').forEach(e=>e.classList.remove('sel'));this.closest('.qopt').classList.add('sel');autoP()"/>
+          <div class="qdot"></div><span class="qot">${o.l}</span>
+        </label>`).join('')}
+      </div>
+    </div>
+    ${psfChoice}
+    <div class="qb">
+      <label class="ql">${LANG==='vn'?`Diện tích đất (${areaUnit})`:`Land area (${areaUnit})`}</label>
+      <div class="qh">${areaHint}</div>
+      <div class="qiw"><input class="qi" type="number" id="q_land_area" placeholder="120"
+        value="${ST.ans.land_area||''}" oninput="ST.ans.land_area=this.value;autoP()"/>
+        <span class="qu">${areaUnit}</span></div>
+    </div>
+    <div class="qb">
+      <label class="ql">${LANG==='vn'?`Diện tích sàn xây dựng (${areaUnit})`:`Built-up floor area (${areaUnit})`}</label>
+      <div class="qh">${LANG==='vn'?'Tổng diện tích sàn. Đất trống chưa xây → gõ 0':'Total built-up area. Bare land → enter 0'}</div>
+      <div class="qiw"><input class="qi" type="number" id="q_floor_area" placeholder="80"
+        value="${ST.ans.floor_area||''}" oninput="ST.ans.floor_area=this.value;autoP()"/>
+        <span class="qu">${areaUnit}</span></div>
+    </div>
+    <div class="qb">
+      <label class="ql">${LANG==='vn'?'Năm xây dựng / hoàn công':'Year built / completed'}</label>
+      <div class="qh">${LANG==='vn'?'VD: Xây 2018 → gõ 2018 | Đất trống → gõ năm hiện tại (2025)':'E.g. Built 2018 → enter 2018 | Land plot → enter current year'}</div>
+      <div class="qiw"><input class="qi" type="number" id="q_year_built" placeholder="2018"
+        value="${ST.ans.year_built||''}" oninput="ST.ans.year_built=this.value;autoP()"/>
+        <span class="qu">Year</span></div>
+    </div>
+    ${floorHint}
+    <div class="qb">
+      <label class="ql">${LANG==='vn'?'Tình trạng pháp lý':'Legal / Title status'}</label>
+      <div class="qo">${lglOpts}</div>
+    </div>
+    ${bumiNote}
+    ${thaiQuota}
+    <div class="qb">
+      <label class="ql">${LANG==='vn'?'Thu nhập cho thuê hàng tháng (nếu có)':'Monthly rental income (if any)'}</label>
+      <div class="qh">${rentHint}</div>
+      <div class="qiw"><input class="qi" type="number" id="q_monthly_rent" placeholder="0"
+        value="${ST.ans.monthly_rent||''}" oninput="ST.ans.monthly_rent=this.value;autoP()"/>
+        <span class="qu">${curLabel}</span></div>
+    </div>
+    <div class="qb">
+      <label class="ql">${LANG==='vn'?'Mục đích định giá':'Purpose of valuation'}</label>
+      <div class="qo c2">
+        ${[
+          {v:'sell',l:LANG==='vn'?'💸 Bán / Chuyển nhượng':'💸 Sale / Transfer'},
+          {v:'mortgage',l:LANG==='vn'?'🏦 Thế chấp ngân hàng':'🏦 Bank mortgage / Refinance'},
+          {v:'invest',l:LANG==='vn'?'📈 Đầu tư / Góp vốn':'📈 Investment analysis'},
+          {v:'reference',l:LANG==='vn'?'📋 Tham khảo cá nhân':'📋 Personal reference'},
+        ].map(o=>`<label class="qopt ${ST.ans.purpose===o.v?'sel':''}">
+          <input type="radio" name="q_purpose" value="${o.v}"
+            onchange="ST.ans.purpose='${o.v}';this.closest('.qo').querySelectorAll('.qopt').forEach(e=>e.classList.remove('sel'));this.closest('.qopt').classList.add('sel');autoP()"/>
+          <div class="qdot"></div><span class="qot">${o.l}</span>
+        </label>`).join('')}
+      </div>
+    </div>`;
+
+  const qcon=document.getElementById('qcon');
+  if(qcon){
+    // Giữ country selector ở đầu, replace phần còn lại
+    const countryBlock=qcon.querySelector('.re-country-block');
+    if(countryBlock){
+      // Replace everything after country block
+      const siblings=[...qcon.children].filter(el=>!el.classList.contains('re-country-block'));
+      siblings.forEach(el=>el.remove());
+      countryBlock.insertAdjacentHTML('afterend',html);
+    } else {
+      qcon.innerHTML+= html;
+    }
+    // Cập nhật progress
+    const totalFields=['re_location_tier','re_type','land_area','floor_area','year_built','legal_status','purpose'];
+    const filled=totalFields.filter(k=>ST.ans[k]).length;
+    updProg(filled,totalFields.length);
+  }
+}
+
+function getCurFlag(cur){
+  const map={VND:'🇻🇳',SGD:'🇸🇬',MYR:'🇲🇾',THB:'🇹🇭',IDR:'🇮🇩',USD:'🇺🇸',KHR:'🇰🇭'};
+  return map[cur]||'';
+}
+
+function autoVNTier(){
+  const p=ST.ans.vn_province||'';
+  const t1=['Hà Nội','TP. Hồ Chí Minh'];
+  const t2=['Đà Nẵng','Bình Dương','Đồng Nai','Hải Phòng','Cần Thơ','Bà Rịa - Vũng Tàu','Long An'];
+  const t3=['Khánh Hòa','Quảng Ninh','Thừa Thiên Huế','Lâm Đồng','Bình Thuận','Quảng Nam','Nghệ An','Thanh Hóa','Hải Dương','Hưng Yên','Bắc Ninh','Thái Nguyên'];
+  if(t1.includes(p)) ST.ans.re_location_tier='t1';
+  else if(t2.includes(p)) ST.ans.re_location_tier='t2';
+  else if(t3.includes(p)) ST.ans.re_location_tier='t3';
+  else ST.ans.re_location_tier='t4';
 }
 
 // ════════════════════════════════════════════════
@@ -1008,6 +1356,19 @@ function goBizTypeNext(){
 // RENDER QUESTIONS
 // ════════════════════════════════════════════════
 function renderQs(seg){
+  if(seg==='realestate'){
+    // BĐS: render country selector trước, câu hỏi động sau khi chọn country
+    document.getElementById('qcon').innerHTML=`
+      <div class="qb re-country-block">
+        <label class="ql">${LANG==='vn'?'🌏 Chọn quốc gia / thị trường BĐS':'🌏 Select country / property market'}</label>
+        <div class="qh">${LANG==='vn'?'Bộ câu hỏi và phương pháp định giá sẽ thay đổi theo từng quốc gia':'Questions and valuation methods adapt per country'}</div>
+        ${renderCountry()}
+      </div>`;
+    updProg(0,8);
+    // Nếu đã có country trong state (quay lại), render tiếp
+    if(ST.ans.country) renderREQuestions(ST.ans.country);
+    return;
+  }
   const qs=(QS[seg]&&QS[seg][LANG])||QS[seg]?.vn||[];
   document.getElementById('qcon').innerHTML=qs.map((q,i)=>rQ(q,i,qs.length)).join('');
   updProg(0,qs.length);
@@ -1149,35 +1510,129 @@ function calcEnterprise(a){
 function calcRE(a){
   const ctry=a.country||'vn';
   const cfg=REC[ctry]||REC.vn;
+  const cur=a.inputCur||cfg.cur;
+  const isSqft=cfg.sqftMode||false;
   const rt=a.re_type||'apartment';
-  const la=parseFloat(a.land_area)||0;
-  const fa=parseFloat(a.floor_area)||0;
-  const yb=parseInt(a.year_built)||2015;
-  const mrent=parseFloat(a.monthly_rent)||0;
-  const cr=(cfg.cap[rt]||6)/100;
-  const lgl={full:1,pending:.85,contract:.75,dispute:.5}[a.legal_status]||.8;
-  const pks=Object.keys(cfg.basePrice);
-  const base=cfg.basePrice[pks[Math.floor(pks.length/2)]];
-  const vComp=(rt==='land'?la:fa)*base*lgl;
-  const noi=mrent>0?mrent*12*.8:0;
-  const vInc=cr>0&&noi>0?noi/cr:0;
-  const age=Math.max(0,new Date().getFullYear()-yb);
-  const dep=Math.min(age/50,.7);
-  const bldC=fa*cfg.bldCost;
-  const landV=la*base*.6;
-  const vCost=landV+bldC*(1-dep);
-  let final,mths;
-  if(vInc>0){
-    final=vComp*.5+vInc*.3+vCost*.2;
-    mths=[{n:LANG==='vn'?'So sánh TT':'Market Comparison',v:vComp,w:'50%'},
-      {n:'Cap Rate '+cfg.cap[rt]+'%',v:vInc,w:'30%'},
-      {n:LANG==='vn'?'Chi phí':'Cost Approach',v:vCost,w:'20%'}];
-  }else{
-    final=vComp*.7+vCost*.3;
-    mths=[{n:LANG==='vn'?'So sánh TT':'Market Comparison',v:vComp,w:'70%'},
-      {n:LANG==='vn'?'Chi phí':'Cost Approach',v:vCost,w:'30%'}];
+  const tierKey=a.re_location_tier||Object.keys(cfg.priceTier)[1]||'t2';
+  const tier=cfg.priceTier[tierKey]||Object.values(cfg.priceTier)[1];
+  const basePrice=tier.price[rt]||tier.price.apartment||0;
+
+  // User custom price (SG/KH option)
+  const customPrice=a.priceMode==='custom'&&a.custom_price?parseFloat(a.custom_price):0;
+  const effectivePrice=customPrice>0?customPrice:basePrice;
+
+  // Diện tích — convert sqft→sqm nếu cần
+  const laRaw=parseFloat(a.land_area)||0;
+  const faRaw=parseFloat(a.floor_area)||0;
+  const la=isSqft?laRaw*0.0929:laRaw; // sqft→sqm
+  const fa=isSqft?faRaw*0.0929:faRaw;
+  const area=rt==='land'?la:(fa||la);
+  const areaEffective=isSqft?faRaw||laRaw:area; // Keep original unit for comparison
+
+  // Hệ số pháp lý theo quốc gia
+  const lglMap={
+    vn:{full:1,pending:.85,contract:.75,dispute:.5},
+    sg:{full:1,lease999:.98,lease99:.90,pending:.85},
+    my:{full:1,lease99:.88,bumi:.93,pending:.82},
+    th:{chanote:1,ns4:.88,ns3:.75,foreign:.95},
+    id:{shm:1,hgb:.85,shmsrs:.90,girik:.70},
+    kh:{full:1,soft:.75,possessory:.60,dispute:.45},
+  };
+  const lgl=(lglMap[ctry]||lglMap.vn)[a.legal_status]||0.8;
+
+  // Hệ số tầng (VN và SG)
+  const floorMult={low:.92,mid:1.0,high:1.08,pent:1.18}[a.floor_tier]||1.0;
+
+  // Bumi discount (MY)
+  const bumiAdj=ctry==='my'&&a.bumi==='yes'?(cfg.bumiDiscount||0.07):0;
+
+  // ── Phương pháp 1: So sánh thị trường ──────────────────────────────
+  // Convert effectivePrice → VND
+  let priceVND=0;
+  if(ctry==='vn'){
+    // basePrice = triệu VND/m² → VND
+    priceVND=effectivePrice*1e6;
+  } else if(ctry==='sg'||ctry==='my'){
+    // basePrice = local/sqft → convert to VND per sqft (NOT multiplied by area yet)
+    const fxRate=FX[cfg.fxKey]||1;
+    priceVND=(effectivePrice/fxRate)*FX.USDVND; // VND per sqft
+  } else if(ctry==='id'){
+    // IDR/m² → USD → VND
+    priceVND=(effectivePrice/FX.USDIDR)*FX.USDVND;
+  } else {
+    // THB, USD (KH): per sqm → USD → VND
+    const fxRate=FX[cfg.fxKey]||FX.USDVND;
+    priceVND=ctry==='kh'
+      ?(effectivePrice*FX.USDVND)  // KH: USD/m² → VND/m²
+      :(effectivePrice/fxRate)*FX.USDVND;
   }
-  return{final,pps:0,cur:cfg.cur,ctry,cfg,mths,rng:[final*.85,final*1.2]};
+
+  // vComp: area × giá/m² đã quy về VND × các hệ số
+  // Với SG/MY: areaEffective là sqft, priceVND đã tính theo sqft, nên dùng areaEffective
+  const areaForComp=(ctry==='sg'||ctry==='my')?areaEffective:area;
+  const vComp=areaForComp*priceVND*lgl*floorMult*(1-bumiAdj);
+
+  // ── Phương pháp 2: Thu nhập / Cap Rate ──────────────────────────────
+  const cr=(cfg.cap[rt]||6)/100;
+  let annualNOI=0;
+  const mrent=parseFloat(a.monthly_rent)||0;
+  if(mrent>0){
+    if(ctry==='vn'){
+      // triệu VND/tháng → VND/năm
+      annualNOI=mrent*12*0.8*1e6;
+    } else if(ctry==='id'){
+      // juta IDR/bulan → IDR/tahun → VND
+      annualNOI=(mrent*1e6*12*0.8/FX.USDIDR)*FX.USDVND;
+    } else {
+      // cur/month → VND
+      const fxRate=FX[cfg.fxKey]||FX.USDVND;
+      annualNOI=ctry==='kh'
+        ?(mrent*12*0.8*FX.USDVND)
+        :(mrent*12*0.8/fxRate)*FX.USDVND;
+    }
+  }
+  const vInc=cr>0&&annualNOI>0?annualNOI/cr:0;
+
+  // ── Phương pháp 3: Chi phí ──────────────────────────────────────────
+  const yb=parseInt(a.year_built)||2015;
+  const age=Math.max(0,2025-yb);
+  const dep=Math.min(age*0.02,0.6); // 2%/năm tối đa 60%
+  let vCost=0;
+  if(fa>0){
+    let bldCostVND=0;
+    const bc=cfg.bldCost[rt]||cfg.bldCost.apartment||0;
+    if(ctry==='vn') bldCostVND=fa*bc*1e6;
+    else if(ctry==='sg'||ctry==='my') bldCostVND=(faRaw*bc/FX[cfg.fxKey])*FX.USDVND;
+    else if(ctry==='id') bldCostVND=(fa*bc/FX.USDIDR)*FX.USDVND;
+    else bldCostVND=ctry==='kh'?(fa*bc*FX.USDVND):(fa*bc/FX[cfg.fxKey])*FX.USDVND;
+    vCost=vComp*0.4+bldCostVND*(1-dep); // land = 40% of comp value
+  } else {
+    vCost=vComp; // Đất trống: chi phí ≈ giá đất
+  }
+
+  // ── Tổng hợp 3 phương pháp ──────────────────────────────────────────
+  const capLabel=cfg.cap[rt]+'% Cap Rate';
+  const compLabel=LANG==='vn'?'So sánh thị trường':'Market Comparison';
+  const costLabel=LANG==='vn'?'Chi phí (Cost Approach)':'Cost Approach';
+  const incLabel=LANG==='vn'?`Thu nhập (${capLabel})`:`Income (${capLabel})`;
+  const tierLabel=tier.label[LANG]||'';
+  const legalLabel=a.legal_status||'N/A';
+
+  let final,mths,wComp,wInc,wCost;
+  if(vInc>0){
+    wComp=.45;wInc=.35;wCost=.20;
+    final=vComp*wComp+vInc*wInc+vCost*wCost;
+    mths=[{n:compLabel,v:vComp,w:'45%'},{n:incLabel,v:vInc,w:'35%'},{n:costLabel,v:vCost,w:'20%'}];
+  } else {
+    wComp=.65;wCost=.35;
+    final=vComp*wComp+vCost*wCost;
+    mths=[{n:compLabel,v:vComp,w:'65%'},{n:costLabel,v:vCost,w:'35%'}];
+  }
+
+  return{final,pps:0,cur:cfg.cur,inputCur:cur,ctry,cfg,rt,
+    mths,rng:[final*.82,final*1.22],
+    tierLabel,legalLabel,effectivePrice,area,cr,dep,
+    vComp,vInc,vCost};
 }
 
 // ════════════════════════════════════════════════
@@ -1218,41 +1673,95 @@ async function animLoad(){
 function dispRes(r){
   const isRE=ST.seg==='realestate';
   const ctry=ST.ans.country||'vn';
-  const cfg=REC[ctry]||REC.vn;
-  let dv,du;
-  if(isRE&&ctry!=='vn'){
+  const cfg=isRE?(REC[ctry]||REC.vn):null;
+  let dv,du,rangeStr;
+
+  if(isRE){
+    const reLabel=LANG==='vn'?'🏠 Giá trị BĐS ước tính sơ bộ':'🏠 Estimated Property Value';
+    document.getElementById('rl')&&(document.getElementById('rl').textContent=reLabel);
+    const cfg2=REC[ctry]||REC.vn;
     const usd=r.final/FX.USDVND;
-    const rate=FX[cfg.fxKey]||1;
-    const local=usd*rate;
-    dv=local.toLocaleString('en-US',{maximumFractionDigits:0})+' '+cfg.cur;
-  }else{dv=fVND(r.final);}
-  du=fUSD(r.final);
+    // Hiển thị tiền tệ địa phương
+    if(ctry==='vn'){
+      dv='~ '+fVND(r.final);
+      du='≈ $'+usd.toLocaleString('en-US',{maximumFractionDigits:0})+' USD';
+      rangeStr=(LANG==='vn'?'Khoảng: ':'Range: ')+fVND(r.rng[0])+' — '+fVND(r.rng[1]);
+    } else if(ctry==='sg'){
+      const sgd=(usd*(FX.USDSGD||1.34)).toLocaleString('en-US',{maximumFractionDigits:0});
+      dv='~ SGD '+sgd;
+      du='≈ $'+usd.toLocaleString('en-US',{maximumFractionDigits:0})+' USD';
+      const r0=(r.rng[0]/FX.USDVND*(FX.USDSGD||1.34)).toLocaleString('en-US',{maximumFractionDigits:0});
+      const r1=(r.rng[1]/FX.USDVND*(FX.USDSGD||1.34)).toLocaleString('en-US',{maximumFractionDigits:0});
+      rangeStr='Range: SGD '+r0+' – SGD '+r1;
+    } else if(ctry==='my'){
+      const myr=(usd*(FX.USDMYR||4.68)).toLocaleString('en-US',{maximumFractionDigits:0});
+      dv='~ MYR '+myr;
+      du='≈ $'+usd.toLocaleString('en-US',{maximumFractionDigits:0})+' USD';
+      rangeStr='Range: MYR '+(r.rng[0]/FX.USDVND*(FX.USDMYR||4.68)).toLocaleString('en-US',{maximumFractionDigits:0})+' – MYR '+(r.rng[1]/FX.USDVND*(FX.USDMYR||4.68)).toLocaleString('en-US',{maximumFractionDigits:0});
+    } else if(ctry==='th'){
+      const thb=(usd*(FX.USDTHB||35.2)).toLocaleString('en-US',{maximumFractionDigits:0});
+      dv='~ ฿'+thb+' THB';
+      du='≈ $'+usd.toLocaleString('en-US',{maximumFractionDigits:0})+' USD';
+      rangeStr='Range: ฿'+(r.rng[0]/FX.USDVND*(FX.USDTHB||35.2)).toLocaleString('en-US',{maximumFractionDigits:0})+' – ฿'+(r.rng[1]/FX.USDVND*(FX.USDTHB||35.2)).toLocaleString('en-US',{maximumFractionDigits:0});
+    } else if(ctry==='id'){
+      const idr=(usd*(FX.USDIDR||16200)/1e9).toFixed(2);
+      dv='~ Rp '+idr+' Miliar IDR';
+      du='≈ $'+usd.toLocaleString('en-US',{maximumFractionDigits:0})+' USD';
+      rangeStr='Range: Rp '+(r.rng[0]/FX.USDVND*(FX.USDIDR||16200)/1e9).toFixed(2)+' – Rp '+(r.rng[1]/FX.USDVND*(FX.USDIDR||16200)/1e9).toFixed(2)+' Miliar';
+    } else { // KH — USD
+      dv='~ $'+usd.toLocaleString('en-US',{maximumFractionDigits:0})+' USD';
+      du='≈ '+fVND(r.final)+' VND';
+      rangeStr='Range: $'+(r.rng[0]/FX.USDVND).toLocaleString('en-US',{maximumFractionDigits:0})+' – $'+(r.rng[1]/FX.USDVND).toLocaleString('en-US',{maximumFractionDigits:0})+' USD';
+    }
+  } else {
+    // DN: hiện giá trị doanh nghiệp
+    dv='~ '+fVND(r.final);
+    du=fUSD(r.final);
+    rangeStr=(LANG==='vn'?'Khoảng: ':'Range: ')+fVND(r.rng[0])+' — '+fVND(r.rng[1]);
+  }
+
   document.getElementById('rval').textContent=dv;
   document.getElementById('rusd').textContent=du;
-  document.getElementById('rrange').textContent=r.rng&&r.rng[0]>0?t('range_lbl')+fVND(r.rng[0])+' — '+fVND(r.rng[1]):'';
+  document.getElementById('rrange').textContent=r.rng&&r.rng[0]>0?rangeStr:'';
+
+  // Render methods table — BĐS dùng fVND (tất cả đã quy về VND trong calcRE)
   document.getElementById('mgrid').innerHTML=(r.mths||[]).map(m=>`
     <div class="mc"><div class="mn">${m.n}</div>
       <div class="mv">${m.v>0?fVND(m.v):t('na')}</div>
       <div class="mw">${t('weight_lbl')}${m.w}</div></div>`).join('');
-  // Hiện bảng tóm tắt số liệu đã nhập
+
+  // Tóm tắt số liệu đã nhập
   renderInputSummary();
   updTotal();
 }
 function renderInputSummary(){
   const a=ST.ans;const seg=ST.seg;
+  const isREseg=ST.seg==='realestate';
   const labels={
     industry:'Ngành',biz_model:'Mô hình KD',biztype:'Loại hình DN',
     bctc:'Minh bạch BCTC',
-    rev_y2:'DT năm N-2',rev_y1:'DT năm N-1',revenue:'Doanh thu năm N',
-    net_profit:'Lợi nhuận',equity:'Vốn CSH',total_shares:'Cổ phần',
-    ebitda:'EBITDA',wacc:'WACC',fcff_growth:'Tăng trưởng',
+    rev_y2:'DT năm N-2',rev_y1:'DT năm N-1',revenue:isREseg?'Diện tích sàn':'Doanh thu năm N',
+    net_profit:'Lợi nhuận',equity:'Vốn CSH',total_shares:'Cổ phần/VĐL',
+    ebitda:'EBITDA',wacc:'WACC',fcff_growth:'Tăng trưởng FCFF',
     re_type:'Loại BĐS',land_area:'Diện tích đất',floor_area:'Diện tích sàn',
-    legal_status:'Pháp lý',monthly_rent:'Thu nhập cho thuê',
+    location_tier:'Vị trí',legal_status:'Pháp lý',
+    usage:'Mục đích sử dụng',purpose:'Mục đích định giá',
+    monthly_rent:'Thu nhập cho thuê',year_built:'Năm xây dựng',
     cagr:'CAGR 3 năm',funding:'Vốn gọi được',
+    arr:'ARR/Doanh thu',growth_mom:'Tăng trưởng MoM',
+    tam:'TAM thị trường',idea_stage:'Giai đoạn',team_score:'Đội ngũ',
+    ip_score:'IP / Công nghệ',poc_score:'Traction',
   };
   const units={rev_y2:'tỷ VND',rev_y1:'tỷ VND',revenue:'tỷ VND',
     net_profit:'tỷ VND',equity:'tỷ VND',ebitda:'tỷ VND',
-    land_area:'m²',floor_area:'m²',monthly_rent:'triệu VND/th'};
+    land_area:isREseg&&(REC[ST.ans.country]?.sqftMode)?'sqft':'m²',
+    floor_area:isREseg&&(REC[ST.ans.country]?.sqftMode)?'sqft':'m²',
+    monthly_rent:isREseg?((ST.ans.inputCur||REC[ST.ans.country]?.cur||'VND')+'/tháng'):'triệu VND/tháng',
+    year_built:'năm',
+    tam:'tỷ VND',arr:'triệu VND',funding:'tỷ VND'};
+  const sectionTitle=isREseg
+    ?(LANG==='vn'?'🏠 Thông tin bất động sản đã nhập':'🏠 Property Details Entered')
+    :(LANG==='vn'?'📋 Số liệu doanh nghiệp đã nhập':'📋 Business Data Entered');
   const rows=Object.entries(a).filter(([k,v])=>v&&labels[k]&&k!=='country').map(([k,v])=>`
     <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px">
       <span style="color:var(--tm)">${labels[k]||k}</span>
@@ -1262,7 +1771,7 @@ function renderInputSummary(){
   const el=document.getElementById('mgrid');
   el.insertAdjacentHTML('beforebegin',`
     <div style="background:var(--s2);border:1px solid var(--b);border-radius:var(--rmd);padding:16px 18px;margin-bottom:16px">
-      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--a400);margin-bottom:10px">📋 Số liệu bạn đã nhập</div>
+      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--a400);margin-bottom:10px">${sectionTitle}</div>
       ${rows}
     </div>
     <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--a400);margin-bottom:10px">📐 Phương pháp định giá áp dụng</div>`);
