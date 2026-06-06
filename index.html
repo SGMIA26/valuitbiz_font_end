@@ -60,6 +60,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .sl{font-size:9px;color:var(--tm);text-transform:uppercase;letter-spacing:.1em;margin-top:4px;display:block}
 .hcta-hint{font-size:12px;color:var(--tm);margin-top:-28px;margin-bottom:44px}
 .hcta-hint span{color:var(--a400)}
+/* VALUE PROP */
+.vp-item{display:flex;gap:16px;padding:16px;border:1px solid var(--b);border-radius:var(--rmd);background:var(--s2)}
+.vp-num{font-family:var(--fd);font-size:28px;font-weight:700;color:var(--a400);flex-shrink:0;line-height:1;width:36px}
+.vp-title{font-size:14px;font-weight:600;color:var(--tp);margin-bottom:5px}
+.vp-desc{font-size:12px;color:var(--ts);line-height:1.6}
 /* CARD */
 .card{background:var(--s1);border:1px solid var(--b);border-radius:var(--rxl);backdrop-filter:blur(20px);max-width:880px;margin:0 auto;width:calc(100% - 40px);overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,.4),inset 0 1px 0 rgba(240,168,48,.08)}
 /* SCREENS */
@@ -276,6 +281,38 @@ footer{text-align:center;padding:28px 20px;border-top:1px solid var(--gl);margin
     </div>
   </div>
 
+  <!-- S0b: Loại hình DN -->
+  <div class="scr" id="s-biztype">
+    <div class="sh">
+      <div class="ss">Bước 1b / Loại hình doanh nghiệp</div>
+      <div class="st" id="bt_title">Loại hình pháp lý doanh nghiệp của bạn?</div>
+      <div class="sd">Ảnh hưởng đến cách tính vốn điều lệ và cổ phần</div>
+    </div>
+    <div class="sb">
+      <div class="qo" id="biztypeGrid"></div>
+      <div class="bnav">
+        <button class="btn bg" onclick="goScr('s-seg')">← <span data-t="btn_back">Quay lại</span></button>
+        <button class="btn bp" onclick="goBizTypeNext()" id="btnBT" disabled>Tiếp tục →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- S0b: Loại hình DN -->
+  <div class="scr" id="s-biztype">
+    <div class="sh">
+      <div class="ss">Bước 1b / Loại hình doanh nghiệp</div>
+      <div class="st">Loại hình pháp lý doanh nghiệp của bạn?</div>
+      <div class="sd">Ảnh hưởng đến cách tính vốn điều lệ và số cổ phần lưu hành</div>
+    </div>
+    <div class="sb">
+      <div class="qo" id="biztypeGrid"></div>
+      <div class="bnav">
+        <button class="btn bg" onclick="goScr('s-seg')">← <span>Quay lại</span></button>
+        <button class="btn bp" onclick="goBizTypeNext()" id="btnBT" disabled>Tiếp tục →</button>
+      </div>
+    </div>
+  </div>
+
   <!-- S1: Questions -->
   <div class="scr" id="s-q">
     <div class="sh">
@@ -372,6 +409,75 @@ footer{text-align:center;padding:28px 20px;border-top:1px solid var(--gl);margin
       <div class="disc"><p id="disc_txt"></p></div>
       <div style="margin-top:18px;text-align:center">
         <button class="btn bg" onclick="restart()" style="font-size:12px;padding:7px 18px">↺ <span data-t="btn_rst">Định giá lại</span></button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+  <!-- S4: Value Proposition -->
+  <div class="scr" id="s-value">
+    <div class="rh" style="text-align:left;padding:28px 36px">
+      <div class="rl">✦ BÁO CÁO PHÂN TÍCH CHUYÊN SÂU</div>
+      <div class="st" style="font-size:clamp(18px,2.5vw,26px);margin-top:6px">Tại sao bạn cần bản Full Report?</div>
+      <div class="sd" style="margin-top:6px">Soạn thảo theo chuẩn IVS · TĐGVN · Thực tiễn M&A Việt Nam</div>
+    </div>
+    <div class="sb">
+      <div style="display:grid;gap:14px;margin-bottom:24px">
+        <div class="vp-item">
+          <div class="vp-num">01</div>
+          <div>
+            <div class="vp-title">Định giá đa phương pháp đầy đủ</div>
+            <div class="vp-desc">3+ phương pháp tính toán chi tiết với công thức, giả định và sensitivity analysis — đúng chuẩn báo cáo thẩm định giá chuyên nghiệp</div>
+          </div>
+        </div>
+        <div class="vp-item">
+          <div class="vp-num">02</div>
+          <div>
+            <div class="vp-title">Nhận định định tính từ chuyên gia</div>
+            <div class="vp-desc">Phân tích điểm mạnh / yếu tác động đến định giá. Rủi ro cần xử lý trước khi đưa hồ sơ cho NĐT hoặc thẩm định viên</div>
+          </div>
+        </div>
+        <div class="vp-item">
+          <div class="vp-num">03</div>
+          <div>
+            <div class="vp-title">Lộ trình chuẩn hóa hồ sơ doanh nghiệp</div>
+            <div class="vp-desc">Build To Sell Roadmap 6–18 tháng: Checklist BCTC đủ chuẩn thẩm định viên · Hành động cụ thể để tăng định giá tối đa trước M&A / IPO</div>
+          </div>
+        </div>
+        <div class="vp-item">
+          <div class="vp-num">04</div>
+          <div>
+            <div class="vp-title">Hành trình đưa DN lên đỉnh giá trị</div>
+            <div class="vp-desc">Framework SandboxStartUp — từ định giá hiện tại đến mục tiêu M&A / IPO. Hồ sơ chuẩn mà khi gửi thẩm định viên, họ thấy ngay giá trị vượt trội</div>
+          </div>
+        </div>
+      </div>
+      <!-- Blurred preview -->
+      <div style="position:relative;border:1px solid var(--b);border-radius:var(--rmd);overflow:hidden;margin-bottom:20px">
+        <div style="padding:16px 20px;font-size:12px;color:var(--ts);line-height:2;filter:blur(4px);user-select:none;pointer-events:none">
+          Sensitivity Analysis · WACC Breakdown · Comparable Transactions<br/>
+          EBITDA Multiple Benchmarks · Financial Health Score · Risk Matrix<br/>
+          Strategic Recommendations · 12/24/36M Roadmap · Exit Strategy Options<br/>
+          Build To Sell Checklist · BCTC Chuẩn hóa · NĐT Target Profile
+        </div>
+        <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,var(--n900) 90%);display:flex;align-items:flex-end;justify-content:center;padding-bottom:12px">
+          <span style="font-size:11px;color:var(--a400);letter-spacing:.1em">🔒 MỞ KHÓA VỚI FULL REPORT</span>
+        </div>
+      </div>
+      <!-- Sandbox CTA tự nhiên -->
+      <div style="background:rgba(240,168,48,.04);border:1px solid var(--gl);border-radius:var(--rmd);padding:14px 18px;margin-bottom:20px;font-size:12px;color:var(--ts);line-height:1.7">
+        Báo cáo được soạn thảo có tham chiếu framework <strong style="color:var(--tp)">Build To Sell</strong> của SandboxStartUp.VN —
+        chương trình đồng hành cùng chủ DN từ giai đoạn chuẩn bị hồ sơ đến chốt deal M&A.
+        <a href="https://sandboxstartup.vn" target="_blank" style="color:var(--a400);text-decoration:none">Tìm hiểu thêm →</a>
+      </div>
+      <!-- Price + CTA -->
+      <div style="text-align:center;margin-bottom:16px">
+        <div class="pbadge" style="justify-content:center;margin-bottom:14px"><span class="pold">$30</span><span class="pnew">$15 USD</span></div>
+        <button class="btn bp bf" onclick="showLead()">Nhận Full Report ngay → <span style="font-size:11px;opacity:.8">Giao trong 10 phút</span></button>
+      </div>
+      <div style="margin-top:12px;text-align:center">
+        <button class="btn bg" onclick="goScr('s-res')" style="font-size:12px;padding:7px 18px">← Xem lại kết quả sơ bộ</button>
       </div>
     </div>
   </div>
@@ -650,20 +756,23 @@ const QS={
   },
   sme:{
     vn:[
-      {id:'industry',type:'text',label:'Ngành kinh doanh',placeholder:'VD: F&B, Bán lẻ, Sản xuất, SaaS...'},
+      {id:'industry',type:'text',label:'Ngành kinh doanh',hint:'Không có ngành phù hợp? Hãy tự điền thông tin bạn cần định giá',placeholder:'VD: F&B, Bán lẻ, Sản xuất, SaaS... hoặc tự mô tả'},
       {id:'biz_model',type:'options',label:'Mô hình kinh doanh',opts:[
         {v:'saas',l:'SaaS / Tech'},{v:'marketplace',l:'Marketplace'},{v:'fb',l:'F&B / Chuỗi'},
-        {v:'retail',l:'Bán lẻ / Phân phối'},{v:'manufacturing',l:'Sản xuất'},{v:'trading',l:'Thương mại'},{v:'service',l:'Dịch vụ'},
+        {v:'retail',l:'Bán lẻ / Phân phối'},{v:'manufacturing',l:'Sản xuất'},{v:'trading',l:'Thương mại'},{v:'service',l:'Dịch vụ'},{v:'other',l:'🖊️ Khác — tự mô tả'},
       ]},
+      {id:'biz_model_other',type:'text',label:'Mô tả mô hình kinh doanh của bạn',hint:'Chỉ hiển thị nếu chọn "Khác" ở trên',placeholder:'VD: Nhượng quyền thương hiệu, Franchise...'},
       {id:'bctc',type:'options',label:'Mức độ minh bạch Báo cáo Tài chính (BCTC)',hint:'Ảnh hưởng trực tiếp đến hệ số chiết khấu định giá',opts:[
         {v:'A',l:'Tier A — Kiểm toán bởi Big4 / firm uy tín (0% chiết khấu)'},
         {v:'B',l:'Tier B — Sổ sách nội bộ, chưa kiểm toán (50% chiết khấu)'},
         {v:'C',l:'Tier C — Số liệu sơ bộ, chưa đầy đủ (75% chiết khấu)'},
       ]},
-      {id:'revenue',type:'number',label:'Doanh thu 12 tháng gần nhất',placeholder:'25',unit:'Tỷ VND'},
-      {id:'net_profit',type:'number',label:'Lợi nhuận sau thuế (LNST)',hint:'Nhập số âm nếu đang lỗ',placeholder:'3',unit:'Tỷ VND'},
-      {id:'equity',type:'number',label:'Vốn chủ sở hữu (Book Value)',hint:'Theo BCTC gần nhất',placeholder:'15',unit:'Tỷ VND'},
-      {id:'total_shares',type:'number',label:'Tổng cổ phần đang lưu hành',placeholder:'1000000',unit:'Cổ phần'},
+      {id:'rev_y2',type:'number',label:'Doanh thu năm N-2 (2 năm trước)',hint:'VD: Doanh thu 10 tỷ → gõ 10 | Doanh thu 200 tỷ → gõ 200',placeholder:'20',unit:'Tỷ VND'},
+      {id:'rev_y1',type:'number',label:'Doanh thu năm N-1 (năm ngoái)',hint:'VD: Doanh thu 25 tỷ → gõ 25',placeholder:'25',unit:'Tỷ VND'},
+      {id:'revenue',type:'number',label:'Doanh thu năm N (12 tháng gần nhất)',hint:'VD: Doanh thu 30 tỷ → gõ 30 | Đây là số liệu quan trọng nhất',placeholder:'30',unit:'Tỷ VND'},
+      {id:'net_profit',type:'number',label:'Lợi nhuận sau thuế (LNST) năm N',hint:'Nhập số âm nếu đang lỗ. VD: Lãi 3 tỷ → gõ 3 | Lỗ 500 triệu → gõ -0.5',placeholder:'3',unit:'Tỷ VND'},
+      {id:'equity',type:'number',label:'Vốn chủ sở hữu (Book Value)',hint:'Xem BCTC dòng "Vốn chủ sở hữu". VD: 15 tỷ → gõ 15',placeholder:'15',unit:'Tỷ VND'},
+      {id:'total_shares',type:'number',label:'Tổng cổ phần / Vốn điều lệ thực góp',hint:'TNHH: gõ vốn điều lệ thực góp (tỷ VND) | Cổ phần: gõ số cổ phần đang lưu hành',placeholder:'1000000',unit:'CP hoặc tỷ VND'},
       {id:'dividend_pct',type:'options',label:'Tỷ lệ cổ tức chi trả hàng năm',opts:[
         {v:'0',l:'0% — Tái đầu tư toàn bộ'},{v:'5',l:'5-10% — Chi trả nhỏ'},
         {v:'15',l:'10-20% — Chi trả trung bình'},{v:'25',l:'>20% — Chi trả cao'},
@@ -700,7 +809,9 @@ const QS={
   },
   enterprise:{
     vn:[
-      {id:'industry',type:'text',label:'Ngành kinh doanh',placeholder:'VD: Sản xuất, Tech, Logistics, BĐS KCN...'},
+      {id:'industry',type:'text',label:'Ngành kinh doanh',hint:'Không có ngành phù hợp? Hãy tự mô tả mô hình kinh doanh của bạn',placeholder:'VD: Sản xuất, Tech, Logistics, BĐS KCN... hoặc tự mô tả'},
+      {id:'rev_y2',type:'number',label:'Doanh thu năm N-2 (2 năm trước)',hint:'VD: Doanh thu 200 tỷ → gõ 200',placeholder:'400',unit:'Tỷ VND'},
+      {id:'rev_y1',type:'number',label:'Doanh thu năm N-1 (năm ngoái)',hint:'VD: Doanh thu 450 tỷ → gõ 450',placeholder:'450',unit:'Tỷ VND'},
       {id:'ebitda',type:'number',label:'EBITDA 12 tháng gần nhất',hint:'Lợi nhuận trước lãi vay, thuế, khấu hao và phân bổ',placeholder:'80',unit:'Tỷ VND'},
       {id:'da',type:'number',label:'Khấu hao & Phân bổ (D&A)',hint:'Dùng để tính EBIT và FCFF tự động',placeholder:'15',unit:'Tỷ VND'},
       {id:'capex',type:'number',label:'Chi tiêu vốn (CapEx) hàng năm',placeholder:'20',unit:'Tỷ VND'},
@@ -855,11 +966,42 @@ function selSeg(k){
 function goQ(){
   if(!ST.seg)return;
   ST.sid=genSID();
+  if(ST.seg==='realestate'){
+    // BĐS: skip loại hình DN, vào thẳng câu hỏi
+    const s=SEGS[ST.seg];
+    document.getElementById('qtitle').textContent=s.lbl[LANG];
+    document.getElementById('qsub').textContent=s.std[LANG];
+    renderQs(ST.seg);goScr('s-q');
+  } else {
+    renderBizType();goScr('s-biztype');
+  }
+}
+function renderBizType(){
+  const opts=[
+    {v:'tnhh',l:'🏢 Công ty TNHH',d:'Vốn góp — không có cổ phần phổ thông'},
+    {v:'cophần',l:'📊 Công ty Cổ phần',d:'Có cổ phần lưu hành — tính giá trị/cp'},
+    {v:'tư_nhân',l:'👤 DN Tư nhân / Hộ KD',d:'Một chủ sở hữu — định giá theo tài sản'},
+    {v:'startup',l:'🚀 Startup chưa đăng ký',d:'Đang trong giai đoạn gọi vốn / pre-seed'},
+  ];
+  document.getElementById('biztypeGrid').innerHTML=opts.map(o=>`
+    <label class="qopt ${ST.ans.biztype===o.v?'sel':''}" style="flex-direction:column;align-items:flex-start;gap:4px">
+      <input type="radio" name="biztype" value="${o.v}"
+        onchange="ST.ans.biztype='${o.v}';
+          this.closest('.qo').querySelectorAll('.qopt').forEach(e=>e.classList.remove('sel'));
+          this.closest('.qopt').classList.add('sel');
+          document.getElementById('btnBT').disabled=false;
+          // Cập nhật label câu cổ phần/vốn dựa trên loại hình
+          ST.biztype='${o.v}'"/>
+      <div style="font-size:14px;font-weight:600;color:var(--tp)">${o.l}</div>
+      <div style="font-size:11px;color:var(--ts)">${o.d}</div>
+    </label>`).join('');
+}
+function goBizTypeNext(){
+  if(!ST.ans.biztype)return;
   const s=SEGS[ST.seg];
   document.getElementById('qtitle').textContent=s.lbl[LANG];
   document.getElementById('qsub').textContent=s.std[LANG];
-  renderQs(ST.seg);
-  goScr('s-q');
+  renderQs(ST.seg);goScr('s-q');
 }
 
 // ════════════════════════════════════════════════
@@ -1092,7 +1234,38 @@ function dispRes(r){
     <div class="mc"><div class="mn">${m.n}</div>
       <div class="mv">${m.v>0?fVND(m.v):t('na')}</div>
       <div class="mw">${t('weight_lbl')}${m.w}</div></div>`).join('');
+  // Hiện bảng tóm tắt số liệu đã nhập
+  renderInputSummary();
   updTotal();
+}
+function renderInputSummary(){
+  const a=ST.ans;const seg=ST.seg;
+  const labels={
+    industry:'Ngành',biz_model:'Mô hình KD',biztype:'Loại hình DN',
+    bctc:'Minh bạch BCTC',
+    rev_y2:'DT năm N-2',rev_y1:'DT năm N-1',revenue:'Doanh thu năm N',
+    net_profit:'Lợi nhuận',equity:'Vốn CSH',total_shares:'Cổ phần',
+    ebitda:'EBITDA',wacc:'WACC',fcff_growth:'Tăng trưởng',
+    re_type:'Loại BĐS',land_area:'Diện tích đất',floor_area:'Diện tích sàn',
+    legal_status:'Pháp lý',monthly_rent:'Thu nhập cho thuê',
+    cagr:'CAGR 3 năm',funding:'Vốn gọi được',
+  };
+  const units={rev_y2:'tỷ VND',rev_y1:'tỷ VND',revenue:'tỷ VND',
+    net_profit:'tỷ VND',equity:'tỷ VND',ebitda:'tỷ VND',
+    land_area:'m²',floor_area:'m²',monthly_rent:'triệu VND/th'};
+  const rows=Object.entries(a).filter(([k,v])=>v&&labels[k]&&k!=='country').map(([k,v])=>`
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px">
+      <span style="color:var(--tm)">${labels[k]||k}</span>
+      <span style="color:var(--tp);font-weight:500">${v}${units[k]?' '+units[k]:''}</span>
+    </div>`).join('');
+  if(!rows)return;
+  const el=document.getElementById('mgrid');
+  el.insertAdjacentHTML('beforebegin',`
+    <div style="background:var(--s2);border:1px solid var(--b);border-radius:var(--rmd);padding:16px 18px;margin-bottom:16px">
+      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--a400);margin-bottom:10px">📋 Số liệu bạn đã nhập</div>
+      ${rows}
+    </div>
+    <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--a400);margin-bottom:10px">📐 Phương pháp định giá áp dụng</div>`);
 }
 function updTotal(){
   const tot=ST.upsell?'$20 USD':'$15 USD';
@@ -1108,6 +1281,8 @@ function toggleUpsell(){
   updTotal();
 }
 function showLead(){
+  // Nếu chưa qua value prop screen, hiện value prop trước
+  if(!ST.seenValue){ST.seenValue=true;goScr('s-value');return;}
   document.getElementById('lfwrap').style.display='block';
   document.getElementById('lfwrap').scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -1169,7 +1344,7 @@ function goScr(id){
 }
 function restart(){
   clearInterval(ST.qrTmr);
-  ST={seg:null,ans:{},res:null,sid:null,payMethod:'vn',upsell:false,consent:false,qrTmr:null};
+  ST={seg:null,ans:{},res:null,sid:null,payMethod:'vn',upsell:false,consent:false,qrTmr:null,seenValue:false};
   document.getElementById('lfwrap').style.display='none';
   document.getElementById('qrw').classList.remove('show');
   document.getElementById('btnPay').style.display='';
