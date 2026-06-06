@@ -375,7 +375,7 @@ footer{text-align:center;padding:28px 20px;border-top:1px solid var(--gl);margin
               <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#07101E" stroke-width="1.5" stroke-linecap="round"/></svg>
             </div>
             <div class="utxt">
-              <strong data-t="up_t">So sánh với SG · MY · TH</strong>
+              <strong data-t="up_t">🌏 So sánh BĐS: SG · MY · TH · ID · KH</strong>
               <p data-t="up_s">AI Agent phân tích yield, tăng trưởng, rủi ro pháp lý theo từng thị trường</p>
             </div>
             <div class="upr">+$5</div>
@@ -394,7 +394,7 @@ footer{text-align:center;padding:28px 20px;border-top:1px solid var(--gl);margin
           <div class="qb"><label class="ql" data-t="l_phone">Số điện thoại</label><input class="qi" id="lphone" type="tel" placeholder="+84 xxx xxx xxx"/></div>
           <div class="crow" onclick="togConsent()">
             <div class="cbox" id="cbox"></div>
-            <div class="ctx" data-t="consent">Tôi đồng ý với <a href="#" onclick="return false">Điều khoản</a> và <a href="#" onclick="return false">Chính sách bảo mật</a>. Dữ liệu mã hóa theo NĐ 13/2023/NĐ-CP.</div>
+            <div class="ctx" data-t="consent">Tôi đồng ý với <a href="/terms" target="_blank">Điều khoản</a> và <a href="/privacy" target="_blank">Chính sách bảo mật</a>. Dữ liệu mã hóa theo NĐ 13/2023/NĐ-CP.</div>
           </div>
           <div>
             <label class="ql" data-t="pay_m">Phương thức thanh toán</label>
@@ -451,7 +451,7 @@ footer{text-align:center;padding:28px 20px;border-top:1px solid var(--gl);margin
       <!-- Price + CTA -->
       <div style="text-align:center;margin-bottom:16px">
         <div class="pbadge" style="justify-content:center;margin-bottom:14px"><span class="pold">$30</span><span class="pnew">$15 USD</span></div>
-        <button class="btn bp bf" onclick="showLead()">Nhận Full Report ngay → <span style="font-size:11px;opacity:.8">Giao trong 10 phút</span></button>
+        <button class="btn bp bf" onclick="goToPayForm()">Nhận Full Report ngay → <span style="font-size:11px;opacity:.8">Giao trong 10 phút</span></button>
       </div>
       <div style="margin-top:12px;text-align:center">
         <button class="btn bg" onclick="goScr('s-res')" style="font-size:12px;padding:7px 18px">← Xem lại kết quả sơ bộ</button>
@@ -467,8 +467,8 @@ footer{text-align:center;padding:28px 20px;border-top:1px solid var(--gl);margin
     <a href="https://market.sandboxstartup.vn" target="_blank">SandboxMarket</a>
     <a href="https://workshop.sandboxstartup.vn" target="_blank">Workshop</a>
     <a href="#" data-t="f_about">Về ValuitBiz</a>
-    <a href="#" data-t="f_terms">Điều khoản</a>
-    <a href="#" data-t="f_priv">Bảo mật</a>
+    <a href="/terms" target="_blank" data-t="f_terms">Điều khoản</a>
+    <a href="/privacy" target="_blank" data-t="f_priv">Bảo mật</a>
   </div>
   <div class="fc">© 2026 ValuitBiz by SandboxStartUp.VN &nbsp;·&nbsp; <span data-t="f_disc">Kết quả mang tính tham khảo, không thay thế thẩm định giá chính thức.</span></div>
 </footer>
@@ -560,7 +560,15 @@ function setLang(l){
     if(TXT[l][k]!==undefined) el.innerHTML=TXT[l][k];
   });
   renderSegs();
-  if(ST.seg) renderQs(ST.seg);
+  if(ST.seg==='realestate'&&ST.ans.country){
+    // RE: re-render dynamic questions theo ngôn ngữ mới
+    const qcon=document.getElementById('qcon');
+    if(qcon&&qcon.innerHTML.length>10){
+      renderREQuestions(ST.ans.country);
+    }
+  } else if(ST.seg){
+    renderQs(ST.seg);
+  }
   updDisc();
 }
 
@@ -642,7 +650,7 @@ function renderSegs(){
 const QS={
   idea:{
     vn:[
-      {id:'industry',type:'text',label:'Ngành / lĩnh vực',placeholder:'VD: EdTech, F&B, SaaS, Logistics...'},
+      {id:'industry',type:'industry',label:'Ngành / lĩnh vực',placeholder:'VD: EdTech, F&B, SaaS, Logistics...'},
       {id:'idea_stage',type:'options',label:'Ý tưởng đã được kiểm chứng ở mức nào?',opts:[
         {v:'concept',l:'Ý tưởng thuần — chưa nghiên cứu thị trường'},
         {v:'researched',l:'Đã nghiên cứu, có dữ liệu thị trường'},
@@ -667,7 +675,7 @@ const QS={
       {id:'funding',type:'number',label:'Vốn đã huy động (nếu có)',hint:'Bỏ trống nếu chưa có',placeholder:'0',unit:'Tỷ VND'},
     ],
     en:[
-      {id:'industry',type:'text',label:'Industry / Sector',placeholder:'e.g. EdTech, F&B, SaaS, Logistics...'},
+      {id:'industry',type:'industry',label:'Industry / Sector',placeholder:'e.g. EdTech, F&B, SaaS, Logistics...'},
       {id:'idea_stage',type:'options',label:'How validated is your idea?',opts:[
         {v:'concept',l:'Pure concept — no market research yet'},{v:'researched',l:'Researched with market data'},
         {v:'validated',l:'Customer interviews / small PoC done'},{v:'committed',l:'LOI or committed buyers in hand'},
@@ -690,7 +698,7 @@ const QS={
   },
   startup:{
     vn:[
-      {id:'industry',type:'text',label:'Ngành / lĩnh vực',placeholder:'VD: SaaS B2B, Fintech, E-commerce...'},
+      {id:'industry',type:'industry',label:'Ngành / lĩnh vực',placeholder:'VD: SaaS B2B, Fintech, E-commerce...'},
       {id:'biz_model',type:'options',label:'Mô hình kinh doanh chính',opts:[
         {v:'saas',l:'SaaS / Subscription'},{v:'marketplace',l:'Marketplace / Platform'},
         {v:'ecommerce',l:'E-commerce / D2C'},{v:'service',l:'Dịch vụ / Agency'},
@@ -713,7 +721,7 @@ const QS={
       {id:'funding',type:'number',label:'Vốn đã gọi được',hint:'Bỏ trống nếu bootstrap',placeholder:'0',unit:'Tỷ VND'},
     ],
     en:[
-      {id:'industry',type:'text',label:'Industry / Sector',placeholder:'e.g. SaaS B2B, Fintech, E-commerce...'},
+      {id:'industry',type:'industry',label:'Industry / Sector',placeholder:'e.g. SaaS B2B, Fintech, E-commerce...'},
       {id:'biz_model',type:'options',label:'Primary business model',opts:[
         {v:'saas',l:'SaaS / Subscription'},{v:'marketplace',l:'Marketplace / Platform'},
         {v:'ecommerce',l:'E-commerce / D2C'},{v:'service',l:'Services / Agency'},
@@ -738,7 +746,7 @@ const QS={
   },
   sme:{
     vn:[
-      {id:'industry',type:'text',label:'Ngành kinh doanh',hint:'Không có ngành phù hợp? Hãy tự điền thông tin bạn cần định giá',placeholder:'VD: F&B, Bán lẻ, Sản xuất, SaaS... hoặc tự mô tả'},
+      {id:'industry',type:'industry',label:'Ngành kinh doanh',hint:'Không có ngành phù hợp? Hãy tự điền thông tin bạn cần định giá',placeholder:'VD: F&B, Bán lẻ, Sản xuất, SaaS... hoặc tự mô tả'},
       {id:'biz_model',type:'options',label:'Mô hình kinh doanh',opts:[
         {v:'saas',l:'SaaS / Tech'},{v:'marketplace',l:'Marketplace'},{v:'fb',l:'F&B / Chuỗi'},
         {v:'retail',l:'Bán lẻ / Phân phối'},{v:'manufacturing',l:'Sản xuất'},{v:'trading',l:'Thương mại'},{v:'service',l:'Dịch vụ'},{v:'other',l:'🖊️ Khác — tự mô tả'},
@@ -765,7 +773,7 @@ const QS={
       ]},
     ],
     en:[
-      {id:'industry',type:'text',label:'Industry / Business sector',placeholder:'e.g. F&B, Retail, Manufacturing, SaaS...'},
+      {id:'industry',type:'industry',label:'Industry / Business sector',placeholder:'e.g. F&B, Retail, Manufacturing, SaaS...'},
       {id:'biz_model',type:'options',label:'Business model',opts:[
         {v:'saas',l:'SaaS / Tech'},{v:'marketplace',l:'Marketplace'},{v:'fb',l:'F&B / Chain'},
         {v:'retail',l:'Retail / Distribution'},{v:'manufacturing',l:'Manufacturing'},{v:'trading',l:'Trading'},{v:'service',l:'Services'},
@@ -793,12 +801,12 @@ const QS={
   },
   enterprise:{
     vn:[
-      {id:'industry',type:'text',label:'Ngành kinh doanh',hint:'Không có ngành phù hợp? Hãy tự mô tả mô hình kinh doanh của bạn',placeholder:'VD: Sản xuất, Tech, Logistics, BĐS KCN... hoặc tự mô tả'},
+      {id:'industry',type:'industry',label:'Ngành kinh doanh',hint:'Không có ngành phù hợp? Hãy tự mô tả mô hình kinh doanh của bạn',placeholder:'VD: Sản xuất, Tech, Logistics, BĐS KCN... hoặc tự mô tả'},
       {id:'rev_y2',type:'number',label:'Doanh thu năm N-2 (2 năm trước)',hint:'VD: Doanh thu 200 tỷ → gõ 200',placeholder:'400',unit:'Tỷ VND'},
       {id:'rev_y1',type:'number',label:'Doanh thu năm N-1 (năm ngoái)',hint:'VD: Doanh thu 450 tỷ → gõ 450',placeholder:'450',unit:'Tỷ VND'},
       {id:'ebitda',type:'number',label:'EBITDA 12 tháng gần nhất',hint:'Lợi nhuận trước lãi vay, thuế, khấu hao và phân bổ',placeholder:'80',unit:'Tỷ VND'},
-      {id:'da',type:'number',label:'Khấu hao & Phân bổ (D&A)',hint:'Dùng để tính EBIT và FCFF tự động',placeholder:'15',unit:'Tỷ VND'},
-      {id:'capex',type:'number',label:'Chi tiêu vốn (CapEx) hàng năm',placeholder:'20',unit:'Tỷ VND'},
+      {id:'da',type:'number',label:'Khấu hao & Phân bổ (D&A)',hint:'Là chi phí không dùng tiền mặt — khấu hao tài sản cố định + phân bổ chi phí trả trước. Xem ở BCTC mục "Chi phí khấu hao". VD: máy móc 10 tỷ khấu hao 10 năm → D&A = 1 tỷ/năm → gõ 1',placeholder:'15',unit:'Tỷ VND'},
+      {id:'capex',type:'number',label:'Chi tiêu vốn (CapEx) hàng năm',hint:'Tiền chi mua sắm / nâng cấp tài sản cố định: nhà xưởng, máy móc, xe, thiết bị... KHÔNG bao gồm chi phí vận hành. VD: mua máy móc 20 tỷ, nâng cấp nhà xưởng 5 tỷ → CapEx = 25 → gõ 25',placeholder:'20',unit:'Tỷ VND'},
       {id:'total_debt',type:'number',label:'Tổng nợ chịu lãi',hint:'Vay ngân hàng + trái phiếu + leasing tài chính',placeholder:'100',unit:'Tỷ VND'},
       {id:'cash',type:'number',label:'Tiền mặt & tương đương tiền',placeholder:'30',unit:'Tỷ VND'},
       {id:'wacc',type:'options',label:'WACC ước tính (Chi phí vốn bình quân)',hint:'Chọn theo đặc điểm ngành và cơ cấu vốn',opts:[
@@ -819,12 +827,12 @@ const QS={
       {id:'total_shares',type:'number',label:'Tổng cổ phần lưu hành',placeholder:'10000000',unit:'Cổ phần'},
     ],
     en:[
-      {id:'industry',type:'text',label:'Industry / Sector',hint:'No matching option? Describe your business model in your own words',placeholder:'e.g. Manufacturing, Tech, Industrial RE... or describe your own'},
+      {id:'industry',type:'industry',label:'Industry / Sector',hint:'No matching option? Describe your business model in your own words',placeholder:'e.g. Manufacturing, Tech, Industrial RE... or describe your own'},
       {id:'rev_y2',type:'number',label:'Revenue Year N-2 (2 years ago)',hint:'In thousands USD. Example: $16M → enter 16000',placeholder:'16000',unit:'K USD'},
       {id:'rev_y1',type:'number',label:'Revenue Year N-1 (last year)',hint:'Example: $18M → enter 18000',placeholder:'18000',unit:'K USD'},
       {id:'ebitda',type:'number',label:'EBITDA (last 12 months)',hint:'Earnings before interest, tax, depreciation & amortization. Example: EBITDA $3.2M → enter 3200',placeholder:'3200',unit:'K USD'},
-      {id:'da',type:'number',label:'Depreciation & Amortization (D&A)',hint:'Used to derive EBIT and auto-calculate FCFF',placeholder:'600',unit:'K USD'},
-      {id:'capex',type:'number',label:'Annual Capital Expenditure (CapEx)',placeholder:'800',unit:'K USD'},
+      {id:'da',type:'number',label:'Depreciation & Amortization (D&A)',hint:'Non-cash expense: depreciation of fixed assets + amortization of prepaid costs. Find in P&L under "Depreciation". E.g. Equipment worth $600K over 10 years → D&A = $60K/yr → enter 60',placeholder:'600',unit:'K USD'},
+      {id:'capex',type:'number',label:'Annual Capital Expenditure (CapEx)',hint:'Cash spent buying/upgrading fixed assets: machinery, equipment, vehicles, buildings. Excludes operating costs. E.g. New machinery $500K + warehouse upgrade $300K → CapEx = 800 → enter 800',placeholder:'800',unit:'K USD'},
       {id:'total_debt',type:'number',label:'Total interest-bearing debt',hint:'Bank loans + bonds + finance leases',placeholder:'4000',unit:'K USD'},
       {id:'cash',type:'number',label:'Cash & cash equivalents',placeholder:'1200',unit:'K USD'},
       {id:'wacc',type:'options',label:'Estimated WACC',hint:'Select based on industry risk and capital structure',opts:[
@@ -1223,8 +1231,20 @@ function renderREQuestions(ctry){
     <div class="qb">
       <label class="ql">${LANG==='vn'?'Thu nhập cho thuê hàng tháng (nếu có)':'Monthly rental income (if any)'}</label>
       <div class="qh">${rentHint}</div>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <label class="qopt ${ST.ans.no_rent?'sel':''}" style="flex:0 0 auto;padding:7px 13px"
+          onclick="ST.ans.no_rent=!ST.ans.no_rent;ST.ans.monthly_rent=ST.ans.no_rent?'0':'';
+            this.classList.toggle('sel',ST.ans.no_rent);
+            document.getElementById('q_monthly_rent').disabled=ST.ans.no_rent;
+            document.getElementById('q_monthly_rent').value=ST.ans.no_rent?'0':'';
+            autoP()">
+          <div class="qdot" style="${ST.ans.no_rent?'background:var(--a400);border-color:var(--a400)':''}"></div>
+          <span class="qot">${LANG==='vn'?'Không có dòng tiền cho thuê':'No rental income'}</span>
+        </label>
+      </div>
       <div class="qiw"><input class="qi" type="number" id="q_monthly_rent" placeholder="0"
-        value="${ST.ans.monthly_rent||''}" oninput="ST.ans.monthly_rent=this.value;autoP()"/>
+        ${ST.ans.no_rent?'disabled':''} value="${ST.ans.monthly_rent||''}"
+        oninput="ST.ans.monthly_rent=this.value;autoP()"/>
         <span class="qu">${curLabel}</span></div>
     </div>
     <div class="qb">
@@ -1357,7 +1377,42 @@ function renderQs(seg){
 }
 function rQ(q,i,tot){
   let inp='';
-  if(q.type==='text'||q.type==='number'){
+  if(q.type==='industry'){
+    const industries=LANG==='vn'
+      ?['F&B / Nhà hàng / Chuỗi','Công nghệ / SaaS / Phần mềm','Bán lẻ / Thương mại điện tử',
+        'Sản xuất / Chế biến','Logistics / Vận tải','Y tế / Dược phẩm','Giáo dục / Edtech',
+        'Bất động sản / Xây dựng','Tài chính / Fintech','Nông nghiệp / Thực phẩm',
+        'Năng lượng / Môi trường','Du lịch / Khách sạn','Truyền thông / Quảng cáo','Khác — tự mô tả']
+      :['F&B / Restaurant / Chain','Technology / SaaS / Software','Retail / E-commerce',
+        'Manufacturing / Processing','Logistics / Transportation','Healthcare / Pharma',
+        'Education / Edtech','Real Estate / Construction','Finance / Fintech',
+        'Agriculture / Food','Energy / Environment','Tourism / Hospitality',
+        'Media / Advertising','Other — describe below'];
+    const curVal=ST.ans[q.id]||'';
+    const isOther=curVal&&!industries.slice(0,-1).includes(curVal);
+    inp=`<div>
+      <select class="qi" id="q_${q.id}_sel" style="cursor:pointer;margin-bottom:8px"
+        onchange="
+          const v=this.value;
+          if(v==='__other__'){
+            document.getElementById('q_${q.id}_txt').style.display='block';
+            ST.ans['${q.id}']=document.getElementById('q_${q.id}_txt').value||'';
+          } else {
+            document.getElementById('q_${q.id}_txt').style.display='none';
+            ST.ans['${q.id}']=v;
+          }
+          autoP()">
+        <option value="">${LANG==='vn'?'-- Chọn ngành --':'-- Select industry --'}</option>
+        ${industries.map(ind=>`<option value="${ind==='Khác — tự mô tả'||ind==='Other — describe below'?'__other__':ind}"
+          ${curVal===ind?'selected':''}>${ind}</option>`).join('')}
+      </select>
+      <input class="qi" type="text" id="q_${q.id}_txt"
+        style="display:${isOther?'block':'none'}"
+        placeholder="${LANG==='vn'?'Mô tả ngành / lĩnh vực của bạn...':'Describe your industry...'}"
+        value="${isOther?curVal:''}"
+        oninput="ST.ans['${q.id}']=this.value;autoP()"/>
+    </div>`;
+  }else if(q.type==='text'||q.type==='number'){
     inp=`<div class="qiw"><input class="qi" type="${q.type==='number'?'number':'text'}" id="q_${q.id}"
       placeholder="${q.placeholder||''}" value="${ST.ans[q.id]||''}"
       oninput="ST.ans['${q.id}']=this.value;autoP()"/>
@@ -1706,11 +1761,31 @@ function dispRes(r){
   document.getElementById('rusd').textContent=du;
   document.getElementById('rrange').textContent=r.rng&&r.rng[0]>0?rangeStr:'';
 
-  // Render methods table — BĐS dùng fVND (tất cả đã quy về VND trong calcRE)
-  document.getElementById('mgrid').innerHTML=(r.mths||[]).map(m=>`
-    <div class="mc"><div class="mn">${m.n}</div>
-      <div class="mv">${m.v>0?fVND(m.v):t('na')}</div>
-      <div class="mw">${t('weight_lbl')}${m.w}</div></div>`).join('');
+  // Render methods table
+  const isREdisp=ST.seg==='realestate';
+  const ctryDisp=ST.ans.country||'vn';
+  const cfgDisp=isREdisp?(REC[ctryDisp]||REC.vn):null;
+  document.getElementById('mgrid').innerHTML=(r.mths||[]).map(m=>{
+    let valStr;
+    if(!isREdisp){
+      valStr=m.v>0?fVND(m.v):t('na');
+    } else if(ctryDisp==='vn'){
+      valStr=m.v>0?fVND(m.v):t('na');
+    } else {
+      // Hiện đơn vị local
+      const fxRate=FX[cfgDisp?.fxKey]||1;
+      const usdVal=m.v/FX.USDVND;
+      if(ctryDisp==='sg') valStr='SGD '+(usdVal*fxRate).toLocaleString('en-US',{maximumFractionDigits:0});
+      else if(ctryDisp==='my') valStr='MYR '+(usdVal*fxRate).toLocaleString('en-US',{maximumFractionDigits:0});
+      else if(ctryDisp==='th') valStr='฿'+(usdVal*fxRate).toLocaleString('en-US',{maximumFractionDigits:0})+' THB';
+      else if(ctryDisp==='id') valStr='Rp '+(usdVal*fxRate/1e9).toFixed(2)+' M IDR';
+      else if(ctryDisp==='kh') valStr='$'+usdVal.toLocaleString('en-US',{maximumFractionDigits:0})+' USD';
+      else valStr=m.v>0?fVND(m.v):t('na');
+    }
+    return `<div class="mc"><div class="mn">${m.n}</div>
+      <div class="mv">${valStr}</div>
+      <div class="mw">${t('weight_lbl')}${m.w}</div></div>`;
+  }).join('');
 
   // Tóm tắt số liệu đã nhập
   renderInputSummary();
@@ -1719,21 +1794,33 @@ function dispRes(r){
 function renderInputSummary(){
   const a=ST.ans;const seg=ST.seg;
   const isREseg=ST.seg==='realestate';
-  const labels={
+  // Labels theo phân khúc — BĐS chỉ show fields BĐS
+  const dnLabels={
     industry:'Ngành',biz_model:'Mô hình KD',biztype:'Loại hình DN',
     bctc:'Minh bạch BCTC',
-    rev_y2:'DT năm N-2',rev_y1:'DT năm N-1',revenue:isREseg?'Diện tích sàn':'Doanh thu năm N',
-    net_profit:'Lợi nhuận',equity:'Vốn CSH',total_shares:'Cổ phần/VĐL',
-    ebitda:'EBITDA',wacc:'WACC',fcff_growth:'Tăng trưởng FCFF',
-    re_type:'Loại BĐS',land_area:'Diện tích đất',floor_area:'Diện tích sàn',
-    location_tier:'Vị trí',legal_status:'Pháp lý',
-    usage:'Mục đích sử dụng',purpose:'Mục đích định giá',
-    monthly_rent:'Thu nhập cho thuê',year_built:'Năm xây dựng',
+    rev_y2:'DT năm N-2',rev_y1:'DT năm N-1',revenue:'Doanh thu năm N',
+    net_profit:'Lợi nhuận ròng',equity:'Vốn chủ sở hữu',total_shares:'Cổ phần / VĐL',
+    ebitda:'EBITDA',wacc:'WACC (%)',fcff_growth:'Tăng trưởng FCFF (%)',
+    capex:'CapEx',da:'Khấu hao D&A',total_debt:'Tổng nợ vay',cash:'Tiền mặt',
+    ebitda_multiple:'EV/EBITDA múltiple',
     cagr:'CAGR 3 năm',funding:'Vốn gọi được',
-    arr:'ARR/Doanh thu',growth_mom:'Tăng trưởng MoM',
-    tam:'TAM thị trường',idea_stage:'Giai đoạn',team_score:'Đội ngũ',
-    ip_score:'IP / Công nghệ',poc_score:'Traction',
+    arr:'ARR / Doanh thu',growth_mom:'Tăng trưởng MoM',
+    tam:'TAM thị trường',idea_stage:'Giai đoạn ý tưởng',team_score:'Đội ngũ sáng lập',
+    ip_score:'IP / Công nghệ',poc_score:'Traction',stage:'Giai đoạn phát triển',
+    biz_model_other:'Mô hình KD (mô tả)',dividend_pct:'Tỷ lệ cổ tức',
   };
+  const reLabels={
+    country:'Quốc gia',vn_province:'Tỉnh / Thành phố',area_name:'Khu vực',
+    re_type:'Loại BĐS',re_location_tier:'Vị trí / Khu vực',
+    land_area:'Diện tích đất',floor_area:'Diện tích sàn',
+    year_built:'Năm xây dựng',floor_tier:'Tầng / Hướng',
+    legal_status:'Tình trạng pháp lý',bumi:'Phân loại lô (MY)',
+    th_ownership:'Quyền sở hữu (TH)',
+    monthly_rent:'Thu nhập cho thuê / tháng',
+    usage:'Mục đích sử dụng',purpose:'Mục đích định giá',
+    inputCur:'Tiền tệ nhập liệu',priceMode:'Giá tham chiếu',
+  };
+  const labels=isREseg?reLabels:dnLabels;
   const units={rev_y2:'tỷ VND',rev_y1:'tỷ VND',revenue:'tỷ VND',
     net_profit:'tỷ VND',equity:'tỷ VND',ebitda:'tỷ VND',
     land_area:isREseg&&(REC[ST.ans.country]?.sqftMode)?'sqft':'m²',
@@ -1741,8 +1828,9 @@ function renderInputSummary(){
     monthly_rent:isREseg?((ST.ans.inputCur||REC[ST.ans.country]?.cur||'VND')+'/tháng'):'triệu VND/tháng',
     year_built:'năm',
     tam:'tỷ VND',arr:'triệu VND',funding:'tỷ VND'};
+  const isIntlRE=isREseg&&ST.ans.country&&ST.ans.country!=='vn';
   const sectionTitle=isREseg
-    ?(LANG==='vn'?'🏠 Thông tin bất động sản đã nhập':'🏠 Property Details Entered')
+    ?(isIntlRE?'🏠 Property Details Entered':(LANG==='vn'?'🏠 Thông tin bất động sản đã nhập':'🏠 Property Details Entered'))
     :(LANG==='vn'?'📋 Số liệu doanh nghiệp đã nhập':'📋 Business Data Entered');
   const rows=Object.entries(a).filter(([k,v])=>v&&labels[k]&&k!=='country').map(([k,v])=>`
     <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px">
@@ -1753,7 +1841,7 @@ function renderInputSummary(){
   const el=document.getElementById('mgrid');
   el.insertAdjacentHTML('beforebegin',`
     <div style="background:var(--s2);border:1px solid var(--b);border-radius:var(--rmd);padding:16px 18px;margin-bottom:16px">
-      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--a400);margin-bottom:10px">${sectionTitle}</div>
+      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--a400);margin-bottom:10px" id="summary-title">${sectionTitle}</div>
       ${rows}
     </div>
     <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--a400);margin-bottom:10px">📐 Phương pháp định giá áp dụng</div>`);
@@ -1770,6 +1858,15 @@ function toggleUpsell(){
   ST.upsell=!ST.upsell;
   document.getElementById('ubanner').classList.toggle('on',ST.upsell);
   updTotal();
+}
+// Nút "Nhận full report" từ value prop screen → về s-res show form
+function goToPayForm(){
+  goScr('s-res');
+  setTimeout(()=>{
+    const lf=document.getElementById('lfwrap');
+    lf.style.display='block';
+    lf.scrollIntoView({behavior:'smooth',block:'start'});
+  },150);
 }
 // ── Value Prop content theo phân khúc ──────────────────────────────
 const VP_CONTENT = {
@@ -1860,7 +1957,7 @@ function renderValueProp(){
     startup:'Chuẩn Revenue Multiple · IVS 200 · Benchmark SEA',
     sme:'Chuẩn IVS · TĐGVN · HOSE/HNX benchmarks · TT06',
     enterprise:'Chuẩn IVS · IFRS · WACC · Thực tiễn M&A & IPO VN',
-    realestate:'Chuẩn IVS 230 · RICS · TT36/2024 · Thực tiễn ngân hàng & NĐT',
+    realestate:ST.ans.country&&ST.ans.country!=='vn'?'International Standards: IVS 230 · RICS · Local Appraisal Authority':'Chuẩn IVS 230 · RICS · TT36/2024 · Thực tiễn ngân hàng & NĐT',
   };
   document.getElementById('vp-badge').textContent=badgeMap[seg]||badgeMap.sme;
   document.getElementById('vp-title').textContent=titleMap[seg]||titleMap.sme;
