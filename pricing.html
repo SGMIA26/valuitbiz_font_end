@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Pricing — ValuitBiz M&A Valuation Engine</title>
+<meta name="description" content="ValuitBiz pricing: Free valuation estimate + $15 USD for full PDF report. Professional M&A valuation for Startups, SMEs and Enterprises."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --n950:#07101E;--n900:#0B1929;--n800:#0F2236;--n700:#162D45;
+  --a400:#F0A830;--a500:#D98E22;--a300:#F5C462;--a100:#FDF3DC;
+  --gl:rgba(240,168,48,0.2);
+  --tp:#F0EDE8;--ts:#A8B4C0;--tm:#5A6878;
+  --s1:rgba(15,34,54,0.85);--s2:rgba(22,45,69,0.6);
+  --b:rgba(240,168,48,0.15);--bh:rgba(240,168,48,0.4);
+  --ok:#2ECC71;
+  --rsm:6px;--rmd:12px;--rlg:20px;--rxl:32px;
+  --fd:'Cormorant Garamond',Georgia,serif;
+  --fb:'DM Sans',system-ui,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--n950);color:var(--tp);min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 20% 20%,rgba(240,168,48,0.05) 0%,transparent 60%),radial-gradient(ellipse 60% 80% at 80% 80%,rgba(14,52,99,0.25) 0%,transparent 60%);pointer-events:none;z-index:0}
+.gbg{position:fixed;inset:0;background-image:linear-gradient(rgba(240,168,48,0.035) 1px,transparent 1px),linear-gradient(90deg,rgba(240,168,48,0.035) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:0 24px 80px}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--gl);margin-bottom:60px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.lm{width:34px;height:34px;border:1.5px solid var(--a400);border-radius:var(--rsm);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:16px;font-weight:700;color:var(--a400)}
+.lt{font-family:var(--fd);font-size:20px;font-weight:600;color:var(--tp)}
+.lt span{color:var(--a400)}
+.back{font-size:13px;color:var(--ts);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color .2s}
+.back:hover{color:var(--a400)}
+
+/* HERO */
+.hero{text-align:center;padding:20px 0 56px}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border:1px solid var(--gl);border-radius:20px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--a400);margin-bottom:22px}
+.hero h1{font-family:var(--fd);font-size:clamp(36px,5vw,60px);font-weight:700;line-height:1.1;margin-bottom:14px}
+.hero h1 em{color:var(--a400);font-style:italic}
+.hero p{font-size:16px;color:var(--ts);max-width:480px;margin:0 auto;line-height:1.65;font-weight:300}
+
+/* PRICING CARDS */
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:48px 0}
+@media(max-width:640px){.plans{grid-template-columns:1fr}}
+.plan{background:var(--s1);border:1px solid var(--b);border-radius:var(--rxl);padding:36px;position:relative;overflow:hidden;backdrop-filter:blur(20px)}
+.plan.featured{border-color:var(--a400);background:rgba(240,168,48,0.06)}
+.plan.featured::before{content:'MOST POPULAR';position:absolute;top:20px;right:20px;font-size:9px;letter-spacing:.15em;color:var(--a400);border:1px solid var(--gl);border-radius:20px;padding:4px 10px}
+.plan-icon{font-size:32px;margin-bottom:16px}
+.plan-name{font-family:var(--fd);font-size:24px;font-weight:700;margin-bottom:6px}
+.plan-desc{font-size:13px;color:var(--ts);line-height:1.55;margin-bottom:24px}
+.plan-price{margin-bottom:28px}
+.price-main{font-family:var(--fd);font-size:52px;font-weight:700;color:var(--a400);line-height:1}
+.price-main sup{font-size:24px;vertical-align:top;margin-top:10px;display:inline-block}
+.price-period{font-size:12px;color:var(--tm);margin-top:4px}
+.plan-features{list-style:none;margin-bottom:32px}
+.plan-features li{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--ts);padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);line-height:1.45}
+.plan-features li:last-child{border-bottom:none}
+.plan-features li::before{content:'✓';color:var(--ok);font-weight:700;flex-shrink:0;margin-top:1px}
+.plan-features li.no::before{content:'×';color:var(--tm)}
+.plan-features li.no{color:var(--tm)}
+.btn{display:block;text-align:center;padding:14px 24px;border-radius:var(--rmd);font-size:14px;font-weight:600;text-decoration:none;cursor:pointer;transition:all .2s;border:none;font-family:var(--fb);width:100%}
+.btn-free{background:transparent;border:1px solid var(--b);color:var(--tp)}
+.btn-free:hover{border-color:var(--bh);background:rgba(240,168,48,.05)}
+.btn-paid{background:linear-gradient(135deg,var(--a400),var(--a500));color:var(--n950)}
+.btn-paid:hover{opacity:.9;transform:translateY(-1px)}
+
+/* CROSS COUNTRY */
+.addon{background:var(--s2);border:1px solid var(--b);border-radius:var(--rlg);padding:28px 32px;margin-bottom:48px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.addon-info h3{font-family:var(--fd);font-size:22px;font-weight:600;margin-bottom:6px}
+.addon-info p{font-size:13px;color:var(--ts);line-height:1.5}
+.addon-price{text-align:right;flex-shrink:0}
+.addon-price .price-main{font-size:36px}
+.addon-price p{font-size:11px;color:var(--tm);margin-top:4px}
+
+/* COMPARISON TABLE */
+.compare{margin-bottom:56px}
+.compare h2{font-family:var(--fd);font-size:32px;font-weight:700;text-align:center;margin-bottom:32px}
+.ctable{width:100%;border-collapse:collapse;background:var(--s1);border-radius:var(--rlg);overflow:hidden;border:1px solid var(--b)}
+.ctable th{padding:16px 20px;text-align:left;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--a400);border-bottom:1px solid var(--b);font-weight:600}
+.ctable th:not(:first-child){text-align:center}
+.ctable td{padding:14px 20px;font-size:13px;color:var(--ts);border-bottom:1px solid rgba(255,255,255,.04)}
+.ctable td:not(:first-child){text-align:center}
+.ctable tr:last-child td{border-bottom:none}
+.ctable td.yes{color:var(--ok)}
+.ctable td.no{color:var(--tm)}
+.ctable td:first-child{color:var(--tp)}
+
+/* FAQ */
+.faq{margin-bottom:56px}
+.faq h2{font-family:var(--fd);font-size:32px;font-weight:700;text-align:center;margin-bottom:32px}
+.faq-item{border-bottom:1px solid var(--b);padding:20px 0}
+.faq-q{font-size:15px;font-weight:500;color:var(--tp);margin-bottom:10px}
+.faq-a{font-size:13px;color:var(--ts);line-height:1.65}
+
+/* DISCLAIMER */
+.disclaimer{background:rgba(240,168,48,.05);border:1px solid var(--gl);border-radius:var(--rmd);padding:20px 24px;font-size:12px;color:var(--tm);line-height:1.65;text-align:center}
+
+/* CTA */
+.cta-bar{text-align:center;padding:48px 0 0}
+.cta-bar h2{font-family:var(--fd);font-size:36px;font-weight:700;margin-bottom:12px}
+.cta-bar p{font-size:14px;color:var(--ts);margin-bottom:28px}
+</style>
+</head>
+<body>
+<div class="gbg"></div>
+<div class="wrap">
+  <nav class="topbar">
+    <a href="/" class="logo">
+      <div class="lm">V</div>
+      <span class="lt">Valuit<span>Biz</span></span>
+    </a>
+    <a href="/" class="back">← Back to App</a>
+  </nav>
+
+  <div class="hero">
+    <div class="badge">💎 Transparent Pricing</div>
+    <h1>Simple, <em>Honest</em> Pricing</h1>
+    <p>Start free. Upgrade only when you need the full analysis. No subscriptions, no hidden fees.</p>
+  </div>
+
+  <div class="plans">
+    <!-- FREE -->
+    <div class="plan">
+      <div class="plan-icon">🔍</div>
+      <div class="plan-name">Free Estimate</div>
+      <div class="plan-desc">Get an instant valuation range for your business — no payment required.</div>
+      <div class="plan-price">
+        <div class="price-main">$0</div>
+        <div class="price-period">Always free</div>
+      </div>
+      <ul class="plan-features">
+        <li>3-minute valuation questionnaire</li>
+        <li>Estimated valuation range</li>
+        <li>Segment-specific methodology</li>
+        <li>Bilingual: Vietnamese / English</li>
+        <li class="no">Full PDF Analysis Report</li>
+        <li class="no">DCF model breakdown</li>
+        <li class="no">Comparable transaction data</li>
+        <li class="no">Investor-ready summary</li>
+      </ul>
+      <a href="/" class="btn btn-free">Start Free Valuation</a>
+    </div>
+
+    <!-- PAID -->
+    <div class="plan featured">
+      <div class="plan-icon">📊</div>
+      <div class="plan-name">Full Report</div>
+      <div class="plan-desc">Complete PDF analysis report — professional grade, investor-ready.</div>
+      <div class="plan-price">
+        <div class="price-main"><sup>$</sup>15</div>
+        <div class="price-period">One-time payment · per report</div>
+      </div>
+      <ul class="plan-features">
+        <li>Everything in Free</li>
+        <li>Full PDF Analysis Report (8–12 pages)</li>
+        <li>Multi-method valuation breakdown</li>
+        <li>DCF model with assumptions</li>
+        <li>Industry benchmark comparison</li>
+        <li>Sensitivity analysis table</li>
+        <li>Executive summary (EN + VI)</li>
+        <li>Delivered to email within 10 minutes</li>
+      </ul>
+      <a href="/" class="btn btn-paid">Get Full Report — $15</a>
+    </div>
+  </div>
+
+  <!-- ADD-ON -->
+  <div class="addon">
+    <div class="addon-info">
+      <h3>🌏 Cross-Country Real Estate Compare</h3>
+      <p>Add-on for Real Estate segment. Compare yield, growth rate, legal framework, and investment risk across Vietnam, Singapore, Malaysia, Thailand, Indonesia & Cambodia — side by side.</p>
+    </div>
+    <div class="addon-price">
+      <div class="price-main"><sup>$</sup>5</div>
+      <p>Add-on · with Full Report</p>
+    </div>
+  </div>
+
+  <!-- COMPARISON TABLE -->
+  <div class="compare">
+    <h2>What's Included</h2>
+    <table class="ctable">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Free</th>
+          <th>Full Report ($15)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Valuation questionnaire (3 min)</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+        <tr><td>Estimated valuation range</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+        <tr><td>Startup / SME / Enterprise / Real Estate</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+        <tr><td>Bilingual output (VI / EN)</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+        <tr><td>PDF report (8–12 pages)</td><td class="no">—</td><td class="yes">✓</td></tr>
+        <tr><td>Multi-method breakdown</td><td class="no">—</td><td class="yes">✓</td></tr>
+        <tr><td>DCF / WACC model detail</td><td class="no">—</td><td class="yes">✓</td></tr>
+        <tr><td>Industry multiple benchmarks</td><td class="no">—</td><td class="yes">✓</td></tr>
+        <tr><td>Sensitivity analysis</td><td class="no">—</td><td class="yes">✓</td></tr>
+        <tr><td>Investor-ready executive summary</td><td class="no">—</td><td class="yes">✓</td></tr>
+        <tr><td>Email delivery</td><td class="no">—</td><td class="yes">✓ Within 10 min</td></tr>
+        <tr><td>Cross-country RE compare</td><td class="no">—</td><td class="yes">+ $5 add-on</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- FAQ -->
+  <div class="faq">
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-item">
+      <div class="faq-q">What payment methods are accepted?</div>
+      <div class="faq-a">Vietnamese users: bank transfer via QR VietQR (SePay). International users: Visa, Mastercard, PayPal via Paddle. All transactions are processed securely.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">How long does it take to receive my report?</div>
+      <div class="faq-a">Your PDF report is delivered to your email within 10 minutes of confirmed payment. If you don't receive it within 30 minutes, please contact us.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Is this an official valuation certificate?</div>
+      <div class="faq-a">No. ValuitBiz provides automated mathematical simulations for internal reference and deal preparation purposes only. Results do not substitute official valuation certificates regulated by the Ministry of Finance of Vietnam (Bộ Tài chính).</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Can I get a refund?</div>
+      <div class="faq-a">Due to the digital nature of the product (instant PDF delivery), refunds are generally not available once the report has been generated. If there is a technical error preventing delivery, please contact support within 24 hours.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">What valuation methods are used?</div>
+      <div class="faq-a">Berkus & Scorecard (Startups), Market Multiples P/E·P/S·P/B + Gordon Growth Model (SMEs), DCF/FCFF + WACC + EV/EBITDA (Enterprise), and Comparable Sales + Income (Cap Rate) + Cost Approach (Real Estate).</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Is my data secure?</div>
+      <div class="faq-a">Yes. All data is encrypted in transit and at rest. We comply with Vietnam's Decree 13/2023/NĐ-CP on personal data protection. We do not sell or share your financial data with third parties.</div>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    ⚠️ ValuitBiz valuation outputs are automated financial simulations intended for internal reference and pre-deal preparation only. Results do not constitute official appraisals or valuation certificates under regulations of the Ministry of Finance of Vietnam (Bộ Tài chính — Nghị định 30/2021/NĐ-CP). Engage a licensed appraiser for legally binding valuations.
+  </div>
+
+  <div class="cta-bar">
+    <h2>Ready to Value Your Business?</h2>
+    <p>3 minutes. Multi-method. Professional grade.</p>
+    <a href="/" class="btn btn-paid" style="display:inline-block;width:auto;padding:14px 40px">Start Free Valuation →</a>
+  </div>
+</div>
+</body>
+</html>

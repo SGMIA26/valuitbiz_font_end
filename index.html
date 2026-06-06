@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ValuitBiz — M&A Valuation Engine</title>
+<meta name="description" content="Định giá doanh nghiệp & bất động sản — 3 phút, đa phương pháp, chuẩn quốc tế"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --n950:#07101E;--n900:#0B1929;--n800:#0F2236;--n700:#162D45;
+  --a400:#F0A830;--a500:#D98E22;--a300:#F5C462;--a100:#FDF3DC;
+  --gl:rgba(240,168,48,0.2);
+  --tp:#F0EDE8;--ts:#A8B4C0;--tm:#5A6878;
+  --s1:rgba(15,34,54,0.85);--s2:rgba(22,45,69,0.6);
+  --b:rgba(240,168,48,0.15);--bh:rgba(240,168,48,0.4);
+  --ok:#2ECC71;--er:#E74C3C;
+  --rsm:6px;--rmd:12px;--rlg:20px;--rxl:32px;
+  --fd:'Cormorant Garamond',Georgia,serif;
+  --fb:'DM Sans',system-ui,sans-serif;
+  --tr:all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--n950);color:var(--tp);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 20% 20%,rgba(240,168,48,0.05) 0%,transparent 60%),radial-gradient(ellipse 60% 80% at 80% 80%,rgba(14,52,99,0.25) 0%,transparent 60%);pointer-events:none;z-index:0}
+.gbg{position:fixed;inset:0;background-image:linear-gradient(rgba(240,168,48,0.035) 1px,transparent 1px),linear-gradient(90deg,rgba(240,168,48,0.035) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0}
+.app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 32px;border-bottom:1px solid var(--gl);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100;background:rgba(7,16,30,0.9)}
+.logo{display:flex;align-items:center;gap:10px}
+.lm{width:34px;height:34px;border:1.5px solid var(--a400);border-radius:var(--rsm);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:16px;font-weight:700;color:var(--a400)}
+.lt{font-family:var(--fd);font-size:20px;font-weight:600;color:var(--tp)}
+.lt span{color:var(--a400)}
+.tr-right{display:flex;align-items:center;gap:14px}
+.fxt{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ts);padding:4px 10px;border:1px solid var(--b);border-radius:20px}
+.fxd{width:6px;height:6px;border-radius:50%;background:var(--ok);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.lt-tog{display:flex;border:1px solid var(--b);border-radius:20px;overflow:hidden}
+.lb{padding:5px 14px;font-size:12px;font-weight:500;background:transparent;color:var(--ts);border:none;cursor:pointer;transition:var(--tr);font-family:var(--fb)}
+.lb.active{background:var(--a400);color:var(--n950)}
+/* HERO */
+.hero{text-align:center;padding:72px 24px 52px;position:relative}
+.hero::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:600px;height:300px;background:radial-gradient(ellipse,rgba(240,168,48,0.09) 0%,transparent 70%);pointer-events:none;z-index:0}
+.hero>*{position:relative;z-index:1}
+.hbadge{display:inline-flex;align-items:center;gap:8px;padding:7px 18px;border:1px solid var(--gl);border-radius:20px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--a400);margin-bottom:28px;background:rgba(240,168,48,0.04);backdrop-filter:blur(8px)}
+.hbadge-dot{width:6px;height:6px;border-radius:50%;background:var(--a400);animation:pulse 2s infinite;flex-shrink:0}
+.hero h1{font-family:var(--fd);font-size:clamp(38px,6.5vw,76px);font-weight:700;line-height:1.05;margin-bottom:6px;letter-spacing:-0.5px}
+.hero h1 em{color:var(--a400);font-style:italic;display:block}
+.hero h1 .h1b{color:var(--tp);display:block}
+.hero h1 .h1c{color:var(--ts);font-size:0.72em;font-weight:300;font-family:var(--fb);letter-spacing:0;display:block;margin-top:10px;font-style:normal}
+.hsub{font-size:clamp(13px,1.8vw,16px);color:var(--ts);max-width:500px;margin:18px auto 40px;line-height:1.7;font-weight:300}
+.hsub strong{color:var(--tp);font-weight:500}
+.hstats{display:flex;justify-content:center;gap:0;flex-wrap:wrap;margin-bottom:48px;border:1px solid var(--b);border-radius:var(--rlg);max-width:500px;margin-left:auto;margin-right:auto;overflow:hidden;background:var(--s2)}
+.stat{text-align:center;padding:18px 0;flex:1;border-right:1px solid var(--b);position:relative}
+.stat:last-child{border-right:none}
+.sn{display:block;font-family:var(--fd);font-size:28px;font-weight:700;color:var(--a400);line-height:1}
+.sl{font-size:9px;color:var(--tm);text-transform:uppercase;letter-spacing:.1em;margin-top:4px;display:block}
+.hcta-hint{font-size:12px;color:var(--tm);margin-top:-28px;margin-bottom:44px}
+.hcta-hint span{color:var(--a400)}
+/* CARD */
+.card{background:var(--s1);border:1px solid var(--b);border-radius:var(--rxl);backdrop-filter:blur(20px);max-width:880px;margin:0 auto;width:calc(100% - 40px);overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,.4),inset 0 1px 0 rgba(240,168,48,.08)}
+/* SCREENS */
+.scr{display:none;animation:se .35s ease}
+.scr.active{display:block}
+@keyframes se{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.sh{padding:28px 36px 20px;border-bottom:1px solid var(--b)}
+.ss{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--a400);margin-bottom:7px}
+.st{font-family:var(--fd);font-size:clamp(20px,2.5vw,30px);font-weight:700;color:var(--tp);line-height:1.2}
+.sd{font-size:13px;color:var(--ts);margin-top:5px;line-height:1.5}
+.sb{padding:28px 36px}
+/* PROGRESS */
+.pwrap{padding:0 36px 16px}
+.pbg{height:2px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
+.pfill{height:100%;background:linear-gradient(90deg,var(--a500),var(--a300));border-radius:2px;transition:width .5s ease}
+/* SEGMENT GRID */
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.sc{border:1px solid var(--b);border-radius:var(--rlg);padding:22px;cursor:pointer;transition:var(--tr);background:var(--s2);position:relative;overflow:hidden}
+.sc::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(240,168,48,.06),transparent);opacity:0;transition:var(--tr)}
+.sc:hover{border-color:var(--bh);transform:translateY(-2px)}
+.sc:hover::before,.sc.sel{opacity:1}
+.sc.sel{border-color:var(--a400);background:rgba(240,168,48,.08)}
+.sc.sel::before{opacity:1}
+.sico{font-size:26px;margin-bottom:10px}
+.slb{font-family:var(--fd);font-size:18px;font-weight:600;color:var(--tp);margin-bottom:3px}
+.srg{font-size:11px;color:var(--a400);margin-bottom:7px;font-weight:500}
+.sds{font-size:12px;color:var(--ts);line-height:1.45}
+.smth{margin-top:10px;display:flex;flex-wrap:wrap;gap:4px}
+.stag{font-size:10px;padding:2px 7px;border-radius:10px;border:1px solid var(--b);color:var(--tm)}
+/* QUESTIONS */
+.qb{margin-bottom:20px}
+.ql{font-size:13px;font-weight:500;color:var(--tp);margin-bottom:7px;display:block}
+.qh{font-size:11px;color:var(--tm);margin-bottom:7px;line-height:1.4}
+.qi{width:100%;padding:11px 15px;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:var(--rmd);color:var(--tp);font-size:14px;font-family:var(--fb);transition:var(--tr);outline:none}
+.qi:focus{border-color:var(--a400);background:rgba(240,168,48,.04)}
+.qi::placeholder{color:var(--tm)}
+.qi[type=number]{-moz-appearance:textfield}
+.qi[type=number]::-webkit-outer-spin-button,.qi[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+.qiw{position:relative}
+.qu{position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--tm);pointer-events:none}
+.qo{display:grid;gap:7px}
+.qo.c2{grid-template-columns:1fr 1fr}
+.qo.c3{grid-template-columns:1fr 1fr 1fr}
+.qopt{display:flex;align-items:center;gap:9px;padding:9px 13px;border:1px solid var(--b);border-radius:var(--rmd);cursor:pointer;transition:var(--tr)}
+.qopt:hover{border-color:var(--bh)}
+.qopt.sel{border-color:var(--a400);background:rgba(240,168,48,.08)}
+.qopt input{display:none}
+.qdot{width:13px;height:13px;border-radius:50%;border:1.5px solid var(--tm);flex-shrink:0;transition:var(--tr)}
+.qopt.sel .qdot{border-color:var(--a400);background:var(--a400)}
+.qot{font-size:13px;color:var(--ts)}
+.qopt.sel .qot{color:var(--tp)}
+/* COUNTRY */
+.cg{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.cc{border:1px solid var(--b);border-radius:var(--rmd);padding:11px 8px;text-align:center;cursor:pointer;transition:var(--tr)}
+.cc:hover{border-color:var(--bh)}
+.cc.sel{border-color:var(--a400);background:rgba(240,168,48,.08)}
+.cfl{font-size:22px;margin-bottom:3px}
+.cn{font-size:11px;font-weight:500;color:var(--ts)}
+.cc.sel .cn{color:var(--a400)}
+.ccur{font-size:10px;color:var(--tm)}
+/* FORM GRID */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:13px 26px;border-radius:var(--rmd);font-family:var(--fb);font-size:14px;font-weight:500;border:none;cursor:pointer;transition:var(--tr);text-decoration:none}
+.bp{background:linear-gradient(135deg,var(--a400),var(--a500));color:var(--n950)}
+.bp:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(240,168,48,.28)}
+.bg{background:transparent;border:1px solid var(--b);color:var(--ts)}
+.bg:hover{border-color:var(--bh);color:var(--tp)}
+.bf{width:100%}
+.bnav{display:flex;gap:10px;margin-top:28px;justify-content:space-between}
+/* LOADING */
+.lwrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:72px 36px;text-align:center}
+.lorb{width:72px;height:72px;border-radius:50%;border:2px solid var(--b);border-top-color:var(--a400);animation:spin 1s linear infinite;margin-bottom:22px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.lstps{margin-top:22px;display:flex;flex-direction:column;gap:7px;width:100%;max-width:320px}
+.lstp{display:flex;align-items:center;gap:9px;padding:7px 13px;border-radius:var(--rmd);font-size:12px;color:var(--tm);transition:var(--tr)}
+.lstp.done{color:var(--ok)}
+.lstp.act{color:var(--a400);background:rgba(240,168,48,.06)}
+.sdot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+/* RESULT */
+.rh{padding:28px 36px;background:linear-gradient(135deg,rgba(240,168,48,.08),rgba(240,168,48,.02));border-bottom:1px solid var(--b);text-align:center}
+.rl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--a400);margin-bottom:7px}
+.rv{font-family:var(--fd);font-size:clamp(32px,5.5vw,60px);font-weight:700;color:var(--tp);line-height:1;margin-bottom:5px}
+.rr{font-size:13px;color:var(--ts)}
+.ru{display:inline-block;margin-top:7px;font-size:15px;color:var(--ts);padding:3px 11px;border:1px solid var(--b);border-radius:20px}
+.mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:22px 0}
+.mc{padding:14px;border:1px solid var(--b);border-radius:var(--rmd);background:var(--s2);text-align:center}
+.mn{font-size:10px;color:var(--tm);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+.mv{font-family:var(--fd);font-size:18px;font-weight:600;color:var(--a400)}
+.mw{font-size:10px;color:var(--tm);margin-top:2px}
+/* FREEMIUM */
+.fg2{margin:20px 0;padding:22px;border:1px solid var(--b);border-radius:var(--rlg);background:var(--s2);position:relative;overflow:hidden}
+.fg2::before{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,transparent 25%,var(--s1) 100%);pointer-events:none;z-index:1}
+.blur{filter:blur(5px);user-select:none;pointer-events:none}
+.gcta{position:relative;z-index:2;text-align:center;padding:16px 0 2px}
+.gcta h3{font-family:var(--fd);font-size:21px;font-weight:700;color:var(--tp);margin-bottom:5px}
+.gcta p{font-size:12px;color:var(--ts);margin-bottom:14px}
+.pbadge{display:inline-flex;align-items:center;gap:8px;padding:9px 22px;border:1px solid var(--gl);border-radius:var(--rmd);margin-bottom:14px}
+.pold{font-size:12px;color:var(--tm);text-decoration:line-through}
+.pnew{font-family:var(--fd);font-size:26px;font-weight:700;color:var(--a400)}
+/* UPSELL */
+.ub{margin:13px 0;padding:14px 18px;border:1px solid rgba(46,204,113,.3);border-radius:var(--rmd);background:rgba(46,204,113,.05);display:flex;align-items:flex-start;gap:11px;cursor:pointer;transition:var(--tr)}
+.ub:hover{border-color:rgba(46,204,113,.5)}
+.ub.on{border-color:#2ECC71;background:rgba(46,204,113,.1)}
+.uchk{width:19px;height:19px;border-radius:4px;border:1.5px solid rgba(46,204,113,.5);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:var(--tr)}
+.ub.on .uchk{background:#2ECC71;border-color:#2ECC71}
+.uchk svg{display:none}
+.ub.on .uchk svg{display:block}
+.utxt strong{font-size:13px;color:var(--tp)}
+.utxt p{font-size:11px;color:var(--ts);margin-top:2px;line-height:1.4}
+.upr{margin-left:auto;font-family:var(--fd);font-size:17px;font-weight:700;color:#2ECC71;white-space:nowrap}
+/* LEAD */
+.lf{display:flex;flex-direction:column;gap:11px;margin-top:20px}
+.lr{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.crow{display:flex;align-items:flex-start;gap:9px;margin-top:3px}
+.cbox{width:15px;height:15px;border-radius:3px;border:1.5px solid var(--b);flex-shrink:0;cursor:pointer;margin-top:2px;transition:var(--tr)}
+.cbox.chk{background:var(--a400);border-color:var(--a400)}
+.ctx{font-size:11px;color:var(--tm);line-height:1.5;cursor:pointer}
+.ctx a{color:var(--a400)}
+/* PAYMENT */
+.pm{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:13px 0}
+.po{border:1px solid var(--b);border-radius:var(--rmd);padding:14px;text-align:center;cursor:pointer;transition:var(--tr)}
+.po:hover{border-color:var(--bh)}
+.po.sel{border-color:var(--a400);background:rgba(240,168,48,.06)}
+.poi{font-size:22px;margin-bottom:5px}
+.pon{font-size:13px;font-weight:500;color:var(--tp)}
+.pod{font-size:11px;color:var(--tm);margin-top:1px}
+/* QR */
+.qrw{text-align:center;padding:22px;border:1px solid var(--b);border-radius:var(--rlg);background:var(--s2);display:none;margin-top:14px}
+.qrw.show{display:block}
+.qri{width:160px;height:160px;margin:0 auto 14px;background:white;border-radius:var(--rmd);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.qri img{width:100%;height:100%;object-fit:contain}
+.qra{font-family:var(--fd);font-size:26px;font-weight:700;color:var(--a400)}
+.qrn{font-size:12px;color:var(--ts);margin-top:5px}
+.qrc{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:10px;font-size:12px;color:var(--tm)}
+.qrt{color:var(--a400);font-weight:600;font-variant-numeric:tabular-nums}
+/* DISCLAIMER */
+.disc{margin-top:20px;padding:14px 18px;border:1px solid rgba(255,255,255,.05);border-radius:var(--rmd);background:rgba(255,255,255,.02)}
+.disc p{font-size:10px;color:var(--tm);line-height:1.6}
+.disc strong{color:var(--ts)}
+/* FOOTER */
+footer{text-align:center;padding:28px 20px;border-top:1px solid var(--gl);margin-top:44px}
+.fl{display:flex;justify-content:center;gap:22px;flex-wrap:wrap;margin-bottom:12px}
+.fl a{font-size:12px;color:var(--tm);text-decoration:none;transition:var(--tr)}
+.fl a:hover{color:var(--a400)}
+.fc{font-size:11px;color:var(--tm)}
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;z-index:9999;padding:11px 18px;border-radius:var(--rmd);font-size:13px;color:white;transform:translateY(80px);opacity:0;transition:all .3s ease;max-width:300px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{background:rgba(46,204,113,.95)}
+.toast.er{background:rgba(231,76,60,.95)}
+/* RESPONSIVE */
+@media(max-width:600px){
+  .fg,.lr,.qo.c2,.qo.c3,.cg,.pm{grid-template-columns:1fr!important}
+  .sg{grid-template-columns:1fr!important}
+  .sb,.sh{padding:18px!important}
+  .topbar{padding:11px 16px}
+  .hero{padding:36px 14px 28px}.h1c{font-size:11px!important}
+}
+</style>
+</head>
+<body>
+<div class="gbg"></div>
+<div class="app">
+
+<header class="topbar">
+  <div class="logo">
+    <div class="lm">V</div>
+    <span class="lt">Valuit<span>Biz</span></span>
+  </div>
+  <div class="tr-right">
+    <div class="fxt">
+      <span class="fxd"></span>
+      <span id="fxRate">USD/VND: 25,400</span>
+    </div>
+    <div class="lt-tog">
+      <button class="lb active" onclick="setLang('vn')" id="btnVN">VN</button>
+      <button class="lb" onclick="setLang('en')" id="btnEN">EN</button>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hbadge"><span class="hbadge-dot"></span><span data-t="hero_badge">Định Giá Doanh Nghiệp Tự Động Online</span></div>
+  <h1>
+    <em data-t="h1a">Doanh nghiệp bạn</em>
+    <span class="h1b" data-t="h1b">đáng giá bao nhiêu?</span>
+  </h1>
+  <p class="hsub" data-t="hsub">Hệ thống mô phỏng tài chính đa phương pháp dành cho <strong>Startup, SMEs</strong> và <strong>Doanh nghiệp lớn</strong>. Nhận kết quả ước tính giá trị trong <strong>3 phút</strong>.</p>
+  <div class="hstats">
+    <div class="stat"><span class="sn">2,450+</span><span class="sl" data-t="s1">Doanh nghiệp đã định giá</span></div>
+    <div class="stat"><span class="sn">4.9★</span><span class="sl" data-t="s2">Đánh giá trung bình</span></div>
+    <div class="stat"><span class="sn">🔒</span><span class="sl" data-t="s3">Bảo mật NĐ 13/2023</span></div>
+    <div class="stat"><span class="sn">6</span><span class="sl" data-t="s4">Quốc gia & Chuẩn quốc tế</span></div>
+  </div>
+  <p class="hcta-hint">↓ Chọn phân khúc bên dưới · <span>Miễn phí</span> · Không cần đăng ký</p>
+</section>
+
+<div class="card" id="mainCard">
+
+  <!-- S0: Segment -->
+  <div class="scr active" id="s-seg">
+    <div class="sh">
+      <div class="ss" data-t="step1">Bước 1 / Chọn phân khúc</div>
+      <div class="st" data-t="seg_t">Bạn muốn định giá gì?</div>
+      <div class="sd" data-t="seg_s">Chọn phân khúc phù hợp — bộ câu hỏi và công thức sẽ được tùy chỉnh riêng</div>
+    </div>
+    <div class="sb">
+      <div class="sg" id="segGrid"></div>
+      <div class="bnav">
+        <div></div>
+        <button class="btn bp" onclick="goQ()" id="btn0" disabled><span data-t="btn_next">Tiếp tục</span> →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- S1: Questions -->
+  <div class="scr" id="s-q">
+    <div class="sh">
+      <div class="ss" id="qstep">Bước 2</div>
+      <div class="st" id="qtitle">Thông tin định giá</div>
+      <div class="sd" id="qsub"></div>
+    </div>
+    <div class="pwrap"><div class="pbg"><div class="pfill" id="pfill" style="width:0%"></div></div></div>
+    <div class="sb">
+      <div id="qcon"></div>
+      <div class="bnav">
+        <button class="btn bg" onclick="goScr('s-seg')">← <span data-t="btn_back">Quay lại</span></button>
+        <button class="btn bp" onclick="doCalc()"><span data-t="btn_calc">Tính định giá</span> ⚡</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- S2: Loading -->
+  <div class="scr" id="s-load">
+    <div class="lwrap">
+      <div class="lorb"></div>
+      <div style="font-family:var(--fd);font-size:22px;font-weight:700;margin-bottom:7px" data-t="load_t">Đang phân tích...</div>
+      <div style="font-size:13px;color:var(--ts)" data-t="load_s">Áp dụng mô hình định giá chuyên nghiệp</div>
+      <div class="lstps" id="lstps"></div>
+    </div>
+  </div>
+
+  <!-- S3: Result -->
+  <div class="scr" id="s-res">
+    <div class="rh">
+      <div class="rl" data-t="res_l">Kết quả định giá sơ bộ</div>
+      <div class="rv" id="rval">—</div>
+      <div class="rr" id="rrange"></div>
+      <div class="ru" id="rusd"></div>
+    </div>
+    <div class="sb">
+      <div class="mg" id="mgrid"></div>
+      <!-- Freemium -->
+      <div class="fg2">
+        <div class="blur" id="bprev">
+          <div style="font-size:12px;color:var(--ts);line-height:2.1">
+            Sensitivity Analysis · WACC Breakdown · Comparable Transactions<br/>
+            EBITDA Multiple Benchmarks · Financial Health Score · Risk Matrix<br/>
+            Strategic Recommendations · 12/24/36M Roadmap · Exit Strategy
+          </div>
+        </div>
+        <div class="gcta">
+          <h3 data-t="gate_t">Nhận báo cáo PDF đầy đủ</h3>
+          <p data-t="gate_s">Phân tích chuyên sâu · Lộ trình tài chính · AI commentary · CTAs hành động</p>
+          <div class="pbadge"><span class="pold">$30</span><span class="pnew">$15 USD</span></div>
+          <!-- Upsell RE compare -->
+          <div class="ub" id="ubanner" style="display:none;text-align:left" onclick="toggleUpsell()">
+            <div class="uchk" id="uchk">
+              <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#07101E" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <div class="utxt">
+              <strong data-t="up_t">So sánh với SG · MY · TH</strong>
+              <p data-t="up_s">AI Agent phân tích yield, tăng trưởng, rủi ro pháp lý theo từng thị trường</p>
+            </div>
+            <div class="upr">+$5</div>
+          </div>
+          <div style="font-size:13px;color:var(--a400);margin-bottom:14px" id="tprice">Tổng: $15 USD</div>
+          <button class="btn bp bf" onclick="showLead()"><span data-t="btn_rpt">Nhận báo cáo ngay</span> →</button>
+        </div>
+      </div>
+      <!-- Lead form -->
+      <div id="lfwrap" style="display:none">
+        <div class="lf">
+          <div class="lr">
+            <div class="qb"><label class="ql" data-t="l_name">Họ tên *</label><input class="qi" id="lname" type="text" placeholder="Nguyễn Văn A"/></div>
+            <div class="qb"><label class="ql" data-t="l_email">Email *</label><input class="qi" id="lemail" type="email" placeholder="you@company.com"/></div>
+          </div>
+          <div class="qb"><label class="ql" data-t="l_phone">Số điện thoại</label><input class="qi" id="lphone" type="tel" placeholder="+84 xxx xxx xxx"/></div>
+          <div class="crow" onclick="togConsent()">
+            <div class="cbox" id="cbox"></div>
+            <div class="ctx" data-t="consent">Tôi đồng ý với <a href="#" onclick="return false">Điều khoản</a> và <a href="#" onclick="return false">Chính sách bảo mật</a>. Dữ liệu mã hóa theo NĐ 13/2023/NĐ-CP.</div>
+          </div>
+          <div>
+            <label class="ql" data-t="pay_m">Phương thức thanh toán</label>
+            <div class="pm">
+              <div class="po sel" id="pvn" onclick="selPay('vn')"><div class="poi">🏦</div><div class="pon">SePay / QR</div><div class="pod">Ngân hàng Việt Nam</div></div>
+              <div class="po" id="pint" onclick="selPay('intl')"><div class="poi">💳</div><div class="pon">Paddle</div><div class="pod">Card / PayPal / Intl</div></div>
+            </div>
+          </div>
+          <button class="btn bp bf" onclick="doPay()" id="btnPay"><span data-t="btn_pay">Thanh toán & nhận báo cáo</span></button>
+        </div>
+        <div class="qrw" id="qrw">
+          <div class="qri" id="qrimg"></div>
+          <div class="qra" id="qramt"></div>
+          <div class="qrn" data-t="qr_n">Chuyển khoản · Tự động xác nhận trong 60 giây</div>
+          <div class="qrc"><span data-t="qr_e">Hết hạn sau</span>&nbsp;<span class="qrt" id="qrtimer">15:00</span></div>
+        </div>
+      </div>
+      <div class="disc"><p id="disc_txt"></p></div>
+      <div style="margin-top:18px;text-align:center">
+        <button class="btn bg" onclick="restart()" style="font-size:12px;padding:7px 18px">↺ <span data-t="btn_rst">Định giá lại</span></button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="fl">
+    <a href="https://sandboxstartup.vn" target="_blank">SandboxNews</a>
+    <a href="https://market.sandboxstartup.vn" target="_blank">SandboxMarket</a>
+    <a href="https://workshop.sandboxstartup.vn" target="_blank">Workshop</a>
+    <a href="#" data-t="f_about">Về ValuitBiz</a>
+    <a href="#" data-t="f_terms">Điều khoản</a>
+    <a href="#" data-t="f_priv">Bảo mật</a>
+  </div>
+  <div class="fc">© 2026 ValuitBiz by SandboxStartUp.VN &nbsp;·&nbsp; <span data-t="f_disc">Kết quả mang tính tham khảo, không thay thế thẩm định giá chính thức.</span></div>
+</footer>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════
+// CONFIG
+// ════════════════════════════════════════════════
+const CFG = {
+  WORKER: 'https://buildtosell.saigonmia2026.workers.dev',
+  SEPAY_MERCHANT: 'SP-LIVE-CT5A97B4',
+  PADDLE_VENDOR: 'YOUR_PADDLE_VENDOR',
+  PADDLE_PRODUCT: 'YOUR_PADDLE_PRODUCT_ID',
+};
+
+// ════════════════════════════════════════════════
+// I18N
+// ════════════════════════════════════════════════
+const TXT = {
+  vn:{
+    hero_badge:'Định Giá Doanh Nghiệp Tự Động Online',
+    h1a:'Doanh nghiệp bạn',h1b:'đáng giá bao nhiêu?',h1c:'Định Giá Doanh Nghiệp Tự Động Online',
+    hsub:'Hệ thống mô phỏng tài chính đa phương pháp dành cho Startup, SMEs và Doanh nghiệp lớn. Nhận kết quả ước tính giá trị trong 3 phút.',
+    s1:'Doanh nghiệp đã định giá',s2:'Đánh giá trung bình',s3:'Bảo mật NĐ 13/2023',s4:'Quốc gia & Chuẩn quốc tế',
+    step1:'Bước 1 / Chọn phân khúc',seg_t:'Bạn muốn định giá gì?',
+    seg_s:'Chọn phân khúc — bộ câu hỏi và công thức sẽ được tùy chỉnh riêng',
+    btn_next:'Tiếp tục',btn_back:'Quay lại',btn_calc:'Tính định giá',
+    load_t:'Đang phân tích...',load_s:'Áp dụng mô hình định giá chuyên nghiệp',
+    res_l:'Kết quả định giá sơ bộ',
+    gate_t:'Nhận báo cáo PDF đầy đủ',gate_s:'Phân tích chuyên sâu · Lộ trình tài chính · AI commentary',
+    up_t:'So sánh với SG · MY · TH',up_s:'AI Agent phân tích yield, tăng trưởng, rủi ro pháp lý',
+    btn_rpt:'Nhận báo cáo ngay',
+    l_name:'Họ tên *',l_email:'Email *',l_phone:'Số điện thoại',
+    consent:'Tôi đồng ý với <a href="#">Điều khoản</a> và <a href="#">Chính sách bảo mật</a>. Dữ liệu mã hóa theo NĐ 13/2023/NĐ-CP.',
+    pay_m:'Phương thức thanh toán',btn_pay:'Thanh toán & nhận báo cáo',
+    qr_n:'Chuyển khoản · Tự động xác nhận trong 60 giây',qr_e:'Hết hạn sau',
+    btn_rst:'Định giá lại',
+    f_about:'Về ValuitBiz',f_terms:'Điều khoản',f_priv:'Bảo mật',
+    f_disc:'Kết quả mang tính tham khảo, không thay thế thẩm định giá chính thức.',
+    disc_vn:'<strong>Tuyên bố miễn trách:</strong> Kết quả định giá này là mô phỏng toán học tự động, chỉ mang tính tham khảo nội bộ. Kết quả KHÔNG thay thế Chứng thư thẩm định giá được cấp bởi tổ chức thẩm định giá được cấp phép theo quy định Bộ Tài chính Việt Nam (Luật Giá 2023, NĐ 26/2023/NĐ-CP). Dữ liệu cá nhân xử lý theo NĐ 13/2023/NĐ-CP về bảo vệ dữ liệu cá nhân.',
+    disc_en:'<strong>Disclaimer:</strong> This valuation result is an automated mathematical simulation for internal reference only. It does NOT constitute an official valuation certificate. Data processed under applicable data protection regulations.',
+    lsteps:['Thu thập dữ liệu đầu vào...','Áp dụng công thức định giá...','Chuẩn hóa theo chuẩn IVS...','Tính giá trị nội tại...','Hoàn tất & xuất kết quả...'],
+    range_lbl:'Khoảng: ',weight_lbl:'Trọng số: ',na:'N/A',
+  },
+  en:{
+    hero_badge:'Automated Business Valuation Online',
+    h1a:'What is your business',h1b:'really worth?',h1c:'Automated Business Valuation — Online',
+    hsub:'Multi-method financial simulation for Startups, SMEs and Enterprises. Get your estimated valuation in 3 minutes.',
+    s1:'Businesses Valued',s2:'Average Rating',s3:'Secured NĐ 13/2023',s4:'Countries & Int\'l Standards',
+    step1:'Step 1 / Choose Segment',seg_t:'What do you want to value?',
+    seg_s:'Select the right segment — questions and formulas are customized for each',
+    btn_next:'Continue',btn_back:'Back',btn_calc:'Calculate Value',
+    load_t:'Analyzing...',load_s:'Applying professional valuation models',
+    res_l:'Preliminary Valuation Result',
+    gate_t:'Get Full PDF Report',gate_s:'Deep analysis · Financial roadmap · AI commentary',
+    up_t:'Compare with SG · MY · TH',up_s:'AI Agent analyzes yield, growth, legal risk per market',
+    btn_rpt:'Get Report Now',
+    l_name:'Full Name *',l_email:'Email *',l_phone:'Phone Number',
+    consent:'I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>. Data encrypted per applicable data protection regulations.',
+    pay_m:'Payment Method',btn_pay:'Pay & Receive Report',
+    qr_n:'Bank Transfer · Auto-confirmed within 60 seconds',qr_e:'Expires in',
+    btn_rst:'New Valuation',
+    f_about:'About ValuitBiz',f_terms:'Terms',f_priv:'Privacy',
+    f_disc:'Results are indicative only and do not replace official professional appraisals.',
+    disc_vn:'<strong>Disclaimer:</strong> This valuation result is an automated mathematical simulation for internal reference only. It does NOT constitute an official valuation certificate under Vietnam Ministry of Finance regulations (Law on Prices 2023). Personal data processed under Decree 13/2023/ND-CP.',
+    disc_en:'<strong>Disclaimer:</strong> This valuation result is an automated mathematical simulation for internal reference only. It does NOT constitute an official valuation certificate under local jurisdiction. For real estate, results are indicative and do not replace professional appraisals.',
+    lsteps:['Collecting input data...','Applying valuation formulas...','Normalizing to IVS standards...','Computing intrinsic value...','Finalizing results...'],
+    range_lbl:'Range: ',weight_lbl:'Weight: ',na:'N/A',
+  }
+};
+
+let LANG = 'vn';
+function t(k){ return TXT[LANG][k] || TXT.vn[k] || k; }
+function setLang(l){
+  LANG = l;
+  document.getElementById('btnVN').classList.toggle('active',l==='vn');
+  document.getElementById('btnEN').classList.toggle('active',l==='en');
+  document.documentElement.lang = l==='vn'?'vi':'en';
+  document.querySelectorAll('[data-t]').forEach(el=>{
+    const k=el.getAttribute('data-t');
+    if(TXT[l][k]!==undefined) el.innerHTML=TXT[l][k];
+  });
+  renderSegs();
+  if(ST.seg) renderQs(ST.seg);
+  updDisc();
+}
+
+// ════════════════════════════════════════════════
+// FX
+// ════════════════════════════════════════════════
+let FX={USDVND:25400,USDSGD:1.34,USDMYR:4.68,USDTHB:35.2,USDIDR:16200,USDKHR:4100};
+async function loadFX(){
+  try{
+    const r=await fetch('https://open.er-api.com/v6/latest/USD');
+    const d=await r.json();
+    if(d.rates){
+      FX.USDVND=d.rates.VND||25400;FX.USDSGD=d.rates.SGD||1.34;
+      FX.USDMYR=d.rates.MYR||4.68;FX.USDTHB=d.rates.THB||35.2;
+      FX.USDIDR=d.rates.IDR||16200;FX.USDKHR=d.rates.KHR||4100;
+    }
+    document.getElementById('fxRate').textContent='USD/VND: '+FX.USDVND.toLocaleString();
+  }catch(e){document.getElementById('fxRate').textContent='USD/VND: '+FX.USDVND.toLocaleString();}
+}
+loadFX();setInterval(loadFX,3600000);
+function fVND(n){
+  if(n>=1e12) return (n/1e12).toFixed(2)+' Nghìn tỷ VND';
+  if(n>=1e9)  return (n/1e9).toFixed(1)+' Tỷ VND';
+  if(n>=1e6)  return (n/1e6).toFixed(0)+' Triệu VND';
+  return n.toLocaleString('vi-VN')+' VND';
+}
+function fUSD(vnd){ return '≈ $'+(vnd/FX.USDVND).toLocaleString('en-US',{maximumFractionDigits:0})+' USD'; }
+
+// ════════════════════════════════════════════════
+// SEGMENTS
+// ════════════════════════════════════════════════
+const SEGS={
+  idea:{icon:'💡',
+    lbl:{vn:'Ý tưởng',en:'Idea / Concept'},
+    rng:{vn:'Pre-seed · Chưa có doanh thu',en:'Pre-seed · No revenue yet'},
+    dsc:{vn:'Bạn có ý tưởng, chưa có MVP hoặc doanh thu. Định giá dựa trên tiềm năng và nền tảng.',en:'You have a business idea, no MVP or revenue yet. Valued on potential and founding fundamentals.'},
+    mth:['Berkus','Scorecard','Risk Factor'],
+    std:{vn:'Chuẩn quốc tế · VC Framework',en:'International · VC Framework'}},
+  startup:{icon:'🚀',
+    lbl:{vn:'Startup / MVP',en:'Startup / MVP'},
+    rng:{vn:'Seed – Series A · <$1M ARR',en:'Seed – Series A · <$1M ARR'},
+    dsc:{vn:'Có MVP, khách hàng đầu tiên, đang tìm product-market fit. Đã hoặc đang gọi vốn.',en:'MVP live, first customers, seeking product-market fit. Fundraising underway.'},
+    mth:['Berkus','Revenue Multiple','Scorecard'],
+    std:{vn:'Chuẩn quốc tế · IVS 200',en:'International · IVS 200'}},
+  sme:{icon:'🏢',
+    lbl:{vn:'SMEs',en:'SMEs'},
+    rng:{vn:'$1M – $5M doanh thu',en:'$1M – $5M Revenue'},
+    dsc:{vn:'Doanh nghiệp có doanh thu ổn định, muốn định giá để gọi vốn, M&A hoặc chiến lược.',en:'Established revenue, seeking valuation for fundraising, M&A, or strategic planning.'},
+    mth:['P/E · P/S · P/B','Gordon Growth','HOSE/HNX'],
+    std:{vn:'VN + Quốc tế · TT06 · IVS 105',en:'VN + International · IVS 105'}},
+  enterprise:{icon:'🏦',
+    lbl:{vn:'Enterprise',en:'Enterprise'},
+    rng:{vn:'Doanh thu >$5M / >125 tỷ VND',en:'Revenue >$5M / EBITDA-positive'},
+    dsc:{vn:'Doanh nghiệp lớn, BCTC kiểm toán, EBITDA dương. M&A, IPO hoặc tái cấu trúc.',en:'Large enterprise with audited financials, positive EBITDA. M&A, IPO, or restructuring.'},
+    mth:['DCF / FCFF','EV/EBITDA','WACC · Terminal Value'],
+    std:{vn:'Quốc tế · IVS · IFRS · WACC',en:'International · IVS · IFRS · WACC'}},
+  realestate:{icon:'🏠',
+    lbl:{vn:'Bất động sản',en:'Real Estate'},
+    rng:{vn:'VN · SG · MY · TH · ID · KH',en:'VN · SG · MY · TH · ID · KH'},
+    dsc:{vn:'Định giá BĐS theo từng quốc gia — chuẩn pháp lý và thị trường địa phương. So sánh cross-country có phí.',en:'Property valuation by country — local legal & market benchmarks. Cross-country comparison available.'},
+    mth:['So sánh','Thu nhập / Cap Rate','Chi phí'],
+    std:{vn:'VN: TT36/2024 · Quốc tế: IVS 230 · RICS',en:'VN: TT36/2024 · International: IVS 230 · RICS'}},
+};
+
+function renderSegs(){
+  document.getElementById('segGrid').innerHTML=Object.entries(SEGS).map(([k,s])=>`
+    <div class="sc ${ST.seg===k?'sel':''}" onclick="selSeg('${k}')">
+      <div class="sico">${s.icon}</div>
+      <div class="slb">${s.lbl[LANG]}</div>
+      <div class="srg">${s.rng[LANG]}</div>
+      <div class="sds">${s.dsc[LANG]}</div>
+      <div class="smth">${s.mth.map(m=>`<span class="stag">${m}</span>`).join('')}</div>
+    </div>`).join('');
+}
+
+// ════════════════════════════════════════════════
+// QUESTIONS DEFINITIONS
+// ════════════════════════════════════════════════
+const QS={
+  idea:{
+    vn:[
+      {id:'industry',type:'text',label:'Ngành / lĩnh vực',placeholder:'VD: EdTech, F&B, SaaS, Logistics...'},
+      {id:'idea_stage',type:'options',label:'Ý tưởng đã được kiểm chứng ở mức nào?',opts:[
+        {v:'concept',l:'Ý tưởng thuần — chưa nghiên cứu thị trường'},
+        {v:'researched',l:'Đã nghiên cứu, có dữ liệu thị trường'},
+        {v:'validated',l:'Đã phỏng vấn khách hàng / PoC nhỏ'},
+        {v:'committed',l:'Có LOI / khách hàng cam kết mua'},
+      ]},
+      {id:'team_score',type:'options',label:'Nền tảng đội ngũ sáng lập',opts:[
+        {v:'0',l:'Chỉ mình tôi, chưa có kinh nghiệm ngành'},
+        {v:'1',l:'2-3 người, có kinh nghiệm liên quan'},
+        {v:'2',l:'Team đầy đủ, đã từng khởi nghiệp'},
+        {v:'3',l:'Serial founder hoặc chuyên gia ngành'},
+      ]},
+      {id:'tam',type:'number',label:'Tổng quy mô thị trường (TAM)',hint:'Ước tính tổng thị trường VN hoặc khu vực',placeholder:'5000',unit:'Tỷ VND'},
+      {id:'ip_score',type:'options',label:'Mức độ bảo hộ IP / công nghệ cốt lõi',opts:[
+        {v:'0',l:'Chưa có — dễ sao chép'},{v:'1',l:'Có bí quyết, chưa đăng ký'},
+        {v:'2',l:'Đang đăng ký patent'},{v:'3',l:'Đã có patent / độc quyền'},
+      ]},
+      {id:'poc_score',type:'options',label:'Proof of Concept / Traction',opts:[
+        {v:'0',l:'Chưa có bằng chứng'},{v:'1',l:'Có pilot nội bộ / demo'},
+        {v:'2',l:'Beta user đang dùng thực tế'},{v:'3',l:'Có doanh thu từ pilot dù nhỏ'},
+      ]},
+      {id:'funding',type:'number',label:'Vốn đã huy động (nếu có)',hint:'Bỏ trống nếu chưa có',placeholder:'0',unit:'Tỷ VND'},
+    ],
+    en:[
+      {id:'industry',type:'text',label:'Industry / Sector',placeholder:'e.g. EdTech, F&B, SaaS, Logistics...'},
+      {id:'idea_stage',type:'options',label:'How validated is your idea?',opts:[
+        {v:'concept',l:'Pure concept — no market research yet'},{v:'researched',l:'Researched with market data'},
+        {v:'validated',l:'Customer interviews / small PoC done'},{v:'committed',l:'LOI or committed buyers in hand'},
+      ]},
+      {id:'team_score',type:'options',label:'Founding team strength',opts:[
+        {v:'0',l:'Just me, no industry experience'},{v:'1',l:'2-3 people, relevant background'},
+        {v:'2',l:'Full team, prior startup experience'},{v:'3',l:'Serial founder or domain expert'},
+      ]},
+      {id:'tam',type:'number',label:'Total Addressable Market (TAM)',hint:'Estimate total market in USD millions',placeholder:'200',unit:'M USD'},
+      {id:'ip_score',type:'options',label:'IP / Core technology protection',opts:[
+        {v:'0',l:'None — easily replicable'},{v:'1',l:'Proprietary know-how, unregistered'},
+        {v:'2',l:'Patent filing in progress'},{v:'3',l:'Granted patent or exclusive technology'},
+      ]},
+      {id:'poc_score',type:'options',label:'Proof of Concept / Traction',opts:[
+        {v:'0',l:'No evidence yet'},{v:'1',l:'Internal pilot or demo'},
+        {v:'2',l:'Beta users actively using'},{v:'3',l:'Revenue from pilot, however small'},
+      ]},
+      {id:'funding',type:'number',label:'Capital raised to date (if any)',hint:'Leave blank if none',placeholder:'0',unit:'K USD'},
+    ],
+  },
+  startup:{
+    vn:[
+      {id:'industry',type:'text',label:'Ngành / lĩnh vực',placeholder:'VD: SaaS B2B, Fintech, E-commerce...'},
+      {id:'biz_model',type:'options',label:'Mô hình kinh doanh chính',opts:[
+        {v:'saas',l:'SaaS / Subscription'},{v:'marketplace',l:'Marketplace / Platform'},
+        {v:'ecommerce',l:'E-commerce / D2C'},{v:'service',l:'Dịch vụ / Agency'},
+        {v:'hardware',l:'Hardware / IoT'},{v:'other',l:'Khác'},
+      ]},
+      {id:'stage',type:'options',label:'Giai đoạn phát triển',opts:[
+        {v:'mvp',l:'MVP — chạy thử nghiệm'},{v:'early',l:'Early Revenue — <100 khách hàng'},
+        {v:'growth',l:'Growth — đang scale'},{v:'series_a',l:'Pre Series A / Series A'},
+      ]},
+      {id:'arr',type:'number',label:'ARR / Doanh thu hàng năm',hint:'Annual Recurring Revenue',placeholder:'500',unit:'Triệu VND'},
+      {id:'growth_mom',type:'options',label:'Tốc độ tăng trưởng MoM',opts:[
+        {v:'5',l:'<5% — ổn định'},{v:'10',l:'5-15% — tăng trưởng tốt'},
+        {v:'20',l:'15-30% — tăng trưởng mạnh'},{v:'30',l:'>30% — hyper-growth'},
+      ]},
+      {id:'tam',type:'number',label:'TAM ước tính',placeholder:'5000',unit:'Tỷ VND'},
+      {id:'ip_score',type:'options',label:'Bảo hộ IP / Công nghệ',opts:[
+        {v:'0',l:'Chưa có'},{v:'1',l:'Có nhưng chưa đăng ký'},
+        {v:'2',l:'Đang đăng ký'},{v:'3',l:'Đã có patent'},
+      ]},
+      {id:'funding',type:'number',label:'Vốn đã gọi được',hint:'Bỏ trống nếu bootstrap',placeholder:'0',unit:'Tỷ VND'},
+    ],
+    en:[
+      {id:'industry',type:'text',label:'Industry / Sector',placeholder:'e.g. SaaS B2B, Fintech, E-commerce...'},
+      {id:'biz_model',type:'options',label:'Primary business model',opts:[
+        {v:'saas',l:'SaaS / Subscription'},{v:'marketplace',l:'Marketplace / Platform'},
+        {v:'ecommerce',l:'E-commerce / D2C'},{v:'service',l:'Services / Agency'},
+        {v:'hardware',l:'Hardware / IoT'},{v:'other',l:'Other'},
+      ]},
+      {id:'stage',type:'options',label:'Development stage',opts:[
+        {v:'mvp',l:'MVP — in testing'},{v:'early',l:'Early Revenue — <100 customers'},
+        {v:'growth',l:'Growth — actively scaling'},{v:'series_a',l:'Pre Series A / Series A'},
+      ]},
+      {id:'arr',type:'number',label:'ARR / Annual Revenue',hint:'Annual Recurring Revenue in USD thousands',placeholder:'20',unit:'K USD'},
+      {id:'growth_mom',type:'options',label:'Month-over-month growth rate',opts:[
+        {v:'5',l:'<5% — stable'},{v:'10',l:'5-15% — solid growth'},
+        {v:'20',l:'15-30% — strong growth'},{v:'30',l:'>30% — hyper-growth'},
+      ]},
+      {id:'tam',type:'number',label:'Estimated TAM',placeholder:'200',unit:'M USD'},
+      {id:'ip_score',type:'options',label:'IP / Technology protection',opts:[
+        {v:'0',l:'None'},{v:'1',l:'Proprietary, unregistered'},
+        {v:'2',l:'Filing in progress'},{v:'3',l:'Granted patent'},
+      ]},
+      {id:'funding',type:'number',label:'Capital raised to date',hint:'Leave blank if bootstrapped',placeholder:'0',unit:'K USD'},
+    ],
+  },
+  sme:{
+    vn:[
+      {id:'industry',type:'text',label:'Ngành kinh doanh',placeholder:'VD: F&B, Bán lẻ, Sản xuất, SaaS...'},
+      {id:'biz_model',type:'options',label:'Mô hình kinh doanh',opts:[
+        {v:'saas',l:'SaaS / Tech'},{v:'marketplace',l:'Marketplace'},{v:'fb',l:'F&B / Chuỗi'},
+        {v:'retail',l:'Bán lẻ / Phân phối'},{v:'manufacturing',l:'Sản xuất'},{v:'trading',l:'Thương mại'},{v:'service',l:'Dịch vụ'},
+      ]},
+      {id:'bctc',type:'options',label:'Mức độ minh bạch Báo cáo Tài chính (BCTC)',hint:'Ảnh hưởng trực tiếp đến hệ số chiết khấu định giá',opts:[
+        {v:'A',l:'Tier A — Kiểm toán bởi Big4 / firm uy tín (0% chiết khấu)'},
+        {v:'B',l:'Tier B — Sổ sách nội bộ, chưa kiểm toán (50% chiết khấu)'},
+        {v:'C',l:'Tier C — Số liệu sơ bộ, chưa đầy đủ (75% chiết khấu)'},
+      ]},
+      {id:'revenue',type:'number',label:'Doanh thu 12 tháng gần nhất',placeholder:'25',unit:'Tỷ VND'},
+      {id:'net_profit',type:'number',label:'Lợi nhuận sau thuế (LNST)',hint:'Nhập số âm nếu đang lỗ',placeholder:'3',unit:'Tỷ VND'},
+      {id:'equity',type:'number',label:'Vốn chủ sở hữu (Book Value)',hint:'Theo BCTC gần nhất',placeholder:'15',unit:'Tỷ VND'},
+      {id:'total_shares',type:'number',label:'Tổng cổ phần đang lưu hành',placeholder:'1000000',unit:'Cổ phần'},
+      {id:'dividend_pct',type:'options',label:'Tỷ lệ cổ tức chi trả hàng năm',opts:[
+        {v:'0',l:'0% — Tái đầu tư toàn bộ'},{v:'5',l:'5-10% — Chi trả nhỏ'},
+        {v:'15',l:'10-20% — Chi trả trung bình'},{v:'25',l:'>20% — Chi trả cao'},
+      ]},
+      {id:'cagr',type:'options',label:'Tốc độ tăng trưởng doanh thu 3 năm (CAGR)',opts:[
+        {v:'5',l:'<10% — Ổn định'},{v:'15',l:'10-20% — Tăng trưởng tốt'},
+        {v:'25',l:'20-35% — Tăng trưởng mạnh'},{v:'40',l:'>35% — Tăng tốc cao'},
+      ]},
+    ],
+    en:[
+      {id:'industry',type:'text',label:'Industry / Business sector',placeholder:'e.g. F&B, Retail, Manufacturing, SaaS...'},
+      {id:'biz_model',type:'options',label:'Business model',opts:[
+        {v:'saas',l:'SaaS / Tech'},{v:'marketplace',l:'Marketplace'},{v:'fb',l:'F&B / Chain'},
+        {v:'retail',l:'Retail / Distribution'},{v:'manufacturing',l:'Manufacturing'},{v:'trading',l:'Trading'},{v:'service',l:'Services'},
+      ]},
+      {id:'bctc',type:'options',label:'Financial statement transparency level',hint:'Directly affects the transparency discount applied to valuation',opts:[
+        {v:'A',l:'Tier A — Audited by reputable firm / Big4 (0% discount)'},
+        {v:'B',l:'Tier B — Internal books only, unaudited (50% discount)'},
+        {v:'C',l:'Tier C — Preliminary / incomplete data (75% discount)'},
+      ]},
+      {id:'revenue',type:'number',label:'Revenue (last 12 months)',placeholder:'1000',unit:'K USD'},
+      {id:'net_profit',type:'number',label:'Net profit after tax',hint:'Enter negative if loss-making',placeholder:'120',unit:'K USD'},
+      {id:'equity',type:'number',label:'Shareholders equity (Book Value)',hint:'Per latest financial statement',placeholder:'600',unit:'K USD'},
+      {id:'total_shares',type:'number',label:'Total shares outstanding',placeholder:'1000000',unit:'Shares'},
+      {id:'dividend_pct',type:'options',label:'Annual dividend payout ratio',opts:[
+        {v:'0',l:'0% — Full reinvestment'},{v:'5',l:'5-10% — Small distribution'},
+        {v:'15',l:'10-20% — Moderate payout'},{v:'25',l:'>20% — High payout'},
+      ]},
+      {id:'cagr',type:'options',label:'3-year revenue CAGR',opts:[
+        {v:'5',l:'<10% — Stable'},{v:'15',l:'10-20% — Solid growth'},
+        {v:'25',l:'20-35% — Strong growth'},{v:'40',l:'>35% — Accelerating'},
+      ]},
+    ],
+  },
+  enterprise:{
+    vn:[
+      {id:'industry',type:'text',label:'Ngành kinh doanh',placeholder:'VD: Sản xuất, Tech, Logistics, BĐS KCN...'},
+      {id:'ebitda',type:'number',label:'EBITDA 12 tháng gần nhất',hint:'Lợi nhuận trước lãi vay, thuế, khấu hao và phân bổ',placeholder:'80',unit:'Tỷ VND'},
+      {id:'da',type:'number',label:'Khấu hao & Phân bổ (D&A)',hint:'Dùng để tính EBIT và FCFF tự động',placeholder:'15',unit:'Tỷ VND'},
+      {id:'capex',type:'number',label:'Chi tiêu vốn (CapEx) hàng năm',placeholder:'20',unit:'Tỷ VND'},
+      {id:'total_debt',type:'number',label:'Tổng nợ chịu lãi',hint:'Vay ngân hàng + trái phiếu + leasing tài chính',placeholder:'100',unit:'Tỷ VND'},
+      {id:'cash',type:'number',label:'Tiền mặt & tương đương tiền',placeholder:'30',unit:'Tỷ VND'},
+      {id:'wacc',type:'options',label:'WACC ước tính (Chi phí vốn bình quân)',hint:'Chọn theo đặc điểm ngành và cơ cấu vốn',opts:[
+        {v:'10',l:'10% — Ngành ổn định, ít rủi ro (Utilities, FMCG)'},
+        {v:'12',l:'12% — Ngành trung bình (Sản xuất, Bán lẻ)'},
+        {v:'14',l:'14% — Ngành tăng trưởng (Tech, Logistics)'},
+        {v:'16',l:'16% — Ngành rủi ro cao (RE, Startup lớn)'},
+      ]},
+      {id:'fcff_growth',type:'options',label:'Tốc độ tăng trưởng FCFF (5 năm tới)',opts:[
+        {v:'5',l:'5% — Tăng trưởng ổn định'},{v:'10',l:'10% — Tăng trưởng tốt'},
+        {v:'15',l:'15% — Tăng trưởng mạnh'},{v:'20',l:'20% — Tăng tốc cao'},
+      ]},
+      {id:'ebitda_multiple',type:'options',label:'EV/EBITDA múltiple tham chiếu ngành',opts:[
+        {v:'6',l:'6x — Sản xuất / Trading'},{v:'8',l:'8x — Bán lẻ / Logistics'},
+        {v:'10',l:'10x — Tech / SaaS'},{v:'12',l:'12x — Healthcare / Premium brands'},
+      ]},
+      {id:'revenue',type:'number',label:'Doanh thu 12 tháng',placeholder:'500',unit:'Tỷ VND'},
+      {id:'total_shares',type:'number',label:'Tổng cổ phần lưu hành',placeholder:'10000000',unit:'Cổ phần'},
+    ],
+    en:[
+      {id:'industry',type:'text',label:'Industry / Sector',placeholder:'e.g. Manufacturing, Tech, Industrial RE...'},
+      {id:'ebitda',type:'number',label:'EBITDA (last 12 months)',hint:'Earnings before interest, tax, depreciation & amortization',placeholder:'3200',unit:'K USD'},
+      {id:'da',type:'number',label:'Depreciation & Amortization (D&A)',hint:'Used to derive EBIT and auto-calculate FCFF',placeholder:'600',unit:'K USD'},
+      {id:'capex',type:'number',label:'Annual Capital Expenditure (CapEx)',placeholder:'800',unit:'K USD'},
+      {id:'total_debt',type:'number',label:'Total interest-bearing debt',hint:'Bank loans + bonds + finance leases',placeholder:'4000',unit:'K USD'},
+      {id:'cash',type:'number',label:'Cash & cash equivalents',placeholder:'1200',unit:'K USD'},
+      {id:'wacc',type:'options',label:'Estimated WACC',hint:'Select based on industry risk and capital structure',opts:[
+        {v:'10',l:'10% — Defensive / stable (Utilities, FMCG)'},
+        {v:'12',l:'12% — Average risk (Manufacturing, Retail)'},
+        {v:'14',l:'14% — Growth sector (Tech, Logistics)'},
+        {v:'16',l:'16% — Higher risk (RE, Late-stage startup)'},
+      ]},
+      {id:'fcff_growth',type:'options',label:'FCFF growth rate (next 5 years)',opts:[
+        {v:'5',l:'5% — Stable growth'},{v:'10',l:'10% — Solid growth'},
+        {v:'15',l:'15% — Strong growth'},{v:'20',l:'20% — High acceleration'},
+      ]},
+      {id:'ebitda_multiple',type:'options',label:'Industry EV/EBITDA reference multiple',opts:[
+        {v:'6',l:'6x — Manufacturing / Trading'},{v:'8',l:'8x — Retail / Logistics'},
+        {v:'10',l:'10x — Tech / SaaS'},{v:'12',l:'12x — Healthcare / Premium brands'},
+      ]},
+      {id:'revenue',type:'number',label:'Revenue (last 12 months)',placeholder:'20000',unit:'K USD'},
+      {id:'total_shares',type:'number',label:'Total shares outstanding',placeholder:'10000000',unit:'Shares'},
+    ],
+  },
+  realestate:{
+    vn:[
+      {id:'country',type:'country',label:'Chọn quốc gia / thị trường BĐS'},
+      {id:'re_type',type:'options',label:'Loại bất động sản',opts:[
+        {v:'apartment',l:'🏢 Căn hộ / Chung cư'},{v:'house',l:'🏠 Nhà phố / Biệt thự'},
+        {v:'land',l:'🌳 Đất nền'},{v:'commercial',l:'🏪 BĐS thương mại / VP'},
+        {v:'industrial',l:'🏭 BĐS công nghiệp / Kho'},{v:'resort',l:'🏖️ BĐS nghỉ dưỡng'},
+      ]},
+      {id:'land_area',type:'number',label:'Diện tích đất (m²)',placeholder:'120',unit:'m²'},
+      {id:'floor_area',type:'number',label:'Diện tích sàn xây dựng (m²)',hint:'Bỏ trống nếu là đất trống',placeholder:'80',unit:'m²'},
+      {id:'year_built',type:'number',label:'Năm xây dựng / hoàn công',placeholder:'2018',unit:'Năm'},
+      {id:'legal_status',type:'options',label:'Tình trạng pháp lý',opts:[
+        {v:'full',l:'✅ Sổ đỏ / Sổ hồng đầy đủ'},{v:'pending',l:'⏳ Đang chờ cấp sổ'},
+        {v:'contract',l:'📄 HĐMB (chưa có sổ)'},{v:'dispute',l:'⚠️ Đang có tranh chấp'},
+      ]},
+      {id:'usage',type:'options',label:'Mục đích sử dụng hiện tại',opts:[
+        {v:'owner',l:'Tự sử dụng / Ở'},{v:'rent',l:'Cho thuê'},
+        {v:'vacant',l:'Bỏ trống'},{v:'develop',l:'Đang xây dựng / phát triển'},
+      ]},
+      {id:'monthly_rent',type:'number',label:'Doanh thu cho thuê hàng tháng',hint:'Bỏ trống nếu không cho thuê',placeholder:'0',unit:'Triệu VND'},
+      {id:'purpose',type:'options',label:'Mục đích định giá',opts:[
+        {v:'sell',l:'Bán / Chuyển nhượng'},{v:'mortgage',l:'Thế chấp ngân hàng'},
+        {v:'invest',l:'Góp vốn / Đầu tư'},{v:'reference',l:'Tham khảo cá nhân'},
+      ]},
+    ],
+    en:[
+      {id:'country',type:'country',label:'Select country / market'},
+      {id:'re_type',type:'options',label:'Property type',opts:[
+        {v:'apartment',l:'🏢 Apartment / Condo'},{v:'house',l:'🏠 House / Villa'},
+        {v:'land',l:'🌳 Land plot'},{v:'commercial',l:'🏪 Commercial / Office'},
+        {v:'industrial',l:'🏭 Industrial / Warehouse'},{v:'resort',l:'🏖️ Resort / Hospitality'},
+      ]},
+      {id:'land_area',type:'number',label:'Land area (sqm)',placeholder:'120',unit:'sqm'},
+      {id:'floor_area',type:'number',label:'Built-up floor area (sqm)',hint:'Leave blank if bare land',placeholder:'80',unit:'sqm'},
+      {id:'year_built',type:'number',label:'Year built / completed',placeholder:'2018',unit:'Year'},
+      {id:'legal_status',type:'options',label:'Legal / title status',opts:[
+        {v:'full',l:'✅ Full title / freehold'},{v:'pending',l:'⏳ Title pending'},
+        {v:'contract',l:'📄 SPA only (no title yet)'},{v:'dispute',l:'⚠️ Title dispute'},
+      ]},
+      {id:'usage',type:'options',label:'Current usage',opts:[
+        {v:'owner',l:'Owner-occupied'},{v:'rent',l:'Tenanted / rented out'},
+        {v:'vacant',l:'Vacant'},{v:'develop',l:'Under development'},
+      ]},
+      {id:'monthly_rent',type:'number',label:'Monthly rental income (if any)',hint:'Leave blank if not rented',placeholder:'0',unit:'USD/mo'},
+      {id:'purpose',type:'options',label:'Purpose of valuation',opts:[
+        {v:'sell',l:'Sale / transfer'},{v:'mortgage',l:'Bank mortgage'},
+        {v:'invest',l:'Investment / JV'},{v:'reference',l:'Personal reference'},
+      ]},
+    ],
+  },
+};
+
+// ════════════════════════════════════════════════
+// RE COUNTRIES CONFIG
+// ════════════════════════════════════════════════
+const REC={
+  vn:{flag:'🇻🇳',name:{vn:'Việt Nam',en:'Vietnam'},cur:'VND',
+    cap:{apartment:5.5,house:4.5,land:0,commercial:7,industrial:8,resort:6},
+    std:'TT36/2024',bldCost:7,basePrice:{hcm:80,hn:60,other:25},fxKey:'USDVND'},
+  sg:{flag:'🇸🇬',name:{vn:'Singapore',en:'Singapore'},cur:'SGD',
+    cap:{apartment:3.5,house:2.5,land:0,commercial:5,industrial:6,resort:4},
+    std:'SISV · URA',bldCost:250,basePrice:{cbd:20000,fringe:12000,other:8000},fxKey:'USDSGD'},
+  my:{flag:'🇲🇾',name:{vn:'Malaysia',en:'Malaysia'},cur:'MYR',
+    cap:{apartment:5,house:4,land:0,commercial:6.5,industrial:7.5,resort:5.5},
+    std:'BOVAEA · JPPH',bldCost:50,basePrice:{kl:3500,penang:2500,other:1200},fxKey:'USDMYR'},
+  th:{flag:'🇹🇭',name:{vn:'Thái Lan',en:'Thailand'},cur:'THB',
+    cap:{apartment:5.5,house:4.5,land:0,commercial:7,industrial:8,resort:6.5},
+    std:'AREA Thailand',bldCost:1200,basePrice:{bkk:120000,phuket:100000,other:50000},fxKey:'USDTHB'},
+  id:{flag:'🇮🇩',name:{vn:'Indonesia',en:'Indonesia'},cur:'IDR',
+    cap:{apartment:6,house:5,land:0,commercial:7.5,industrial:9,resort:7},
+    std:'MAPPI · SPI',bldCost:7e6,basePrice:{jkt:30e6,bali:25e6,other:10e6},fxKey:'USDIDR'},
+  kh:{flag:'🇰🇭',name:{vn:'Campuchia',en:'Cambodia'},cur:'USD',
+    cap:{apartment:6.5,house:5.5,land:0,commercial:8,industrial:10,resort:7},
+    std:'CVEA',bldCost:500,basePrice:{pp:2500,sr:1500,other:800},fxKey:'USDVND'},
+};
+
+function renderCountry(){
+  return `<div class="cg">${Object.entries(REC).map(([k,c])=>`
+    <div class="cc ${ST.ans.country===k?'sel':''}" onclick="selCtry('${k}')">
+      <div class="cfl">${c.flag}</div>
+      <div class="cn">${c.name[LANG]}</div>
+      <div class="ccur">${c.cur} · ${c.std}</div>
+    </div>`).join('')}</div>`;
+}
+function selCtry(k){
+  ST.ans.country=k;
+  document.querySelectorAll('.cc').forEach(el=>el.classList.toggle('sel',el.onclick&&el.getAttribute('onclick').includes("'"+k+"'")));
+}
+
+// ════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════
+let ST={seg:null,ans:{},res:null,sid:null,payMethod:'vn',upsell:false,consent:false,qrTmr:null};
+function genSID(){return 'VB-'+Date.now()+'-'+Math.random().toString(36).substr(2,6).toUpperCase();}
+
+// ════════════════════════════════════════════════
+// SEGMENT SELECT
+// ════════════════════════════════════════════════
+function selSeg(k){
+  ST.seg=k;ST.ans={};
+  renderSegs();
+  document.getElementById('btn0').disabled=false;
+  document.getElementById('ubanner').style.display=k==='realestate'?'flex':'none';
+}
+function goQ(){
+  if(!ST.seg)return;
+  ST.sid=genSID();
+  const s=SEGS[ST.seg];
+  document.getElementById('qtitle').textContent=s.lbl[LANG];
+  document.getElementById('qsub').textContent=s.std[LANG];
+  renderQs(ST.seg);
+  goScr('s-q');
+}
+
+// ════════════════════════════════════════════════
+// RENDER QUESTIONS
+// ════════════════════════════════════════════════
+function renderQs(seg){
+  const qs=(QS[seg]&&QS[seg][LANG])||QS[seg]?.vn||[];
+  document.getElementById('qcon').innerHTML=qs.map((q,i)=>rQ(q,i,qs.length)).join('');
+  updProg(0,qs.length);
+}
+function rQ(q,i,tot){
+  let inp='';
+  if(q.type==='text'||q.type==='number'){
+    inp=`<div class="qiw"><input class="qi" type="${q.type==='number'?'number':'text'}" id="q_${q.id}"
+      placeholder="${q.placeholder||''}" value="${ST.ans[q.id]||''}"
+      oninput="ST.ans['${q.id}']=this.value;autoP()"/>
+      ${q.unit?`<span class="qu">${q.unit}</span>`:''}</div>`;
+  }else if(q.type==='options'){
+    const cls=q.opts.length<=2?'c2':q.opts.length===3?'c3':'';
+    inp=`<div class="qo ${cls}">${q.opts.map(o=>`
+      <label class="qopt ${ST.ans[q.id]===o.v?'sel':''}">
+        <input type="radio" name="q_${q.id}" value="${o.v}"
+          onchange="ST.ans['${q.id}']='${o.v}';
+            this.closest('.qo').querySelectorAll('.qopt').forEach(e=>e.classList.remove('sel'));
+            this.closest('.qopt').classList.add('sel');autoP()"/>
+        <div class="qdot"></div><span class="qot">${o.l}</span>
+      </label>`).join('')}</div>`;
+  }else if(q.type==='country'){
+    inp=renderCountry();
+  }
+  return `<div class="qb">
+    <label class="ql">${q.label} <span style="color:var(--tm);font-weight:400;font-size:11px">(${i+1}/${tot})</span></label>
+    ${q.hint?`<div class="qh">${q.hint}</div>`:''}${inp}</div>`;
+}
+function autoP(){
+  const qs=(QS[ST.seg]&&QS[ST.seg][LANG])||[];
+  const f=qs.filter(q=>ST.ans[q.id]&&ST.ans[q.id]!=='').length;
+  updProg(f,qs.length);
+}
+function updProg(f,tot){
+  document.getElementById('pfill').style.width=(tot>0?Math.round(f/tot*100):0)+'%';
+}
+
+// ════════════════════════════════════════════════
+// VALUATION ENGINE
+// ════════════════════════════════════════════════
+function calcIdea(a){
+  const sm={concept:100,researched:200,validated:350,committed:500};
+  const tm={'0':0,'1':200,'2':350,'3':500};
+  const tamS=Math.min(500,(parseFloat(a.tam)||0)/50000*500);
+  const im={'0':0,'1':150,'2':300,'3':500};
+  const pm={'0':0,'1':150,'2':300,'3':500};
+  const berkus=((sm[a.idea_stage]||0)+(tm[a.team_score]||0)+tamS+(im[a.ip_score]||0)+(pm[a.poc_score]||0))*1e6;
+  const fund=(parseFloat(a.funding)||0)*1e9;
+  let final=berkus;
+  if(fund>0) final=berkus*0.6+fund*3*0.4;
+  return{final,pps:0,
+    mths:[{n:'Berkus Method',v:berkus,w:'60%'},fund>0?{n:'Funding ×3',v:fund*3,w:'40%'}:null].filter(Boolean),
+    rng:[final*.7,final*1.5]};
+}
+function calcStartup(a){
+  const sM={mvp:.7,early:1,growth:1.4,series_a:2};
+  const arrVND=(parseFloat(a.arr)||0)*1e6;
+  const gM={'5':1,'10':1.3,'20':1.7,'30':2.2};
+  const iM={'0':.8,'1':1,'2':1.1,'3':1.3};
+  const mM={saas:8,marketplace:5,ecommerce:3,service:2,hardware:3,other:2};
+  const mult=mM[a.biz_model]||3;
+  const gAdj=gM[a.growth_mom]||1;
+  const sAdj=sM[a.stage]||1;
+  const iAdj=iM[a.ip_score]||1;
+  const revM=arrVND*mult*gAdj*sAdj*iAdj;
+  const berkus=2e9*sAdj*iAdj;
+  const fund=(parseFloat(a.funding)||0)*1e9;
+  const fundV=fund>0?fund*3:0;
+  const final=revM*.5+berkus*.3+(fundV>0?fundV*.2:revM*.2);
+  return{final,pps:0,
+    mths:[{n:'Revenue ×'+mult,v:revM,w:'50%'},{n:'Berkus Adj.',v:berkus,w:'30%'},
+      fundV>0?{n:'Funding ×3',v:fundV,w:'20%'}:{n:'Market Traction',v:revM*.5,w:'20%'}],
+    rng:[final*.7,final*1.6]};
+}
+function calcSME(a){
+  const rev=(parseFloat(a.revenue)||0)*1e9;
+  const np=(parseFloat(a.net_profit)||0)*1e9;
+  const eq=(parseFloat(a.equity)||0)*1e9;
+  const sh=parseFloat(a.total_shares)||1e6;
+  const div=(parseFloat(a.dividend_pct)||0)/100;
+  const cagr=(parseFloat(a.cagr)||5)/100;
+  const disc={A:1,B:.5,C:.25}[a.bctc]||.5;
+  const bm={saas:{pe:25,ps:5,pb:6},marketplace:{pe:20,ps:4,pb:5},
+    fb:{pe:18,ps:2.5,pb:3.5},retail:{pe:14,ps:1.5,pb:2.5},
+    manufacturing:{pe:12,ps:1.2,pb:2},trading:{pe:10,ps:.8,pb:1.5},
+    service:{pe:15,ps:2,pb:3},def:{pe:16.45,ps:2.03,pb:3.02}};
+  const m=bm[a.biz_model]||bm.def;
+  let wPE=.35,wPS=.3,wPB=.2,wG=.15;
+  if(np<=0){wPE=0;wG=0;wPS=.6;wPB=.4;}
+  const vPE=np>0?np*m.pe:0;
+  const vPS=rev*m.ps;
+  const vPB=eq*m.pb;
+  const Rf=LANG==='vn'?.045:.038;
+  const betas={saas:1.3,marketplace:1.2,fb:.9,retail:.95,manufacturing:1,trading:.85,service:1};
+  const beta=betas[a.biz_model]||1;
+  const ke=Rf+beta*.085;
+  const g=Math.min(cagr*.6,.07);
+  const sg=ke-g>0.01?g:ke-.01;
+  const d1=np>0?np*div:0;
+  const vG=d1>0?d1*(1+sg)/(ke-sg):0;
+  const raw=vPE*wPE+vPS*wPS+vPB*wPB+vG*wG;
+  const final=raw*disc;
+  const pps=sh>0?final/sh:0;
+  return{final,pps,
+    mths:[{n:'P/E ×'+m.pe,v:vPE*disc,w:Math.round(wPE*100)+'%'},
+      {n:'P/S ×'+m.ps,v:vPS*disc,w:Math.round(wPS*100)+'%'},
+      {n:'P/B ×'+m.pb,v:vPB*disc,w:Math.round(wPB*100)+'%'},
+      {n:'Gordon Growth',v:vG,w:Math.round(wG*100)+'%'}],
+    rng:[final*.8,final*1.25]};
+}
+function calcEnterprise(a){
+  const ebitda=(parseFloat(a.ebitda)||0)*1e9;
+  const da=(parseFloat(a.da)||0)*1e9;
+  const capex=(parseFloat(a.capex)||0)*1e9;
+  const debt=(parseFloat(a.total_debt)||0)*1e9;
+  const cash=(parseFloat(a.cash)||0)*1e9;
+  const wacc=(parseFloat(a.wacc)||12)/100;
+  const g5=(parseFloat(a.fcff_growth)||10)/100;
+  const gT=.03;
+  const em=parseFloat(a.ebitda_multiple)||8;
+  const sh=parseFloat(a.total_shares)||1e7;
+  const ebit=ebitda-da;
+  const fcff1=Math.max(ebit*(1-.2)+da-capex,0);
+  let pv=0;
+  for(let i=1;i<=5;i++) pv+=fcff1*Math.pow(1+g5,i-1)/Math.pow(1+wacc,i);
+  const fcff5=fcff1*Math.pow(1+g5,4);
+  const tv=wacc>gT?(fcff5*(1+gT))/(wacc-gT):fcff5*15;
+  const pvTV=tv/Math.pow(1+wacc,5);
+  const evDCF=pv+pvTV;
+  const evEB=ebitda*em;
+  const ev=evDCF*.7+evEB*.3;
+  const nd=Math.max(debt-cash,0);
+  const eq=Math.max(ev-nd,0);
+  const pps=sh>0?eq/sh:0;
+  return{final:eq,ev,pps,
+    mths:[{n:'DCF / FCFF',v:Math.max(evDCF-nd,0),w:'70%'},{n:'EV/EBITDA ×'+em,v:Math.max(evEB-nd,0),w:'30%'}],
+    rng:[eq*.8,eq*1.3]};
+}
+function calcRE(a){
+  const ctry=a.country||'vn';
+  const cfg=REC[ctry]||REC.vn;
+  const rt=a.re_type||'apartment';
+  const la=parseFloat(a.land_area)||0;
+  const fa=parseFloat(a.floor_area)||0;
+  const yb=parseInt(a.year_built)||2015;
+  const mrent=parseFloat(a.monthly_rent)||0;
+  const cr=(cfg.cap[rt]||6)/100;
+  const lgl={full:1,pending:.85,contract:.75,dispute:.5}[a.legal_status]||.8;
+  const pks=Object.keys(cfg.basePrice);
+  const base=cfg.basePrice[pks[Math.floor(pks.length/2)]];
+  const vComp=(rt==='land'?la:fa)*base*lgl;
+  const noi=mrent>0?mrent*12*.8:0;
+  const vInc=cr>0&&noi>0?noi/cr:0;
+  const age=Math.max(0,new Date().getFullYear()-yb);
+  const dep=Math.min(age/50,.7);
+  const bldC=fa*cfg.bldCost;
+  const landV=la*base*.6;
+  const vCost=landV+bldC*(1-dep);
+  let final,mths;
+  if(vInc>0){
+    final=vComp*.5+vInc*.3+vCost*.2;
+    mths=[{n:LANG==='vn'?'So sánh TT':'Market Comparison',v:vComp,w:'50%'},
+      {n:'Cap Rate '+cfg.cap[rt]+'%',v:vInc,w:'30%'},
+      {n:LANG==='vn'?'Chi phí':'Cost Approach',v:vCost,w:'20%'}];
+  }else{
+    final=vComp*.7+vCost*.3;
+    mths=[{n:LANG==='vn'?'So sánh TT':'Market Comparison',v:vComp,w:'70%'},
+      {n:LANG==='vn'?'Chi phí':'Cost Approach',v:vCost,w:'30%'}];
+  }
+  return{final,pps:0,cur:cfg.cur,ctry,cfg,mths,rng:[final*.85,final*1.2]};
+}
+
+// ════════════════════════════════════════════════
+// SUBMIT
+// ════════════════════════════════════════════════
+async function doCalc(){
+  document.querySelectorAll('.qi').forEach(el=>{
+    const k=el.id.replace('q_','');if(el.value)ST.ans[k]=el.value;
+  });
+  goScr('s-load');await animLoad();
+  let r;
+  try{
+    if(ST.seg==='idea')       r=calcIdea(ST.ans);
+    else if(ST.seg==='startup') r=calcStartup(ST.ans);
+    else if(ST.seg==='sme')     r=calcSME(ST.ans);
+    else if(ST.seg==='enterprise') r=calcEnterprise(ST.ans);
+    else if(ST.seg==='realestate') r=calcRE(ST.ans);
+    else r={final:5e9,pps:0,mths:[],rng:[3e9,8e9]};
+    ST.res=r;
+  }catch(e){console.error(e);r=ST.res||{final:5e9,pps:0,mths:[],rng:[3e9,8e9]};}
+  sendBE('valuation',{sessionId:ST.sid,locale:LANG,segment:ST.seg,
+    country:ST.ans.country||'Vietnam',industry:ST.ans.industry||'',
+    finalValVND:r.final,finalValUSD:r.final/FX.USDVND,
+    pricePerShare:r.pps,method:(r.mths||[]).map(m=>m.n).join('+'),answers:ST.ans});
+  dispRes(r);goScr('s-res');updDisc();
+}
+async function animLoad(){
+  const steps=t('lsteps');
+  const c=document.getElementById('lstps');
+  c.innerHTML=steps.map((s,i)=>`<div class="lstp" id="ls${i}"><div class="sdot"></div>${s}</div>`).join('');
+  for(let i=0;i<steps.length;i++){
+    if(i>0)document.getElementById('ls'+(i-1)).className='lstp done';
+    document.getElementById('ls'+i).className='lstp act';
+    await sleep(480);
+  }
+  await sleep(300);
+}
+function dispRes(r){
+  const isRE=ST.seg==='realestate';
+  const ctry=ST.ans.country||'vn';
+  const cfg=REC[ctry]||REC.vn;
+  let dv,du;
+  if(isRE&&ctry!=='vn'){
+    const usd=r.final/FX.USDVND;
+    const rate=FX[cfg.fxKey]||1;
+    const local=usd*rate;
+    dv=local.toLocaleString('en-US',{maximumFractionDigits:0})+' '+cfg.cur;
+  }else{dv=fVND(r.final);}
+  du=fUSD(r.final);
+  document.getElementById('rval').textContent=dv;
+  document.getElementById('rusd').textContent=du;
+  document.getElementById('rrange').textContent=r.rng&&r.rng[0]>0?t('range_lbl')+fVND(r.rng[0])+' — '+fVND(r.rng[1]):'';
+  document.getElementById('mgrid').innerHTML=(r.mths||[]).map(m=>`
+    <div class="mc"><div class="mn">${m.n}</div>
+      <div class="mv">${m.v>0?fVND(m.v):t('na')}</div>
+      <div class="mw">${t('weight_lbl')}${m.w}</div></div>`).join('');
+  updTotal();
+}
+function updTotal(){
+  const tot=ST.upsell?'$20 USD':'$15 USD';
+  document.getElementById('tprice').textContent=(LANG==='vn'?'Tổng: ':'Total: ')+tot;
+}
+function updDisc(){
+  const intl=ST.ans.country&&ST.ans.country!=='vn';
+  document.getElementById('disc_txt').innerHTML=t(intl?'disc_en':'disc_vn');
+}
+function toggleUpsell(){
+  ST.upsell=!ST.upsell;
+  document.getElementById('ubanner').classList.toggle('on',ST.upsell);
+  updTotal();
+}
+function showLead(){
+  document.getElementById('lfwrap').style.display='block';
+  document.getElementById('lfwrap').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function togConsent(){
+  ST.consent=!ST.consent;
+  document.getElementById('cbox').classList.toggle('chk',ST.consent);
+}
+function selPay(m){
+  ST.payMethod=m;
+  document.getElementById('pvn').classList.toggle('sel',m==='vn');
+  document.getElementById('pint').classList.toggle('sel',m==='intl');
+}
+async function doPay(){
+  const name=document.getElementById('lname').value.trim();
+  const email=document.getElementById('lemail').value.trim();
+  const phone=document.getElementById('lphone').value.trim();
+  if(!name||!email){showToast(LANG==='vn'?'Vui lòng nhập họ tên và email':'Please enter name and email','er');return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showToast(LANG==='vn'?'Email không hợp lệ':'Invalid email','er');return;}
+  if(!ST.consent){showToast(LANG==='vn'?'Vui lòng đồng ý điều khoản':'Please agree to terms','er');return;}
+  const totalUSD=ST.upsell?20:15;
+  const totalVND=Math.round(totalUSD*FX.USDVND);
+  await sendBE('lead',{sessionId:ST.sid,orderId:ST.sid,name,email,phone,
+    segment:ST.seg,country:ST.ans.country||'Vietnam',
+    finalValVND:ST.res?.final||0,finalValUSD:(ST.res?.final||0)/FX.USDVND,
+    upsellCompare:ST.upsell,totalBillUSD:totalUSD,
+    paymentMethod:ST.payMethod==='vn'?'SePay':'Paddle'});
+  if(ST.payMethod==='vn'){
+    const qrw=document.getElementById('qrw');
+    qrw.classList.add('show');
+    document.getElementById('qramt').textContent=totalVND.toLocaleString('vi-VN')+' VND';
+    const note='VALUITBIZ '+ST.sid;
+    const qURL=`https://qr.sepay.vn/img?bank=${CFG.SEPAY_MERCHANT}&amount=${totalVND}&des=${encodeURIComponent(note)}&template=compact`;
+    document.getElementById('qrimg').innerHTML=`<img src="${qURL}" style="width:100%;height:100%;object-fit:contain" onerror="this.parentElement.textContent='QR: ${totalVND.toLocaleString()}'"/>`;
+    startQR(15*60);
+    document.getElementById('btnPay').style.display='none';
+  }else{
+    showToast(LANG==='vn'?'Đang mở cổng thanh toán quốc tế...':'Opening international checkout...','ok');
+    setTimeout(()=>window.open(`https://buy.paddle.com/product/${CFG.PADDLE_PRODUCT}?email=${encodeURIComponent(email)}&passthrough=${ST.sid}`,'_blank'),800);
+  }
+}
+function startQR(s){
+  clearInterval(ST.qrTmr);
+  let sec=s;const el=document.getElementById('qrtimer');
+  ST.qrTmr=setInterval(()=>{
+    sec--;const m=Math.floor(sec/60),ss=sec%60;
+    el.textContent=m+':'+(ss+'').padStart(2,'0');
+    if(sec<=0){clearInterval(ST.qrTmr);el.textContent=LANG==='vn'?'Hết hạn':'Expired';}
+  },1000);
+}
+async function sendBE(action,data){
+  try{await fetch(CFG.WORKER+'/api/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});}
+  catch(e){console.warn('Backend offline:',action);}
+}
+// ════════ NAV ════════
+function goScr(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('mainCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function restart(){
+  clearInterval(ST.qrTmr);
+  ST={seg:null,ans:{},res:null,sid:null,payMethod:'vn',upsell:false,consent:false,qrTmr:null};
+  document.getElementById('lfwrap').style.display='none';
+  document.getElementById('qrw').classList.remove('show');
+  document.getElementById('btnPay').style.display='';
+  document.getElementById('cbox').classList.remove('chk');
+  document.getElementById('btn0').disabled=true;
+  document.getElementById('ubanner').style.display='none';
+  renderSegs();goScr('s-seg');
+}
+// ════════ UTILS ════════
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function showToast(msg,type='ok'){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className='toast '+type+' show';
+  setTimeout(()=>el.classList.remove('show'),3500);
+}
+// ════════ INIT ════════
+document.addEventListener('DOMContentLoaded',()=>{renderSegs();updDisc();setLang('vn');});
+</script>
+</body>
+</html>
