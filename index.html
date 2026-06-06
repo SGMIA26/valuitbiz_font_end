@@ -194,6 +194,12 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .pod{font-size:11px;color:var(--tm);margin-top:1px}
 /* QR */
 .qrw{text-align:center;padding:22px;border:1px solid var(--b);border-radius:var(--rlg);background:var(--s2);display:none;margin-top:14px}
+.qri{width:220px;height:220px;margin:0 auto 14px;border-radius:var(--rmd);overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center}
+.qri img{width:100%;height:100%;object-fit:contain;display:block}
+.qra{font-family:var(--fd);font-size:22px;font-weight:700;color:var(--a400);margin-bottom:6px}
+.qrn{font-size:12px;color:var(--ts);margin-bottom:4px}
+.qrc{font-size:12px;color:var(--tm)}
+.qrt{color:var(--a400);font-weight:600}
 .qrw.show{display:block}
 .qri{width:160px;height:160px;margin:0 auto 14px;background:white;border-radius:var(--rmd);display:flex;align-items:center;justify-content:center;overflow:hidden}
 .qri img{width:100%;height:100%;object-fit:contain}
@@ -418,41 +424,12 @@ footer{text-align:center;padding:28px 20px;border-top:1px solid var(--gl);margin
   <!-- S4: Value Proposition -->
   <div class="scr" id="s-value">
     <div class="rh" style="text-align:left;padding:28px 36px">
-      <div class="rl">✦ BÁO CÁO PHÂN TÍCH CHUYÊN SÂU</div>
-      <div class="st" style="font-size:clamp(18px,2.5vw,26px);margin-top:6px">Tại sao bạn cần bản Full Report?</div>
-      <div class="sd" style="margin-top:6px">Soạn thảo theo chuẩn IVS · TĐGVN · Thực tiễn M&A Việt Nam</div>
+      <div class="rl" id="vp-badge">✦ BÁO CÁO PHÂN TÍCH CHUYÊN SÂU</div>
+      <div class="st" id="vp-title" style="font-size:clamp(18px,2.5vw,26px);margin-top:6px">Tại sao bạn cần bản Full Report?</div>
+      <div class="sd" id="vp-std" style="margin-top:6px">Soạn thảo theo chuẩn IVS · TĐGVN · Thực tiễn M&A Việt Nam</div>
     </div>
     <div class="sb">
-      <div style="display:grid;gap:14px;margin-bottom:24px">
-        <div class="vp-item">
-          <div class="vp-num">01</div>
-          <div>
-            <div class="vp-title">Định giá đa phương pháp đầy đủ</div>
-            <div class="vp-desc">3+ phương pháp tính toán chi tiết với công thức, giả định và sensitivity analysis — đúng chuẩn báo cáo thẩm định giá chuyên nghiệp</div>
-          </div>
-        </div>
-        <div class="vp-item">
-          <div class="vp-num">02</div>
-          <div>
-            <div class="vp-title">Nhận định định tính từ chuyên gia</div>
-            <div class="vp-desc">Phân tích điểm mạnh / yếu tác động đến định giá. Rủi ro cần xử lý trước khi đưa hồ sơ cho NĐT hoặc thẩm định viên</div>
-          </div>
-        </div>
-        <div class="vp-item">
-          <div class="vp-num">03</div>
-          <div>
-            <div class="vp-title">Lộ trình chuẩn hóa hồ sơ doanh nghiệp</div>
-            <div class="vp-desc">Build To Sell Roadmap 6–18 tháng: Checklist BCTC đủ chuẩn thẩm định viên · Hành động cụ thể để tăng định giá tối đa trước M&A / IPO</div>
-          </div>
-        </div>
-        <div class="vp-item">
-          <div class="vp-num">04</div>
-          <div>
-            <div class="vp-title">Hành trình đưa DN lên đỉnh giá trị</div>
-            <div class="vp-desc">Framework SandboxStartUp — từ định giá hiện tại đến mục tiêu M&A / IPO. Hồ sơ chuẩn mà khi gửi thẩm định viên, họ thấy ngay giá trị vượt trội</div>
-          </div>
-        </div>
-      </div>
+      <div id="vp-items" style="display:grid;gap:14px;margin-bottom:24px"></div>
       <!-- Blurred preview -->
       <div style="position:relative;border:1px solid var(--b);border-radius:var(--rmd);overflow:hidden;margin-bottom:20px">
         <div style="padding:16px 20px;font-size:12px;color:var(--ts);line-height:2;filter:blur(4px);user-select:none;pointer-events:none">
@@ -1794,11 +1771,125 @@ function toggleUpsell(){
   document.getElementById('ubanner').classList.toggle('on',ST.upsell);
   updTotal();
 }
+// ── Value Prop content theo phân khúc ──────────────────────────────
+const VP_CONTENT = {
+  idea:[
+    {n:'01',title:'Định giá Berkus & Scorecard chi tiết',
+     desc:'Phân tích 5 yếu tố Berkus với điểm số cụ thể: Ý tưởng · Đội ngũ · TAM · IP · Traction — kèm so sánh benchmark VC quốc tế cho giai đoạn pre-seed'},
+    {n:'02',title:'Lộ trình từ Ý tưởng → Startup có doanh thu',
+     desc:'Checklist 12 bước từ concept đến MVP có paying user đầu tiên. Các mốc milestone nhà đầu tư thiên thần thường yêu cầu trước khi quyết định rót vốn'},
+    {n:'03',title:'Tư vấn xây dựng Pitch Deck & Hồ sơ gọi vốn',
+     desc:'Hướng dẫn cấu trúc pitch deck chuẩn YC/500 Startups. Những điểm nhà đầu tư VN & quốc tế quan tâm nhất ở giai đoạn idea/pre-seed'},
+    {n:'04',title:'Định hướng từ chuyên gia SandboxStartUp',
+     desc:'Nhận định về tiềm năng ý tưởng trong bối cảnh thị trường VN 2025–2026. Kết nối với chương trình Build To Sell nếu phù hợp'},
+  ],
+  startup:[
+    {n:'01',title:'Định giá Revenue Multiple & Berkus đầy đủ',
+     desc:'Phân tích ARR × bội số ngành + Berkus adjusted + Funding × 3 nếu có. Khoảng định giá theo mức tăng trưởng MoM và giai đoạn phát triển'},
+    {n:'02',title:'Benchmark so sánh Startup cùng ngành Đông Nam Á',
+     desc:'So sánh với 5–10 startup tương đồng đã gọi vốn thành công tại VN/SG/MY. Bạn đang ở đâu trên bản đồ định giá khu vực?'},
+    {n:'03',title:'Lộ trình tăng định giá trước vòng tiếp theo',
+     desc:'6 action items cụ thể để tăng định giá 20–50% trước Series A: tối ưu CAC/LTV, cải thiện MRR churn, xây dựng moat, chuẩn hóa data room'},
+    {n:'04',title:'Hướng dẫn xây dựng Data Room chuẩn VC',
+     desc:'Checklist đầy đủ tài liệu VC cần trước khi term sheet: Cap table, Unit economics, Cohort analysis, Financial model. Framework Build To Sell của SandboxStartUp'},
+  ],
+  sme:[
+    {n:'01',title:'Định giá P/E · P/S · P/B · Gordon Growth đầy đủ',
+     desc:'4 phương pháp tính toán chi tiết theo benchmark HOSE/HNX. Phân tích tác động của Tier minh bạch BCTC (A/B/C) lên từng phương pháp — số liệu cụ thể'},
+    {n:'02',title:'Nhận định từ chuyên gia M&A & thẩm định viên',
+     desc:'Điểm mạnh / yếu theo góc nhìn nhà đầu tư chiến lược. Khoảng cách giữa định giá hiện tại và tiềm năng nếu chuẩn hóa BCTC và quản trị'},
+    {n:'03',title:'Lộ trình nâng định giá trước M&A / Gọi vốn',
+     desc:'Build To Sell Roadmap 6–18 tháng: Nâng cấp BCTC Tier B→A · Tối ưu lợi nhuận · Xây dựng hệ thống quản trị · Chuẩn bị hồ sơ due diligence'},
+    {n:'04',title:'So sánh với M&A thực tế cùng ngành tại VN',
+     desc:'Tham chiếu 3–5 thương vụ M&A gần nhất cùng ngành tại VN. Hiểu bội số thực tế nhà mua chiến lược/PE sẵn sàng trả — không chỉ lý thuyết'},
+  ],
+  enterprise:[
+    {n:'01',title:'DCF / FCFF & EV/EBITDA phân tích toàn diện',
+     desc:'Mô hình DCF 5 năm chi tiết: FCFF từng năm · PV chiết khấu · Terminal Value · WACC breakdown · Sensitivity table ± 2% WACC và ± 5% tăng trưởng'},
+    {n:'02',title:'Đối chiếu với định giá ngân hàng & kiểm toán',
+     desc:'So sánh kết quả với cách ngân hàng thương mại VN thường định giá DN khi thế chấp/M&A. Góc nhìn từ Big4 và thẩm định viên được Bộ Tài chính cấp phép'},
+    {n:'03',title:'Chiến lược tối đa hóa giá trị trước sự kiện thanh khoản',
+     desc:'IPO Roadmap / M&A Playbook: 12–24 tháng chuẩn bị. EBITDA optimization · Net debt reduction · Multiple expansion · Management team strengthening'},
+    {n:'04',title:'Hồ sơ chuẩn bị cho NĐT chiến lược / PE / IPO',
+     desc:'Checklist đầy đủ: CIM (Confidential Information Memorandum) · Teaser · Financial model chuẩn · Data room structure. Framework SandboxStartUp Build To Sell'},
+  ],
+  realestate:[
+    {n:'01',title:'Định giá BĐS 3 phương pháp chuẩn quốc tế',
+     desc:'So sánh thị trường · Thu nhập / Cap Rate · Chi phí — đúng chuẩn IVS 230, RICS, TT36/2024. Hiểu rõ con số đến từ đâu, từng công thức cụ thể'},
+    {n:'02',title:'Nhận định từ chuyên gia thẩm định BĐS & ngân hàng',
+     desc:'Đánh giá pháp lý, vị trí, tiềm năng cho thuê, rủi ro thanh khoản. Quan điểm từ góc nhìn ngân hàng thẩm định thế chấp và NĐT chuyên nghiệp'},
+    {n:'03',title:'Cách tăng giá trị BĐS trước khi giao dịch',
+     desc:'Hướng dẫn thực tế: hoàn thiện pháp lý · cải thiện tình trạng BĐS · tối ưu dòng tiền cho thuê. Các bước cụ thể giúp tăng định giá 10–30%'},
+    {n:'04',title:'Lời khuyên chiến lược từ chuyên gia',
+     desc:'Nên bán / giữ / cho thuê / phát triển? So sánh yield với các kênh đầu tư khác. Định hướng phù hợp mục tiêu tài chính và bối cảnh thị trường hiện tại'},
+  ],
+};
+// VP_DN & VP_RE kept for backward compat
+const VP_DN=VP_CONTENT.sme;
+const VP_RE=VP_CONTENT.realestate;
+const VP_RE = [
+  {n:'01',title:'Định giá BĐS 3 phương pháp chuẩn quốc tế',
+   desc:'So sánh thị trường · Thu nhập / Cap Rate · Chi phí — đúng chuẩn IVS 230, RICS, TT36/2024. Hiểu rõ con số đến từ đâu và tại sao'},
+  {n:'02',title:'Nhận định từ chuyên gia thẩm định BĐS',
+   desc:'Đánh giá các yếu tố tác động: pháp lý, vị trí, tiềm năng cho thuê, rủi ro thanh khoản. Quan điểm từ góc nhìn ngân hàng và thẩm định viên chuyên nghiệp'},
+  {n:'03',title:'Cách tăng giá trị BĐS trước khi giao dịch',
+   desc:'Hướng dẫn cụ thể: hoàn thiện pháp lý, cải thiện tình trạng BĐS, tối ưu dòng tiền cho thuê — các bước thực tế giúp tăng định giá 10-30%'},
+  {n:'04',title:'Lời khuyên chiến lược từ chuyên gia',
+   desc:'Nên bán / giữ / cho thuê / phát triển? Phân tích yield so sánh với các kênh đầu tư khác. Định hướng phù hợp với mục tiêu tài chính cá nhân của bạn'},
+];
+function renderValueProp(){
+  const seg=ST.seg||'sme';
+  const items=VP_CONTENT[seg]||VP_CONTENT.sme;
+  const isRE=seg==='realestate';
+  const badgeMap={
+    idea:'✦ BÁO CÁO PHÂN TÍCH Ý TƯỞNG & TIỀM NĂNG GỌI VỐN',
+    startup:'✦ BÁO CÁO ĐỊNH GIÁ STARTUP & CHIẾN LƯỢC TĂNG TRƯỞNG',
+    sme:'✦ BÁO CÁO ĐỊNH GIÁ DOANH NGHIỆP SMEs CHUYÊN SÂU',
+    enterprise:'✦ BÁO CÁO ĐỊNH GIÁ ENTERPRISE — DCF & M&A PLAYBOOK',
+    realestate:'✦ BÁO CÁO THẨM ĐỊNH GIÁ BẤT ĐỘNG SẢN',
+  };
+  const titleMap={
+    idea:'Tại sao bạn cần Báo cáo Phân tích Ý tưởng đầy đủ?',
+    startup:'Tại sao bạn cần Báo cáo Định giá Startup chi tiết?',
+    sme:'Tại sao bạn cần Báo cáo Định giá SMEs chuyên sâu?',
+    enterprise:'Tại sao bạn cần Báo cáo Định giá Enterprise toàn diện?',
+    realestate:'Tại sao bạn cần Báo cáo Thẩm định BĐS đầy đủ?',
+  };
+  const stdMap={
+    idea:'Chuẩn Berkus · Scorecard · VC Framework quốc tế',
+    startup:'Chuẩn Revenue Multiple · IVS 200 · Benchmark SEA',
+    sme:'Chuẩn IVS · TĐGVN · HOSE/HNX benchmarks · TT06',
+    enterprise:'Chuẩn IVS · IFRS · WACC · Thực tiễn M&A & IPO VN',
+    realestate:'Chuẩn IVS 230 · RICS · TT36/2024 · Thực tiễn ngân hàng & NĐT',
+  };
+  document.getElementById('vp-badge').textContent=badgeMap[seg]||badgeMap.sme;
+  document.getElementById('vp-title').textContent=titleMap[seg]||titleMap.sme;
+  document.getElementById('vp-std').textContent=stdMap[seg]||stdMap.sme;
+  // Items
+  document.getElementById('vp-items').innerHTML=items.map(item=>`
+    <div class="vp-item">
+      <div class="vp-num">${item.n}</div>
+      <div>
+        <div class="vp-title">${item.title}</div>
+        <div class="vp-desc">${item.desc}</div>
+      </div>
+    </div>`).join('');
+}
+
 function showLead(){
-  // Nếu chưa qua value prop screen, hiện value prop trước
-  if(!ST.seenValue){ST.seenValue=true;goScr('s-value');return;}
-  document.getElementById('lfwrap').style.display='block';
-  document.getElementById('lfwrap').scrollIntoView({behavior:'smooth',block:'start'});
+  if(!ST.seenValue){
+    ST.seenValue=true;
+    renderValueProp();
+    goScr('s-value');
+    return;
+  }
+  // Quay về s-res để show lfwrap (lfwrap nằm trong s-res)
+  goScr('s-res');
+  setTimeout(()=>{
+    const lf=document.getElementById('lfwrap');
+    lf.style.display='block';
+    lf.scrollIntoView({behavior:'smooth',block:'start'});
+  },150);
 }
 function togConsent(){
   ST.consent=!ST.consent;
@@ -1826,16 +1917,42 @@ async function doPay(){
     paymentMethod:ST.payMethod==='vn'?'SePay':'Paddle'});
   if(ST.payMethod==='vn'){
     const qrw=document.getElementById('qrw');
+    document.getElementById('qrimg').innerHTML='<div style="color:var(--ts);font-size:12px">⏳ Đang tạo mã QR...</div>';
+    document.getElementById('qramt').textContent='';
     qrw.classList.add('show');
-    document.getElementById('qramt').textContent=totalVND.toLocaleString('vi-VN')+' VND'+'  (USD '+totalUSD+' = '+fxRate.toLocaleString()+' VND/USD)';
+    qrw.scrollIntoView({behavior:'smooth',block:'center'});
+    document.getElementById('qramt').innerHTML=`<div style="font-size:13px;color:var(--ts);margin-bottom:4px">MBBank · 9688666686</div>
+      <div>${totalVND.toLocaleString('vi-VN')} VND</div>
+      <div style="font-size:11px;color:var(--tm);margin-top:2px">(≈ $${totalUSD} USD · tỷ giá ${fxRate.toLocaleString()})</div>`;
     const note='VALUITBIZ '+ST.sid;
     // SePay VietQR format: bank=MABK&acc=SOTK&amount=VND&des=NoiDung
     const qURL=`https://qr.sepay.vn/img?bank=${CFG.BANK_CODE}&acc=${CFG.BANK_ACCOUNT}&amount=${totalVND}&des=${encodeURIComponent(note)}&template=compact&download=false`;
     // Fallback: dùng SePay QR trực tiếp
     const qURLAlt=`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent('00020101021238570010A00000072701270006970422011'+CFG.BANK_ACCOUNT+'0208QRIBFTTA5303704540'+String(totalVND).length+String(totalVND)+'5802VN62'+String(note.length).padStart(2,'0')+note+'6304ABCD')}`;
-    document.getElementById('qrimg').innerHTML=`
-      <img src="${qURL}" style="width:100%;height:100%;object-fit:contain"
-        onerror="this.src='${qURLAlt}';this.onerror=function(){this.parentElement.innerHTML='<div style=\'text-align:center;padding:20px;font-size:13px;color:var(--ts)\'><div style=\'font-size:11px;color:var(--a400);margin-bottom:8px\'>CHUYỂN KHOẢN THỦ CÔNG</div><div style=\'font-size:16px;font-weight:700;color:var(--tp)\'>${CFG.BANK_CODE} — ${CFG.BANK_ACCOUNT}</div><div style=\'margin-top:4px\'>${CFG.BANK_NAME}</div><div style=\'margin-top:8px;color:var(--a400);font-weight:600\'>${totalVND.toLocaleString()} VND</div><div style=\'font-size:11px;color:var(--tm);margin-top:4px\'>Nội dung: ${note}</div></div>'}"/>`;
+    // Load QR với timeout fallback
+    const qrEl=document.getElementById('qrimg');
+    const img=new Image();
+    img.onload=function(){qrEl.innerHTML='';qrEl.appendChild(img);};
+    img.onerror=function(){
+      // Fallback 1: QRServer
+      const img2=new Image();
+      img2.onload=function(){qrEl.innerHTML='';qrEl.appendChild(img2);};
+      img2.onerror=function(){
+        // Fallback 2: hiện thủ công
+        qrEl.innerHTML=`<div style="text-align:center;padding:12px">
+          <div style="font-size:10px;color:var(--a400);letter-spacing:.1em;margin-bottom:8px">CHUYỂN KHOẢN THỦ CÔNG</div>
+          <div style="font-size:15px;font-weight:700;color:var(--tp)">MBBank</div>
+          <div style="font-size:18px;font-weight:700;color:var(--a400);margin:4px 0">9688666686</div>
+          <div style="font-size:12px;color:var(--ts)">SCF INVESTMENT JS CO</div>
+        </div>`;
+      };
+      img2.src=qURLAlt;
+    };
+    img.style.cssText='width:100%;height:100%;object-fit:contain;display:block';
+    img.src=qURL;
+    // Timeout 5s → fallback
+    setTimeout(()=>{if(!img.complete||img.naturalWidth===0)img.onerror()},5000);
+
     startQR(15*60);
     document.getElementById('btnPay').style.display='none';
   }else{
