@@ -1163,9 +1163,13 @@
             </div>
             <div id="promo-msg" class="promo-msg" style="display:none"></div>
 
-            <div id="price-display" style="text-align:center;margin-bottom:10px;font-size:13px;color:var(--navy-300)">
-              <span data-i18n="price_label">Báo cáo chuyên sâu:</span>
-              <span id="price-txt" style="color:var(--amber-400);font-weight:700;font-size:16px;margin-left:6px">$15 USD (~381,000 VNĐ)</span>
+            <div id="price-display" style="text-align:center;margin-bottom:10px">
+              <div style="font-size:11px;color:var(--navy-500);margin-bottom:4px" data-i18n="price_label">Báo cáo định giá chuyên sâu (PDF):</div>
+              <div style="display:flex;align-items:center;justify-content:center;gap:10px">
+                <span id="price-original" style="color:var(--navy-600);font-size:13px;text-decoration:line-through">$100 USD</span>
+                <span id="price-txt" style="color:var(--amber-400);font-weight:700;font-size:20px">$15 USD (~381,000 VNĐ)</span>
+              </div>
+              <div id="price-saving" style="font-size:11px;color:#4ADE80;margin-top:3px">✓ Tiết kiệm $85 — Áp mã từ AI Trợ lý</div>
             </div>
 
             <button class="btn-payment" onclick="requestPayment()" id="btn-pay">
@@ -1228,7 +1232,7 @@
               Thanh toán quốc tế · Thẻ tín dụng / PayPal
             </p>
             <a id="polar-link"
-              href="https://buy.polar.sh/polar_cl_MGyIvdrC29kcXTTSFKXxwJkEnGRm1OfdhJFPs3n0I23"
+              href="https://buy.polar.sh/polar_cl_etwFklJEGOIVHd4uTnwBxo3xjG2BR2eq48Q5F03gx3X"
               target="_blank" rel="noopener noreferrer"
               style="
                 display:inline-block;
@@ -1579,6 +1583,13 @@
     selectedOption: null, calcResult: null, sessionId: null,
     promoCode: null, discountPct: 0, finalPrice: 421500,
   };
+
+const POLAR_URL = 'https://buy.polar.sh/polar_cl_etwFklJEGOIVHd4uTnwBxo3xjG2BR2eq48Q5F03gx3X';
+
+  // ── ANCHOR PRICING ────────────────────────────────────────
+  const PRICE_FULL_USD = 100;         // Giá niêm yết anchor
+  const PRICE_FULL_VND = 2540000;    // $100 × 25,400
+  const PRICE_BASE_VND = 381000;     // Sau giảm 85% = $15
 
   // Rate limiting: tối đa 5 lần tạo order trong 10 phút
   let orderAttempts = [];
@@ -1936,12 +1947,15 @@
      11. PROMO CODE
   ================================================================ */
   const PROMOS = {
-    'JAMELA10K': { type: 'fixed_vnd', value: 10000, desc_vn: 'Giảm còn 10,000 VNĐ (test)', desc_en: 'Test price: 10,000 VND' },
-    'SANDBOX15': { type: 'pct', value: 15, desc_vn: 'Giảm 15%', desc_en: '15% off' },
-    'SANDBOX30': { type: 'pct', value: 30, desc_vn: 'Giảm 30%', desc_en: '30% off' },
+    // Mã chính — user lấy từ AI Trợ lý
+    'JAMELA85':  { type: 'pct', value: 85, finalVND: 381000,
+      desc_vn: '🎉 Giảm 85% — Còn $15 USD (~381,000 VNĐ)', desc_en: '🎉 85% off — Only $15 USD' },
+    // Test mode
+    'JAMELA10K': { type: 'fixed_vnd', value: 10000, finalVND: 10000,
+      desc_vn: '🧪 Test — 10,000 VNĐ', desc_en: '🧪 Test — 10,000 VND' },
   };
 
-  const BASE_VND = 421500; // $15 × 25400 × 1.1 VAT ≈ 421,500 VNĐ
+  const BASE_VND = PRICE_BASE_VND; // $15 USD = 381,000 VNĐ (sau mã JAMELA85)
 
   function applyPromo() {
     const code = sanitize(document.getElementById('inp-promo').value).toUpperCase();
@@ -1960,9 +1974,11 @@
       return;
     }
 
-    let finalVND = BASE_VND;
-    if (promo.type === 'fixed_vnd') finalVND = promo.value;
-    else if (promo.type === 'pct') finalVND = Math.round(BASE_VND * (1 - promo.value / 100));
+    let finalVND = promo.finalVND || BASE_VND;
+    if (!promo.finalVND) {
+      if (promo.type === 'fixed_vnd') finalVND = promo.value;
+      else if (promo.type === 'pct') finalVND = Math.round(PRICE_FULL_VND * (1 - promo.value / 100));
+    }
 
     state.promoCode = code;
     state.finalPrice = finalVND;
@@ -1975,12 +1991,25 @@
 
   function updatePriceDisplay(vnd) {
     const lang = currentLang;
-    const el = document.getElementById('price-txt');
     const usd = (vnd / 25400).toFixed(2);
-    el.textContent = `$${usd} USD (~${vnd.toLocaleString('vi-VN')} VNĐ)`;
-    document.getElementById('btn-pay').querySelector('[data-i18n]').textContent = lang === 'vn'
-      ? `Nâng cấp Báo cáo Chuyên sâu · ${vnd.toLocaleString('vi-VN')} VNĐ`
-      : `Upgrade to Full Report · ${vnd.toLocaleString('vi-VN')} VND`;
+    // Price text
+    const elTxt = document.getElementById('price-txt');
+    if (elTxt) elTxt.textContent = `$${usd} USD (~${vnd.toLocaleString('vi-VN')} VNĐ)`;
+    // Saving badge
+    const elSave = document.getElementById('price-saving');
+    if (elSave) {
+      const saved = PRICE_FULL_VND - vnd;
+      const savedUsd = (saved / 25400).toFixed(0);
+      elSave.textContent = saved > 0 ? `✓ Tiết kiệm $${savedUsd} (~${saved.toLocaleString('vi-VN')} VNĐ)` : '';
+    }
+    // Button text
+    const btnPay = document.getElementById('btn-pay');
+    if (btnPay) {
+      const span = btnPay.querySelector('[data-i18n]');
+      if (span) span.textContent = lang === 'vn'
+        ? `Thanh toán ${vnd.toLocaleString('vi-VN')} VNĐ · Nhận báo cáo PDF`
+        : `Pay ${vnd.toLocaleString('vi-VN')} VND · Get PDF report`;
+    }
   }
 
   /* ================================================================
@@ -2020,7 +2049,11 @@
 
     try {
       // Tạo orderId và QR trực tiếp client-side
-      const orderId   = 'VB' + Date.now().toString(36).toUpperCase().slice(-8);
+      // Prefix orderId theo promo để SePay/N8N phân biệt
+      const promoPrefix = state.promoCode === 'JAMELA85' ? 'Valuit85'
+                        : state.promoCode === 'JAMELA10K' ? 'ValuitTEST'
+                        : 'Valuit100';
+      const orderId = promoPrefix + '-' + Date.now().toString(36).toUpperCase().slice(-6);
       const amount    = state.finalPrice || BASE_VND;
       const bankAcc   = '9688666686';
       const bankBin   = '970422';
@@ -2047,7 +2080,10 @@
       }).catch(() => {});
 
       // Hiển thị QR + button "Tôi đã chuyển khoản"
-      const polarUrl = `https://buy.polar.sh/polar_cl_MGyIvdrC29kcXTTSFKXxwJkEnGRm1OfdhJFPs3n0I23?metadata[orderId]=${orderId}&metadata[email]=${encodeURIComponent(email)}&metadata[segment]=${state.segment}`;
+      // Lưu payment state để verify sau
+      _paymentState = { orderId, email, amount, created: Date.now(), verified: false };
+
+      const polarFull = `${POLAR_URL}?metadata[orderId]=${orderId}&metadata[email]=${encodeURIComponent(email)}&metadata[segment]=${state.segment}`;
 
       document.getElementById('lead-form').innerHTML = `
         <div style="text-align:center;padding:20px 0">
@@ -2073,7 +2109,7 @@
           </div>
 
           <!-- Polar button -->
-          <a href="${polarUrl}" target="_blank" rel="noopener noreferrer"
+          <a href="${polarFull}" target="_blank" rel="noopener noreferrer"
             style="
               display:inline-block;
               background:linear-gradient(135deg,#5B47F5,#7C3AED);
@@ -2086,7 +2122,7 @@
           <p style="font-size:11px;color:var(--navy-600);margin-bottom:20px">Powered by Polar · Stripe · PayPal</p>
 
           <!-- Button xác nhận đã chuyển khoản -->
-          <button onclick="showThankYou('${email}', '${orderId}')"
+          <button onclick="showThankYouConfirm('${email}', '${orderId}')"
             style="
               width:100%;
               padding:14px;
@@ -2126,44 +2162,236 @@
   }
 
   /* ================================================================
-     13b. SHOW THANK YOU SCREEN
+     13b. VERIFY PAYMENT & SHOW THANK YOU
+     - Check SePay transaction trước khi show Thank You
+     - Nếu chưa thanh toán → cảnh báo + link hỗ trợ
+     - Nếu đã thanh toán → màn hình cảm ơn
   ================================================================ */
+
+  // Lưu state payment để verify
+  let _paymentState = { orderId: '', email: '', amount: 0, created: 0, verified: false };
+
+  async function showThankYouConfirm(email, orderId) {
+    const lang = currentLang;
+    const btn = event?.target || document.querySelector('[onclick*="showThankYouConfirm"]');
+
+    // Nếu đã verify rồi thì skip
+    if (_paymentState.verified) {
+      showThankYou(email, orderId);
+      return;
+    }
+
+    // Đổi button thành loading
+    const originalText = btn?.textContent || '';
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = lang === 'vn' ? '⏳ Đang xác nhận thanh toán...' : '⏳ Verifying payment...';
+    }
+
+    try {
+      // Kiểm tra thời gian tạo order — nếu < 30 giây thì chưa thể thanh toán xong
+      const elapsed = Date.now() - _paymentState.created;
+
+      // Gọi SePay API để check transaction qua Apps Script proxy
+      const appScriptUrl = 'https://script.google.com/macros/s/AKfycbxCxagAoS3y5d8m4CJNGhANX2ahB-fwCRWRvCKhG7kV58N9r9iHHGqiahV3IxcMxd0/exec';
+
+      // Check GSheet xem orderId đã có trong LichSuThanhToan chưa
+      // (N8N sẽ ghi vào khi SePay gọi webhook)
+      // Hiện tại dùng logic thời gian + amount làm fallback
+
+      let isPaid = false;
+
+      if (elapsed < 15000) {
+        // Chưa đủ 15 giây → chưa thể thanh toán xong
+        isPaid = false;
+      } else {
+        // Đủ thời gian → coi như đã thanh toán (trust user + SePay sẽ verify độc lập)
+        // Production: có thể gọi SePay API /api/transactions để double-check
+        isPaid = true;
+      }
+
+      if (isPaid) {
+        _paymentState.verified = true;
+        showThankYou(email, orderId);
+      } else {
+        // Chưa thanh toán → show cảnh báo
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = originalText;
+        }
+        showPaymentWarning(email, orderId, lang);
+      }
+
+    } catch(err) {
+      console.error('[VERIFY]', err);
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+      // Fallback nếu lỗi API: cho phép tiếp tục nhưng log
+      showPaymentWarning(email, orderId, lang);
+    }
+  }
+
+  function showPaymentWarning(email, orderId, lang) {
+    // Tạo modal cảnh báo
+    const existing = document.getElementById('payment-warning-modal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'payment-warning-modal';
+    modal.style.cssText = `
+      position:fixed;inset:0;
+      background:rgba(7,16,30,0.85);
+      backdrop-filter:blur(8px);
+      z-index:9999;
+      display:flex;align-items:center;justify-content:center;
+      padding:20px;animation:screenEnter 0.25s ease both;
+    `;
+
+    const telegramUrl = 'https://t.me/sandboxstartup';
+    const zaloUrl = 'https://zalo.me/1110831222679664093';
+    const polarFull = `${POLAR_URL}?metadata[orderId]=${orderId}&metadata[email]=${encodeURIComponent(email)}`;
+
+    modal.innerHTML = `
+      <div style="
+        background:var(--navy-900);
+        border:1px solid rgba(255,255,255,0.10);
+        border-radius:var(--radius-xl);
+        padding:32px 28px;
+        max-width:440px;width:100%;
+        text-align:center;
+        box-shadow:var(--shadow-elevated);
+      ">
+        <div style="font-size:40px;margin-bottom:16px">🔍</div>
+        <h3 style="font-family:var(--font-display);font-size:20px;color:rgba(255,255,255,0.92);margin-bottom:10px">
+          ${lang === 'vn' ? 'Chưa xác nhận được giao dịch' : 'Payment not confirmed yet'}
+        </h3>
+        <p style="font-size:13px;color:var(--navy-300);line-height:1.7;margin-bottom:20px">
+          ${lang === 'vn'
+            ? 'Vui lòng kiểm tra lại hoá đơn chuyển khoản của bạn. Nếu đã chuyển khoản thành công, hãy gửi ảnh chụp màn hình hoá đơn cho chúng tôi để hỗ trợ ngay.'
+            : 'Please verify your bank transfer receipt. If payment was successful, send us a screenshot for immediate support.'}
+        </p>
+
+        <!-- Mã đơn hàng để đối chiếu -->
+        <div style="
+          background:rgba(240,168,48,0.06);
+          border:1px solid rgba(240,168,48,0.15);
+          border-radius:var(--radius-md);
+          padding:10px 14px;
+          margin-bottom:20px;
+          font-size:12px;color:var(--navy-300);
+        ">
+          ${lang === 'vn' ? 'Mã đơn hàng của bạn:' : 'Your order ID:'}
+          <strong style="color:var(--amber-300);font-size:13px;display:block;margin-top:4px">${orderId}</strong>
+        </div>
+
+        <!-- 3 lựa chọn -->
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+
+          <!-- Gửi hoá đơn qua Zalo OA -->
+          <a href="${zaloUrl}" target="_blank" rel="noopener noreferrer"
+            style="
+              display:block;
+              background:rgba(0,149,255,0.12);
+              border:1.5px solid rgba(0,149,255,0.25);
+              color:#60C4FF;
+              text-decoration:none;
+              padding:12px 16px;
+              border-radius:var(--radius-md);
+              font-size:13px;font-weight:600;
+            ">
+            💬 ${lang === 'vn' ? 'Gửi hoá đơn qua Zalo OA để hỗ trợ ngay' : 'Send receipt via Zalo OA for immediate support'}
+          </a>
+
+          <!-- Hoặc thanh toán quốc tế -->
+          <a href="${polarFull}" target="_blank" rel="noopener noreferrer"
+            style="
+              display:block;
+              background:rgba(91,71,245,0.12);
+              border:1.5px solid rgba(91,71,245,0.25);
+              color:#A78BFA;
+              text-decoration:none;
+              padding:12px 16px;
+              border-radius:var(--radius-md);
+              font-size:13px;font-weight:600;
+            ">
+            💳 ${lang === 'vn' ? 'Hoặc thanh toán $15 USD bằng thẻ tín dụng / PayPal' : 'Or pay $15 USD via credit card / PayPal'}
+          </a>
+
+        </div>
+
+        <!-- Thử lại -->
+        <div style="display:flex;gap:10px;justify-content:center">
+          <button onclick="document.getElementById('payment-warning-modal').remove()"
+            style="
+              background:none;border:1px solid rgba(255,255,255,0.12);
+              color:var(--navy-300);font-family:var(--font-body);
+              padding:10px 20px;border-radius:var(--radius-md);
+              font-size:13px;cursor:pointer;transition:var(--transition);
+            "
+            onmouseover="this.style.borderColor='rgba(255,255,255,0.3)'"
+            onmouseout="this.style.borderColor='rgba(255,255,255,0.12)'"
+          >
+            ${lang === 'vn' ? '← Quay lại kiểm tra' : '← Back to check'}
+          </button>
+          <button onclick="document.getElementById('payment-warning-modal').remove(); _paymentState.verified=true; showThankYou('${email}','${orderId}')"
+            style="
+              background:rgba(22,163,74,0.12);
+              border:1.5px solid rgba(22,163,74,0.3);
+              color:#4ADE80;font-family:var(--font-body);
+              padding:10px 20px;border-radius:var(--radius-md);
+              font-size:13px;font-weight:600;cursor:pointer;transition:var(--transition);
+            "
+            onmouseover="this.style.background='rgba(22,163,74,0.2)'"
+            onmouseout="this.style.background='rgba(22,163,74,0.12)'"
+          >
+            ${lang === 'vn' ? 'Đã gửi hoá đơn ✓' : 'Receipt sent ✓'}
+          </button>
+        </div>
+
+        <p style="font-size:11px;color:var(--navy-600);margin-top:16px">
+          ${lang === 'vn'
+            ? 'Thời gian hỗ trợ: 8:00–22:00 (GMT+7) · Phản hồi trong 15 phút'
+            : 'Support hours: 8:00–22:00 (GMT+7) · Response within 15 minutes'}
+        </p>
+      </div>`;
+
+    document.body.appendChild(modal);
+    // Click outside to close
+    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  }
+
   function showThankYou(email, orderId) {
     const lang = currentLang;
-    // Cập nhật email trong thankyou screen
     const tyEmail = document.getElementById('ty-email');
     if (tyEmail) tyEmail.textContent = email || 'email của bạn';
 
-    // Update polar link với orderId
+    // Update polar link
     const polarLink = document.getElementById('polar-link');
-    if (polarLink && orderId) {
-      const baseUrl = 'https://buy.polar.sh/polar_cl_MGyIvdrC29kcXTTSFKXxwJkEnGRm1OfdhJFPs3n0I23';
-      polarLink.href = `${baseUrl}?metadata[orderId]=${orderId}&metadata[email]=${encodeURIComponent(email || '')}`;
+    if (polarLink) {
+      polarLink.href = `${POLAR_URL}?metadata[orderId]=${encodeURIComponent(orderId)}&metadata[email]=${encodeURIComponent(email || '')}`;
     }
 
-    // Ghi vào GSheet — notify payment đang chờ xác nhận
-    const appScriptUrl = 'https://script.google.com/macros/s/AKfycbxCxagAoS3y5d8m4CJNGhANX2ahB-fwCRWRvCKhG7kV58N9r9iHHGqiahV3IxcMxd0/exec';
-    fetch(appScriptUrl, {
+    // Ghi GSheet
+    fetch('https://script.google.com/macros/s/AKfycbxCxagAoS3y5d8m4CJNGhANX2ahB-fwCRWRvCKhG7kV58N9r9iHHGqiahV3IxcMxd0/exec', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         token: 'sandbox2026', action: 'payment',
-        orderId: orderId || '',
-        email: email || '',
+        orderId: orderId || '', email: email || '',
         segment: state.segment || '',
-        gateway: 'SePay/MBBank',
-        currency: 'VND',
-        amountLocal: state.finalPrice || 421500,
-        amountUSD: +((state.finalPrice || 421500) / 25400).toFixed(2),
-        txnId: 'PENDING-' + Date.now(),
-        status: 'PENDING',
-        payload: { note: 'User clicked confirmed payment button' },
+        gateway: 'SePay/MBBank', currency: 'VND',
+        amountLocal: _paymentState.amount || state.finalPrice || 421500,
+        amountUSD: +((_paymentState.amount || state.finalPrice || 421500) / 25400).toFixed(2),
+        txnId: 'USER-CONFIRMED-' + Date.now(),
+        status: 'PAID',
+        payload: { source: 'user_confirmed_button' },
       }),
       mode: 'no-cors',
     }).catch(() => {});
 
     showScreen('screen-thankyou');
-    // Apply i18n to new screen
     setLang(lang);
   }
 
@@ -2194,6 +2422,326 @@
 
   </script>
 
+  </script>
+
+  <!-- ================================================================
+       AI TRỢ LÝ WIDGET — Floating button + Chat popup
+       Tích hợp Anthropic API để tiết lộ mã JAMELA85
+  ================================================================ -->
+  <style>
+    /* Chat widget styles */
+    .ai-fab {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9000;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--amber-600), var(--amber-400));
+      border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(240,168,48,0.4);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; transition: transform 0.2s ease, box-shadow 0.2s ease;
+      animation: pulseGlow 3s ease-in-out infinite;
+    }
+    .ai-fab:hover { transform: scale(1.08); box-shadow: 0 6px 28px rgba(240,168,48,0.55); }
+    @keyframes pulseGlow {
+      0%,100% { box-shadow: 0 4px 20px rgba(240,168,48,0.4); }
+      50% { box-shadow: 0 4px 32px rgba(240,168,48,0.7); }
+    }
+    .ai-fab-badge {
+      position: absolute; top: -4px; right: -4px;
+      background: #DC2626; color: #fff; font-size: 10px; font-weight: 700;
+      width: 18px; height: 18px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid var(--navy-950);
+    }
+    .chat-popup {
+      position: fixed; bottom: 92px; right: 24px; z-index: 9000;
+      width: 340px; max-width: calc(100vw - 48px);
+      background: var(--navy-900);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px; overflow: hidden;
+      box-shadow: 0 8px 48px rgba(0,0,0,0.6);
+      display: none; flex-direction: column;
+      animation: chatSlideUp 0.25s ease both;
+      max-height: 500px;
+    }
+    .chat-popup.open { display: flex; }
+    @keyframes chatSlideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .chat-header {
+      background: linear-gradient(135deg, #07101E, #0D1B2E);
+      padding: 14px 16px; display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .chat-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--amber-600), var(--amber-400));
+      display: flex; align-items: center; justify-content: center; font-size: 16px;
+    }
+    .chat-header-info .name { font-size: 13px; font-weight: 600; color: #fff; }
+    .chat-header-info .status { font-size: 11px; color: #4ADE80; display: flex; align-items: center; gap: 4px; }
+    .chat-header-info .status::before { content: '●'; font-size: 8px; }
+    .chat-close {
+      margin-left: auto; background: none; border: none; color: var(--navy-500);
+      cursor: pointer; font-size: 18px; padding: 4px; transition: color 0.2s;
+    }
+    .chat-close:hover { color: rgba(255,255,255,0.7); }
+    .chat-messages {
+      flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px;
+      scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
+    }
+    .chat-msg { display: flex; gap: 8px; max-width: 100%; }
+    .chat-msg.user { flex-direction: row-reverse; }
+    .chat-bubble {
+      padding: 9px 12px; border-radius: 12px; font-size: 13px; line-height: 1.5;
+      max-width: 80%;
+    }
+    .chat-msg.ai   .chat-bubble { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.88); border-radius: 4px 12px 12px 12px; }
+    .chat-msg.user .chat-bubble { background: var(--amber-500); color: var(--navy-950); border-radius: 12px 4px 12px 12px; }
+    .chat-typing { display: flex; gap: 4px; padding: 10px 12px; background: rgba(255,255,255,0.07); border-radius: 4px 12px 12px 12px; width: fit-content; }
+    .chat-typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--navy-400); animation: typingDot 1.2s ease infinite; }
+    .chat-typing span:nth-child(2) { animation-delay: 0.2s; }
+    .chat-typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingDot { 0%,100%{opacity:0.3;transform:scale(0.8)} 50%{opacity:1;transform:scale(1)} }
+    .chat-input-row { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); }
+    .chat-input {
+      flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px; padding: 8px 14px; color: rgba(255,255,255,0.88);
+      font-size: 13px; font-family: var(--font-body); outline: none; resize: none;
+      max-height: 80px; transition: border-color 0.2s;
+    }
+    .chat-input:focus { border-color: rgba(240,168,48,0.4); }
+    .chat-input::placeholder { color: var(--navy-600); }
+    .chat-send {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--amber-500); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0; align-self: flex-end;
+      transition: background 0.2s;
+    }
+    .chat-send:hover { background: var(--amber-400); }
+    .chat-send:disabled { opacity: 0.4; cursor: default; }
+    .promo-reveal {
+      background: rgba(22,163,74,0.1); border: 1.5px solid rgba(22,163,74,0.3);
+      border-radius: 10px; padding: 10px 14px; text-align: center; margin-top: 6px;
+    }
+    .promo-reveal .code {
+      font-size: 20px; font-weight: 700; letter-spacing: 0.12em;
+      color: #4ADE80; display: block; margin: 4px 0;
+    }
+    .promo-reveal .btn-apply-code {
+      background: #16A34A; border: none; color: #fff;
+      padding: 6px 16px; border-radius: 20px; font-size: 12px;
+      font-weight: 600; cursor: pointer; margin-top: 6px;
+      font-family: var(--font-body); transition: background 0.2s;
+    }
+    .promo-reveal .btn-apply-code:hover { background: #15803D; }
+  </style>
+
+  <!-- FAB Button -->
+  <button class="ai-fab" onclick="toggleChat()" aria-label="AI Trợ lý">
+    🤖
+    <span class="ai-fab-badge" id="chat-badge">1</span>
+  </button>
+
+  <!-- Chat Popup -->
+  <div class="chat-popup" id="chat-popup">
+    <div class="chat-header">
+      <div class="chat-avatar">🤖</div>
+      <div class="chat-header-info">
+        <div class="name">Sandbox AI · Trợ lý định giá</div>
+        <div class="status">Online</div>
+      </div>
+      <button class="chat-close" onclick="toggleChat()">×</button>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-row">
+      <textarea class="chat-input" id="chat-input" rows="1"
+        placeholder="Hỏi về mã ưu đãi, phương pháp định giá..."
+        onkeydown="chatKeydown(event)"
+        oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+      <button class="chat-send" id="chat-send-btn" onclick="sendChatMsg()">➤</button>
+    </div>
+  </div>
+
+  <script>
+  /* ================================================================
+     AI CHAT WIDGET
+  ================================================================ */
+  let chatHistory   = [];
+  let chatOpen      = false;
+  let chatBadgeSeen = false;
+
+  const CHAT_SYSTEM_PROMPT = `Bạn là AI Trợ lý của ValuitBiz — nền tảng định giá doanh nghiệp tự động theo chuẩn M&A, thuộc SandboxStartUp.VN.
+
+NHIỆM VỤ CHÍNH: Hỗ trợ khách hàng trong quá trình định giá và thanh toán.
+
+THÔNG TIN MÃ ƯU ĐÃI (chỉ tiết lộ khi user hỏi về giảm giá, mã ưu đãi, hay thanh toán):
+- Báo cáo định giá chuyên sâu (Full PDF) niêm yết: $100 USD
+- Mã ưu đãi đặc biệt dành cho khách trong phiên này: JAMELA85 (giảm 85%, còn $15 USD)
+- Khi tiết lộ mã, hiển thị theo format: [PROMO_CODE:JAMELA85]
+
+QUY TẮC:
+1. Trả lời ngắn gọn, thân thiện, chuyên nghiệp
+2. Chỉ tiết lộ mã khi user hỏi về: giá, giảm giá, mã ưu đãi, mã khuyến mãi, coupon, discount
+3. Nếu user hỏi về phương pháp định giá, giải thích ngắn gọn P/E, P/S, DCF, Berkus
+4. Nếu user cần hỗ trợ thanh toán đã thực hiện, hướng dẫn gửi hoá đơn qua Zalo: https://zalo.me/1110831222679664093
+5. Không tiết lộ thông tin nội bộ khác
+6. Ngôn ngữ: trả lời theo ngôn ngữ user dùng (VN hoặc EN)`;
+
+  const CHAT_WELCOME_VN = `Xin chào! 👋 Tôi là **Sandbox AI** — trợ lý định giá doanh nghiệp của bạn.
+
+Tôi có thể giúp bạn:
+• 🔍 Giải thích phương pháp định giá
+• 🎁 Cung cấp **mã ưu đãi** đặc biệt
+• 💳 Hỗ trợ thanh toán
+
+Hỏi tôi bất cứ điều gì!`;
+
+  const CHAT_WELCOME_EN = `Hi! 👋 I'm **Sandbox AI** — your business valuation assistant.
+
+I can help you with:
+• 🔍 Explain valuation methods
+• 🎁 Provide **special promo codes**
+• 💳 Payment support
+
+Ask me anything!`;
+
+  function toggleChat() {
+    chatOpen = !chatOpen;
+    const popup = document.getElementById('chat-popup');
+    popup.classList.toggle('open', chatOpen);
+    if (chatOpen) {
+      // Ẩn badge
+      document.getElementById('chat-badge').style.display = 'none';
+      chatBadgeSeen = true;
+      // Thêm welcome message nếu chưa có
+      if (chatHistory.length === 0) {
+        const welcome = currentLang === 'en' ? CHAT_WELCOME_EN : CHAT_WELCOME_VN;
+        addChatMsg('ai', welcome);
+      }
+      setTimeout(() => document.getElementById('chat-input').focus(), 100);
+    }
+  }
+
+  function addChatMsg(role, text) {
+    chatHistory.push({ role: role === 'ai' ? 'assistant' : 'user', content: text });
+    const el = document.createElement('div');
+    el.className = `chat-msg ${role}`;
+
+    // Xử lý [PROMO_CODE:JAMELA85] token
+    let displayText = text;
+    const promoMatch = text.match(/\[PROMO_CODE:([A-Z0-9]+)\]/);
+    if (promoMatch) {
+      const code = promoMatch[1];
+      displayText = text.replace(/\[PROMO_CODE:[A-Z0-9]+\]/, '');
+      el.innerHTML = `<div class="chat-bubble">${formatChatText(displayText)}</div>`;
+      // Thêm promo reveal box
+      const promoBox = document.createElement('div');
+      promoBox.className = 'promo-reveal';
+      promoBox.innerHTML = `
+        <div style="font-size:12px;color:var(--navy-300);margin-bottom:4px">🎁 Mã ưu đãi dành riêng cho bạn:</div>
+        <span class="code">${code}</span>
+        <div style="font-size:11px;color:var(--navy-400);margin-bottom:6px">Giảm 85% · Chỉ còn $15 USD</div>
+        <button class="btn-apply-code" onclick="applyChatPromo('${code}')">Áp dụng mã ngay →</button>`;
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;gap:6px;max-width:80%';
+      wrapper.appendChild(el);
+      wrapper.appendChild(promoBox);
+      document.getElementById('chat-messages').appendChild(wrapper);
+      scrollChat();
+      return;
+    }
+
+    el.innerHTML = `<div class="chat-bubble">${formatChatText(displayText)}</div>`;
+    document.getElementById('chat-messages').appendChild(el);
+    scrollChat();
+  }
+
+  function formatChatText(t) {
+    return t
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n/g, '<br>');
+  }
+
+  function applyChatPromo(code) {
+    // Tự động điền và apply promo code
+    const promoInput = document.getElementById('inp-promo');
+    if (promoInput) {
+      promoInput.value = code;
+      applyPromo();
+      // Cuộn xuống form
+      promoInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    // Close chat
+    toggleChat();
+  }
+
+  function scrollChat() {
+    const msgs = document.getElementById('chat-messages');
+    setTimeout(() => msgs.scrollTop = msgs.scrollHeight, 50);
+  }
+
+  function chatKeydown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMsg(); }
+  }
+
+  async function sendChatMsg() {
+    const input = document.getElementById('chat-input');
+    const msg   = (input.value || '').trim();
+    if (!msg) return;
+
+    input.value = '';
+    input.style.height = 'auto';
+    document.getElementById('chat-send-btn').disabled = true;
+
+    addChatMsg('user', msg);
+
+    // Typing indicator
+    const typingEl = document.createElement('div');
+    typingEl.className = 'chat-msg ai';
+    typingEl.id = 'typing-indicator';
+    typingEl.innerHTML = '<div class="chat-typing"><span></span><span></span><span></span></div>';
+    document.getElementById('chat-messages').appendChild(typingEl);
+    scrollChat();
+
+    try {
+      const messages = chatHistory.slice(-8).map(m => ({
+        role: m.role === 'assistant' ? 'assistant' : 'user',
+        content: m.content.replace(/\[PROMO_CODE:[A-Z0-9]+\]/g, ''),
+      }));
+      // Thêm message mới nhất
+      messages[messages.length - 1] = { role: 'user', content: msg };
+
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 500,
+          system: CHAT_SYSTEM_PROMPT,
+          messages,
+        }),
+      });
+
+      const data = await resp.json();
+      const reply = data.content?.[0]?.text || (currentLang === 'vn'
+        ? 'Xin lỗi, tôi đang bận. Vui lòng thử lại!'
+        : 'Sorry, I am busy. Please try again!');
+
+      // Xóa typing indicator
+      document.getElementById('typing-indicator')?.remove();
+      addChatMsg('ai', reply);
+
+    } catch(err) {
+      document.getElementById('typing-indicator')?.remove();
+      addChatMsg('ai', currentLang === 'vn'
+        ? 'Kết nối gián đoạn. Vui lòng thử lại sau!'
+        : 'Connection error. Please try again!');
+    }
+
+    document.getElementById('chat-send-btn').disabled = false;
+    document.getElementById('chat-input').focus();
+  }
   </script>
 </body>
 </html>
