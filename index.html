@@ -1188,6 +1188,141 @@
 
         </div><!-- /screen-result -->
 
+        <!-- =====================================================
+             MÀN HÌNH 4: CẢM ƠN & TẢI BÁO CÁO
+        ====================================================== -->
+        <div id="screen-thankyou" style="display:none;text-align:center;padding:12px 0">
+
+          <!-- Checkmark animation -->
+          <div style="margin-bottom:24px">
+            <div id="ty-icon" style="
+              width:72px;height:72px;border-radius:50%;
+              background:rgba(22,163,74,0.12);border:2px solid rgba(22,163,74,0.35);
+              display:flex;align-items:center;justify-content:center;
+              font-size:32px;margin:0 auto;
+              animation:screenEnter 0.5s ease both;
+            ">✅</div>
+          </div>
+
+          <h2 class="screen-title" style="color:#4ADE80;font-size:24px" data-i18n="ty_title">
+            Cảm ơn bạn đã tin tưởng ValuitBiz!
+          </h2>
+          <p style="font-size:14px;color:var(--navy-300);margin:12px 0 8px;line-height:1.7" data-i18n="ty_sub">
+            Báo cáo phân tích chuyên sâu đang được AI soạn thảo.
+          </p>
+          <p style="font-size:13px;color:var(--navy-400);margin-bottom:28px">
+            <span data-i18n="ty_email_pre">Báo cáo sẽ gửi đến:</span>
+            <strong id="ty-email" style="color:var(--amber-400)"></strong>
+            <span data-i18n="ty_email_post">trong vòng 5 phút.</span>
+          </p>
+
+          <!-- Polar checkout button (USD) -->
+          <div id="ty-polar" style="
+            background:rgba(255,255,255,0.03);
+            border:1px solid rgba(255,255,255,0.08);
+            border-radius:var(--radius-lg);
+            padding:20px 24px;
+            margin-bottom:16px;
+          ">
+            <p style="font-size:12px;color:var(--navy-500);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.06em" data-i18n="polar_title">
+              Thanh toán quốc tế · Thẻ tín dụng / PayPal
+            </p>
+            <a id="polar-link"
+              href="https://buy.polar.sh/polar_cl_MGyIvdrC29kcXTTSFKXxwJkEnGRm1OfdhJFPs3n0I23"
+              target="_blank" rel="noopener noreferrer"
+              style="
+                display:inline-block;
+                background:linear-gradient(135deg,#5B47F5,#7C3AED);
+                color:#fff;
+                text-decoration:none;
+                padding:13px 28px;
+                border-radius:var(--radius-md);
+                font-weight:600;
+                font-size:14px;
+                letter-spacing:0.01em;
+                transition:var(--transition);
+              "
+              onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'"
+            >
+              💳 <span data-i18n="polar_btn">Thanh toán $15 USD qua thẻ / PayPal →</span>
+            </a>
+            <p style="font-size:11px;color:var(--navy-600);margin-top:8px" data-i18n="polar_note">
+              Powered by Polar · Bảo mật 256-bit SSL
+            </p>
+          </div>
+
+          <!-- Steps tiếp theo -->
+          <div style="
+            background:rgba(255,255,255,0.03);
+            border:1px solid rgba(255,255,255,0.07);
+            border-radius:var(--radius-lg);
+            padding:20px 24px;
+            margin-bottom:20px;
+            text-align:left;
+          ">
+            <p style="font-size:11px;font-weight:500;letter-spacing:0.08em;color:var(--navy-500);text-transform:uppercase;margin-bottom:14px" data-i18n="ty_steps_title">Bước tiếp theo</p>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <span style="width:24px;height:24px;background:rgba(240,168,48,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--amber-400);flex-shrink:0;font-weight:600">1</span>
+                <span style="font-size:13px;color:var(--navy-300)" data-i18n="ty_step1">Kiểm tra email (kể cả hộp thư Spam / Promotions)</span>
+              </div>
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <span style="width:24px;height:24px;background:rgba(240,168,48,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--amber-400);flex-shrink:0;font-weight:600">2</span>
+                <span style="font-size:13px;color:var(--navy-300)" data-i18n="ty_step2">Tải file PDF báo cáo từ email đính kèm</span>
+              </div>
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <span style="width:24px;height:24px;background:rgba(240,168,48,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--amber-400);flex-shrink:0;font-weight:600">3</span>
+                <span style="font-size:13px;color:var(--navy-300)" data-i18n="ty_step3">Đặt lịch tư vấn chuyên gia để tối ưu định giá</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action buttons -->
+          <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+            <a href="https://advisory.sandboxstartup.vn" target="_blank" rel="noopener noreferrer"
+              style="
+                display:block;
+                background:linear-gradient(135deg,var(--amber-600),var(--amber-400));
+                color:var(--navy-950);
+                text-decoration:none;
+                padding:14px;
+                border-radius:var(--radius-md);
+                font-weight:600;
+                font-size:14px;
+                text-align:center;
+              " data-i18n="ty_cta1">
+              📅 Đặt lịch tư vấn M&A miễn phí →
+            </a>
+            <a href="https://zalo.me/1110831222679664093" target="_blank" rel="noopener noreferrer"
+              style="
+                display:block;
+                background:rgba(255,255,255,0.04);
+                border:1px solid rgba(255,255,255,0.12);
+                color:rgba(255,255,255,0.8);
+                text-decoration:none;
+                padding:12px;
+                border-radius:var(--radius-md);
+                font-weight:500;
+                font-size:13px;
+                text-align:center;
+              " data-i18n="ty_cta2">
+              💬 Liên hệ hỗ trợ qua Zalo OA →
+            </a>
+            <button onclick="resetAll()" style="
+              background:none;border:none;
+              color:var(--navy-500);
+              font-size:13px;cursor:pointer;padding:8px;
+              font-family:var(--font-body);
+            " data-i18n="btn_restart">← Định giá doanh nghiệp khác</button>
+          </div>
+
+          <!-- Zalo QR -->
+          <p style="font-size:11px;color:var(--navy-600);margin-top:8px">
+            © 2026 ValuitBiz · SCF Investment JSC · SandboxStartUp.VN
+          </p>
+
+        </div><!-- /screen-thankyou -->
+
       </div><!-- /card -->
     </main>
 
@@ -1254,6 +1389,19 @@
       pay_note: 'Thanh toán an toàn qua QR Code · Bảo mật SSL/TLS · Dữ liệu được ẩn danh hóa theo NĐ 13/2023',
       pay_support_pre: 'Đã thanh toán quá 5 phút chưa nhận báo cáo?',
       pay_support_link: 'Hỗ trợ khẩn qua Zalo →',
+      ty_title: 'Cảm ơn bạn đã tin tưởng ValuitBiz!',
+      ty_sub: 'Báo cáo phân tích chuyên sâu đang được AI soạn thảo.',
+      ty_email_pre: 'Báo cáo sẽ gửi đến:',
+      ty_email_post: 'trong vòng 5 phút.',
+      polar_title: 'Thanh toán quốc tế · Thẻ tín dụng / PayPal',
+      polar_btn: 'Thanh toán $15 USD qua thẻ / PayPal →',
+      polar_note: 'Powered by Polar · Bảo mật 256-bit SSL',
+      ty_steps_title: 'Bước tiếp theo',
+      ty_step1: 'Kiểm tra email (kể cả hộp thư Spam / Promotions)',
+      ty_step2: 'Tải file PDF báo cáo từ email đính kèm',
+      ty_step3: 'Đặt lịch tư vấn chuyên gia để tối ưu định giá',
+      ty_cta1: '📅 Đặt lịch tư vấn M&A miễn phí →',
+      ty_cta2: '💬 Liên hệ hỗ trợ qua Zalo OA →',
       btn_restart: '← Định giá doanh nghiệp khác',
       loading_title: 'Đang phân tích dữ liệu...',
       loading_sub: 'Hệ thống đồng bộ chỉ số ngành từ HOSE/HNX',
@@ -1289,6 +1437,19 @@
       pay_note: 'Secure payment via QR Code · SSL/TLS encrypted · Data anonymized',
       pay_support_pre: 'Payment made but no report after 5 minutes?',
       pay_support_link: 'Contact support →',
+      ty_title: 'Thank you for trusting ValuitBiz!',
+      ty_sub: 'Your in-depth analysis report is being drafted by AI.',
+      ty_email_pre: 'Report will be sent to:',
+      ty_email_post: 'within 5 minutes.',
+      polar_title: 'International Payment · Credit Card / PayPal',
+      polar_btn: 'Pay $15 USD via Card / PayPal →',
+      polar_note: 'Powered by Polar · 256-bit SSL Security',
+      ty_steps_title: 'Next steps',
+      ty_step1: 'Check your email (including Spam / Promotions folder)',
+      ty_step2: 'Download the PDF report from the email attachment',
+      ty_step3: 'Book a consultation to optimize your business valuation',
+      ty_cta1: '📅 Book free M&A consultation →',
+      ty_cta2: '💬 Contact support via Zalo →',
       btn_restart: '← Value another business',
       loading_title: 'Analyzing your data...',
       loading_sub: 'Syncing industry benchmarks from HOSE/HNX',
@@ -1438,7 +1599,7 @@
      3. ĐIỀU HƯỚNG MÀN HÌNH
   ================================================================ */
   function hideAll() {
-    ['screen-segment','screen-questions','screen-loading','screen-result']
+    ['screen-segment','screen-questions','screen-loading','screen-result','screen-thankyou']
       .forEach(id => {
         const el = document.getElementById(id);
         el.style.display = 'none';
@@ -1885,7 +2046,9 @@
         mode: 'no-cors',
       }).catch(() => {});
 
-      // Hiển thị QR
+      // Hiển thị QR + button "Tôi đã chuyển khoản"
+      const polarUrl = `https://buy.polar.sh/polar_cl_MGyIvdrC29kcXTTSFKXxwJkEnGRm1OfdhJFPs3n0I23?metadata[orderId]=${orderId}&metadata[email]=${encodeURIComponent(email)}&metadata[segment]=${state.segment}`;
+
       document.getElementById('lead-form').innerHTML = `
         <div style="text-align:center;padding:20px 0">
           <p style="font-size:13px;color:var(--navy-300);margin-bottom:12px">
@@ -1901,17 +2064,51 @@
             ${lang === 'vn' ? 'Mã đơn hàng' : 'Order ID'}:
             <code style="color:var(--amber-300)">${orderId}</code>
           </p>
-          <p style="font-size:12px;color:var(--navy-500);margin-top:16px;line-height:1.6">
-            ${lang === 'vn'
-              ? `Sau khi chuyển khoản, hệ thống tự gửi Báo cáo PDF đến <strong>${email}</strong> trong 5 phút.`
-              : `After payment, the PDF Report will be sent to <strong>${email}</strong> within 5 minutes.`}
-            <br>
-            <span style="color:var(--navy-600)">
-              ${lang === 'vn' ? 'Quá 5 phút chưa nhận?' : 'Not received after 5 minutes?'}
-              <a onclick="openSupport()" style="color:var(--amber-400);cursor:pointer;text-decoration:underline">
-                ${lang === 'vn' ? 'Liên hệ hỗ trợ Zalo →' : 'Contact support →'}
-              </a>
-            </span>
+
+          <!-- Divider -->
+          <div style="display:flex;align-items:center;gap:12px;margin:20px 0">
+            <div style="flex:1;height:1px;background:rgba(255,255,255,0.07)"></div>
+            <span style="font-size:11px;color:var(--navy-600)">${lang === 'vn' ? 'HOẶC THANH TOÁN QUỐC TẾ' : 'OR INTERNATIONAL PAYMENT'}</span>
+            <div style="flex:1;height:1px;background:rgba(255,255,255,0.07)"></div>
+          </div>
+
+          <!-- Polar button -->
+          <a href="${polarUrl}" target="_blank" rel="noopener noreferrer"
+            style="
+              display:inline-block;
+              background:linear-gradient(135deg,#5B47F5,#7C3AED);
+              color:#fff;text-decoration:none;
+              padding:12px 24px;border-radius:var(--radius-md);
+              font-weight:600;font-size:13px;margin-bottom:8px;
+            ">
+            💳 ${lang === 'vn' ? 'Thanh toán $15 USD bằng thẻ / PayPal' : 'Pay $15 USD via Card / PayPal'} →
+          </a>
+          <p style="font-size:11px;color:var(--navy-600);margin-bottom:20px">Powered by Polar · Stripe · PayPal</p>
+
+          <!-- Button xác nhận đã chuyển khoản -->
+          <button onclick="showThankYou('${email}', '${orderId}')"
+            style="
+              width:100%;
+              padding:14px;
+              background:rgba(22,163,74,0.12);
+              border:1.5px solid rgba(22,163,74,0.35);
+              border-radius:var(--radius-md);
+              color:#4ADE80;
+              font-family:var(--font-body);
+              font-size:14px;font-weight:600;
+              cursor:pointer;
+              transition:var(--transition);
+              margin-bottom:8px;
+            "
+            onmouseover="this.style.background='rgba(22,163,74,0.2)'"
+            onmouseout="this.style.background='rgba(22,163,74,0.12)'"
+          >
+            ✅ ${lang === 'vn' ? 'Tôi đã chuyển khoản → Nhận báo cáo' : 'I have paid → Get my report'}
+          </button>
+          <p style="font-size:12px;color:var(--navy-500);line-height:1.6">
+            ${lang === 'vn' ? 'Sau khi xác nhận, báo cáo sẽ gửi đến' : 'After confirming, report will be sent to'}
+            <strong style="color:var(--amber-400)">${email}</strong>
+            ${lang === 'vn' ? 'trong 5 phút.' : 'within 5 minutes.'}
           </p>
         </div>`;
     } catch (err) {
@@ -1925,7 +2122,49 @@
   }
 
   function openSupport() {
-    window.open('https://zalo.me/sandboxstartup', '_blank', 'noopener,noreferrer');
+    window.open('https://zalo.me/1110831222679664093', '_blank', 'noopener,noreferrer');
+  }
+
+  /* ================================================================
+     13b. SHOW THANK YOU SCREEN
+  ================================================================ */
+  function showThankYou(email, orderId) {
+    const lang = currentLang;
+    // Cập nhật email trong thankyou screen
+    const tyEmail = document.getElementById('ty-email');
+    if (tyEmail) tyEmail.textContent = email || 'email của bạn';
+
+    // Update polar link với orderId
+    const polarLink = document.getElementById('polar-link');
+    if (polarLink && orderId) {
+      const baseUrl = 'https://buy.polar.sh/polar_cl_MGyIvdrC29kcXTTSFKXxwJkEnGRm1OfdhJFPs3n0I23';
+      polarLink.href = `${baseUrl}?metadata[orderId]=${orderId}&metadata[email]=${encodeURIComponent(email || '')}`;
+    }
+
+    // Ghi vào GSheet — notify payment đang chờ xác nhận
+    const appScriptUrl = 'https://script.google.com/macros/s/AKfycbxCxagAoS3y5d8m4CJNGhANX2ahB-fwCRWRvCKhG7kV58N9r9iHHGqiahV3IxcMxd0/exec';
+    fetch(appScriptUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token: 'sandbox2026', action: 'payment',
+        orderId: orderId || '',
+        email: email || '',
+        segment: state.segment || '',
+        gateway: 'SePay/MBBank',
+        currency: 'VND',
+        amountLocal: state.finalPrice || 421500,
+        amountUSD: +((state.finalPrice || 421500) / 25400).toFixed(2),
+        txnId: 'PENDING-' + Date.now(),
+        status: 'PENDING',
+        payload: { note: 'User clicked confirmed payment button' },
+      }),
+      mode: 'no-cors',
+    }).catch(() => {});
+
+    showScreen('screen-thankyou');
+    // Apply i18n to new screen
+    setLang(lang);
   }
 
   /* ================================================================
