@@ -56,6 +56,8 @@
   <!-- ===== FONTS: Cormorant Garamond (Display) + DM Sans (Body) ===== -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- jsPDF: tạo PDF trực tiếp trên trình duyệt -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
   <style>
@@ -1272,13 +1274,57 @@
               </div>
               <div style="display:flex;gap:12px;align-items:flex-start">
                 <span style="width:24px;height:24px;background:rgba(240,168,48,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--amber-400);flex-shrink:0;font-weight:600">2</span>
-                <span style="font-size:13px;color:var(--navy-300)" data-i18n="ty_step2">Tải file PDF báo cáo từ email đính kèm</span>
+                <div style="flex:1">
+                  <span style="font-size:13px;color:var(--navy-300)" data-i18n="ty_step2">Tải file PDF báo cáo ngay bên dưới hoặc từ email đính kèm</span>
+                </div>
               </div>
               <div style="display:flex;gap:12px;align-items:flex-start">
                 <span style="width:24px;height:24px;background:rgba(240,168,48,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--amber-400);flex-shrink:0;font-weight:600">3</span>
                 <span style="font-size:13px;color:var(--navy-300)" data-i18n="ty_step3">Đặt lịch tư vấn chuyên gia để tối ưu định giá</span>
               </div>
             </div>
+          </div>
+
+          <!-- PDF DOWNLOAD BUTTON -->
+          <div id="pdf-download-section" style="
+            background:rgba(240,168,48,0.08);
+            border:1.5px solid rgba(240,168,48,0.3);
+            border-radius:var(--radius-lg);
+            padding:18px 24px;
+            margin-bottom:16px;
+            text-align:center;
+          ">
+            <p style="font-size:12px;color:var(--navy-400);margin-bottom:12px">
+              📄 <span data-i18n="pdf_ready">Báo cáo định giá của bạn đã sẵn sàng</span>
+            </p>
+            <button id="btn-download-pdf" onclick="downloadPDF()"
+              style="
+                width:100%;max-width:340px;
+                padding:14px 24px;
+                background:linear-gradient(135deg,#D98E22,#F0A830);
+                border:none;
+                border-radius:var(--radius-md);
+                color:#07101E;
+                font-family:var(--font-body);
+                font-size:15px;
+                font-weight:700;
+                cursor:pointer;
+                transition:var(--transition);
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                gap:10px;
+                margin:0 auto;
+              "
+              onmouseover="this.style.opacity='0.88'"
+              onmouseout="this.style.opacity='1'"
+            >
+              <span style="font-size:20px">⬇</span>
+              <span data-i18n="pdf_btn">Tải Báo Cáo PDF ngay</span>
+            </button>
+            <p style="font-size:11px;color:var(--navy-600);margin-top:10px" data-i18n="pdf_note">
+              Báo cáo cũng được gửi đến email của bạn trong 5 phút
+            </p>
           </div>
 
           <!-- Action buttons -->
@@ -1406,6 +1452,9 @@
       ty_step3: 'Đặt lịch tư vấn chuyên gia để tối ưu định giá',
       ty_cta1: '📅 Đặt lịch tư vấn M&A miễn phí →',
       ty_cta2: '💬 Liên hệ hỗ trợ qua Zalo OA →',
+      pdf_ready: 'Báo cáo định giá của bạn đã sẵn sàng',
+      pdf_btn: 'Tải Báo Cáo PDF ngay',
+      pdf_note: 'Báo cáo cũng được gửi đến email của bạn trong 5 phút',
       btn_restart: '← Định giá doanh nghiệp khác',
       loading_title: 'Đang phân tích dữ liệu...',
       loading_sub: 'Hệ thống đồng bộ chỉ số ngành từ HOSE/HNX',
@@ -1454,6 +1503,9 @@
       ty_step3: 'Book a consultation to optimize your business valuation',
       ty_cta1: '📅 Book free M&A consultation →',
       ty_cta2: '💬 Contact support via Zalo →',
+      pdf_ready: 'Your valuation report is ready',
+      pdf_btn: 'Download PDF Report now',
+      pdf_note: 'Report is also sent to your email within 5 minutes',
       btn_restart: '← Value another business',
       loading_title: 'Analyzing your data...',
       loading_sub: 'Syncing industry benchmarks from HOSE/HNX',
@@ -2393,6 +2445,348 @@ const POLAR_URL = 'https://buy.polar.sh/polar_cl_etwFklJEGOIVHd4uTnwBxo3xjG2BR2e
 
     showScreen('screen-thankyou');
     setLang(lang);
+  }
+
+  /* ================================================================
+     12b. PDF GENERATION — tạo PDF ngay trên trình duyệt
+  ================================================================ */
+  function downloadPDF() {
+    const lang = currentLang;
+    const btn = document.getElementById('btn-download-pdf');
+    if (btn) {
+      btn.disabled = true;
+      btn.querySelector('[data-i18n]').textContent = lang === 'vn' ? '⏳ Đang tạo PDF...' : '⏳ Generating PDF...';
+    }
+
+    try {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const W = 210, margin = 18;
+      const usable = W - margin * 2;
+      let y = 0;
+
+      // ── HELPER ──────────────────────────────────────────────────
+      const addPage = () => { doc.addPage(); y = margin; };
+      const checkY = (needed) => { if (y + needed > 275) addPage(); };
+
+      // ── COVER ───────────────────────────────────────────────────
+      // Header bar
+      doc.setFillColor(7, 16, 30);
+      doc.rect(0, 0, W, 60, 'F');
+
+      // Logo text
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(9);
+      doc.setTextColor(240, 168, 48);
+      doc.text('VALUITBIZ · M&A VALUATION ENGINE · SANDBOXSTARTUP.VN', W/2, 18, { align: 'center' });
+
+      // Title
+      doc.setFontSize(22);
+      doc.setTextColor(255, 255, 255);
+      doc.text('BÁO CÁO ĐỊNH GIÁ', W/2, 32, { align: 'center' });
+      doc.setFontSize(14);
+      doc.setFont('helvetica','normal');
+      doc.text('DOANH NGHIỆP CHUYÊN SÂU', W/2, 42, { align: 'center' });
+
+      // Paid badge
+      doc.setFillColor(22, 163, 74, 0.15);
+      doc.setDrawColor(22, 163, 74);
+      doc.roundedRect(W/2 - 40, 48, 80, 8, 2, 2, 'FD');
+      doc.setFontSize(8);
+      doc.setTextColor(34, 197, 94);
+      doc.text('✓ Đã xác nhận thanh toán', W/2, 53.5, { align: 'center' });
+
+      // Meta info
+      const orderId = _paymentState?.orderId || 'N/A';
+      const seg = state?.segment || 'N/A';
+      const segLabels = { idea: 'Ý tưởng', startup: 'Startup', sme: 'SMEs', enterprise: 'Enterprise' };
+      const segLabel = segLabels[seg] || seg;
+      const dateStr = new Date().toLocaleDateString('vi-VN');
+
+      y = 70;
+      doc.setDrawColor(200, 180, 140);
+      doc.setLineWidth(0.3);
+      doc.line(margin, y, W - margin, y);
+      y += 8;
+
+      const metas = [
+        ['Mã đơn hàng', orderId],
+        ['Phân khúc định giá', segLabel],
+        ['Ngày phát hành', dateStr],
+        ['Đơn vị phát hành', 'ValuitBiz / SCF Investment JSC'],
+      ];
+      doc.setFontSize(9);
+      metas.forEach(([label, val]) => {
+        doc.setFont('helvetica','normal');
+        doc.setTextColor(120, 140, 160);
+        doc.text(label + ':', margin, y);
+        doc.setFont('helvetica','bold');
+        doc.setTextColor(30, 40, 60);
+        doc.text(val, margin + 52, y);
+        y += 7;
+      });
+
+      y += 6;
+      doc.line(margin, y, W - margin, y);
+      y += 12;
+
+      // ── DISCLAIMER ──────────────────────────────────────────────
+      doc.setFillColor(255, 248, 238);
+      doc.setDrawColor(217, 142, 34);
+      doc.roundedRect(margin, y, usable, 22, 2, 2, 'FD');
+      doc.setFontSize(7.5);
+      doc.setFont('helvetica','bold');
+      doc.setTextColor(133, 79, 11);
+      doc.text('⚠ TUYÊN BỐ MIỄN TRỪ TRÁCH NHIỆM:', margin + 3, y + 6);
+      doc.setFont('helvetica','normal');
+      const disclaimer = 'Báo cáo này là kết quả tự động của mô hình AI, chỉ mang tính tham khảo nội bộ. Đây KHÔNG phải chứng thư thẩm định giá theo Luật Giá 2023 và không có giá trị pháp lý trong giao dịch M&A, thế chấp hoặc kê khai thuế.';
+      const discLines = doc.splitTextToSize(disclaimer, usable - 6);
+      doc.text(discLines, margin + 3, y + 12);
+      y += 28;
+
+      // ── VALUATION RESULT ────────────────────────────────────────
+      if (state?.calcResult) {
+        const r = state.calcResult;
+
+        // Section title
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(12);
+        doc.setTextColor(7, 16, 30);
+        const bar1Y = y;
+        doc.setFillColor(240, 168, 48);
+        doc.rect(margin, bar1Y, 4, 8, 'F');
+        doc.text('1. KẾT QUẢ ĐỊNH GIÁ', margin + 7, bar1Y + 6);
+        y += 14;
+
+        // Big number
+        const fmtV = (n) => {
+          if (n >= 1e12) return (n/1e12).toFixed(2) + ' nghìn tỷ VNĐ';
+          if (n >= 1e9)  return (n/1e9).toFixed(2) + ' tỷ VNĐ';
+          if (n >= 1e6)  return (n/1e6).toFixed(0) + ' triệu VNĐ';
+          return n.toLocaleString('vi-VN') + ' VNĐ';
+        };
+
+        doc.setFillColor(247, 244, 237);
+        doc.roundedRect(margin, y, usable, 22, 3, 3, 'F');
+        doc.setFont('helvetica','normal');
+        doc.setFontSize(8);
+        doc.setTextColor(100, 120, 140);
+        doc.text('Giá trị doanh nghiệp ước tính sơ bộ', W/2, y + 6, { align: 'center' });
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(16);
+        doc.setTextColor(7, 16, 30);
+        doc.text('~ ' + fmtV(r.finalValuation), W/2, y + 17, { align: 'center' });
+        y += 28;
+
+        if (r.pricePerShare > 0) {
+          doc.setFont('helvetica','normal');
+          doc.setFontSize(9);
+          doc.setTextColor(100, 120, 140);
+          doc.text('Giá trị mỗi cổ phần: ' + r.pricePerShare.toLocaleString('vi-VN') + ' VNĐ/cp', W/2, y, { align: 'center' });
+          y += 8;
+        }
+
+        // Methods table
+        y += 4;
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(9);
+        doc.setTextColor(255, 255, 255);
+        doc.setFillColor(7, 16, 30);
+        doc.rect(margin, y, usable, 7, 'F');
+        doc.text('Phương pháp', margin + 3, y + 5);
+        doc.text('Giá trị', margin + usable * 0.62, y + 5);
+        doc.text('Trọng số', margin + usable * 0.82, y + 5);
+        y += 9;
+
+        r.methods.forEach((m, i) => {
+          checkY(7);
+          if (i % 2 === 0) {
+            doc.setFillColor(250, 248, 244);
+            doc.rect(margin, y - 1, usable, 7, 'F');
+          }
+          doc.setFont('helvetica','normal');
+          doc.setFontSize(8.5);
+          doc.setTextColor(30, 42, 60);
+          doc.text(m.name, margin + 3, y + 4);
+          doc.setFont('helvetica','bold');
+          doc.setTextColor(7, 16, 30);
+          doc.text(fmtV(m.value), margin + usable * 0.62, y + 4);
+          doc.setTextColor(217, 142, 34);
+          doc.text((m.weight * 100).toFixed(0) + '%', margin + usable * 0.82, y + 4);
+          y += 7;
+        });
+
+        // BCTC discount (SME)
+        if (r.segment === 'sme' && r.discountFactor < 1) {
+          y += 4;
+          doc.setFillColor(254, 246, 228);
+          doc.setDrawColor(240, 168, 48);
+          doc.roundedRect(margin, y, usable, 10, 2, 2, 'FD');
+          doc.setFont('helvetica','bold');
+          doc.setFontSize(8);
+          doc.setTextColor(133, 79, 11);
+          const discMap = { A: 'Tier A — Minh bạch đầy đủ (100%)', B: 'Tier B — Sổ sách nội bộ (chiết khấu 50%)', C: 'Tier C — Số liệu sơ bộ (chiết khấu 75%)' };
+          doc.text('Hệ số minh bạch BCTC: ' + (discMap[r.bctc] || r.bctc), margin + 3, y + 6.5);
+          y += 14;
+        }
+      }
+
+      // ── METHODOLOGY OVERVIEW ────────────────────────────────────
+      y += 8;
+      checkY(60);
+      const bar2Y = y;
+      doc.setFillColor(240, 168, 48);
+      doc.rect(margin, bar2Y, 4, 8, 'F');
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(12);
+      doc.setTextColor(7, 16, 30);
+      doc.text('2. PHƯƠNG PHÁP ĐỊNH GIÁ ÁP DỤNG', margin + 7, bar2Y + 6);
+      y += 14;
+
+      const methodInfo = {
+        idea:       'Phương pháp Berkus: định giá 5 yếu tố cốt lõi (Ý tưởng, Đội ngũ, Thị trường TAM, Công nghệ lõi, Traction). Mỗi yếu tố tối đa 500 triệu VNĐ. Phù hợp giai đoạn pre-seed khi chưa có doanh thu.',
+        startup:    'Kết hợp Berkus (60%) và Funding Multiple (40%). Funding Multiple = Vốn gọi × 3× (thông lệ thị trường Việt Nam). Phản ánh kỳ vọng tăng trưởng và năng lực gọi vốn.',
+        sme:        'Ba phương pháp so sánh thị trường: P/E (× lợi nhuận), P/S (× doanh thu), P/B (× vốn chủ) dựa trên benchmark HOSE/HNX 2024-2025. Kết hợp Gordon Growth Model cho giá trị cổ tức. Áp hệ số chiết khấu theo mức độ minh bạch BCTC.',
+        enterprise: 'DCF (Discounted Cash Flow): chiết khấu FCFF 5 năm về hiện tại + Terminal Value theo Gordon Perpetuity (g = 3%). Tỷ lệ chiết khấu WACC do người dùng cung cấp. Equity Value = Enterprise Value − Net Debt.',
+      };
+      const info = methodInfo[state?.segment] || 'Xem chi tiết trong báo cáo phân tích đầy đủ.';
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(9);
+      doc.setTextColor(40, 55, 70);
+      const infoLines = doc.splitTextToSize(info, usable);
+      checkY(infoLines.length * 5 + 10);
+      doc.text(infoLines, margin, y);
+      y += infoLines.length * 5 + 10;
+
+      // ── BENCHMARKS ─────────────────────────────────────────────
+      if (state?.segment === 'sme') {
+        checkY(50);
+        const bar3Y = y;
+        doc.setFillColor(240, 168, 48);
+        doc.rect(margin, bar3Y, 4, 8, 'F');
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(12);
+        doc.setTextColor(7, 16, 30);
+        doc.text('3. BENCHMARK NGÀNH (HOSE/HNX 2025)', margin + 7, bar3Y + 6);
+        y += 14;
+
+        const benchmarks = [
+          ['Chỉ số', 'Giá trị chuẩn', 'Ghi chú'],
+          ['P/E trung bình', '16.45×', 'Toàn thị trường HOSE/HNX'],
+          ['P/S trung bình', '2.03×', 'Tỷ lệ Giá/Doanh thu'],
+          ['P/B trung bình', '3.02×', 'Tỷ lệ Giá/Vốn sổ sách'],
+          ['SaaS/Tech P/E', '25–28×', 'Phân khúc công nghệ cao'],
+          ['F&B/Retail P/E', '16–18×', 'Chuỗi F&B và bán lẻ'],
+        ];
+
+        benchmarks.forEach((row, i) => {
+          checkY(7);
+          if (i === 0) {
+            doc.setFillColor(7, 16, 30);
+            doc.rect(margin, y - 1, usable, 7, 'F');
+            doc.setFont('helvetica','bold');
+            doc.setTextColor(255, 255, 255);
+          } else {
+            if (i % 2 === 0) { doc.setFillColor(250, 248, 244); doc.rect(margin, y - 1, usable, 7, 'F'); }
+            doc.setFont('helvetica','normal');
+            doc.setTextColor(30, 42, 60);
+          }
+          doc.setFontSize(8.5);
+          doc.text(row[0], margin + 3, y + 4);
+          doc.setFont('helvetica','bold');
+          doc.setTextColor(i === 0 ? 240 : 217, i === 0 ? 168 : 142, i === 0 ? 48 : 34);
+          doc.text(row[1], margin + usable * 0.52, y + 4);
+          doc.setFont('helvetica','normal');
+          doc.setTextColor(i === 0 ? 200 : 100, i === 0 ? 200 : 120, i === 0 ? 200 : 140);
+          doc.text(row[2], margin + usable * 0.72, y + 4);
+          y += 7;
+        });
+        y += 8;
+      }
+
+      // ── NEXT STEPS ─────────────────────────────────────────────
+      checkY(50);
+      const bar4Y = y;
+      doc.setFillColor(240, 168, 48);
+      doc.rect(margin, bar4Y, 4, 8, 'F');
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(12);
+      doc.setTextColor(7, 16, 30);
+      const part3 = state?.segment === 'sme' ? '4' : '3';
+      doc.text(part3 + '. HÀNH ĐỘNG TIẾP THEO', margin + 7, bar4Y + 6);
+      y += 14;
+
+      const steps_vn = [
+        '1. Chuẩn bị hồ sơ tài chính 3 năm (BCTC đã kiểm toán nếu có)',
+        '2. Xây dựng mô hình tài chính dự báo 3-5 năm tới',
+        '3. Xác định điểm mạnh cạnh tranh và rào cản gia nhập',
+        '4. Tìm kiếm nhà đầu tư phù hợp qua market.sandboxstartup.vn',
+        '5. Đặt lịch tư vấn chuyên sâu tại advisory.sandboxstartup.vn',
+      ];
+      steps_vn.forEach(step => {
+        checkY(7);
+        doc.setFont('helvetica','normal');
+        doc.setFontSize(9);
+        doc.setTextColor(40, 55, 70);
+        doc.text(step, margin + 3, y);
+        y += 7;
+      });
+
+      // ── CTA BOX ────────────────────────────────────────────────
+      y += 8;
+      checkY(35);
+      doc.setFillColor(7, 16, 30);
+      doc.roundedRect(margin, y, usable, 32, 4, 4, 'F');
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(11);
+      doc.setTextColor(240, 168, 48);
+      doc.text('Bước tiếp theo — Tối ưu giá trị doanh nghiệp', W/2, y + 10, { align: 'center' });
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(9);
+      doc.setTextColor(160, 191, 207);
+      doc.text('Tư vấn chuyên gia: advisory.sandboxstartup.vn', W/2, y + 19, { align: 'center' });
+      doc.text('Kết nối nhà đầu tư: market.sandboxstartup.vn', W/2, y + 27, { align: 'center' });
+      y += 38;
+
+      // ── FOOTER ─────────────────────────────────────────────────
+      const totalPages = doc.internal.getNumberOfPages();
+      for (let p = 1; p <= totalPages; p++) {
+        doc.setPage(p);
+        doc.setFillColor(250, 248, 244);
+        doc.rect(0, 284, W, 13, 'F');
+        doc.setDrawColor(220, 210, 190);
+        doc.line(margin, 284, W - margin, 284);
+        doc.setFont('helvetica','normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(140, 150, 160);
+        doc.text('© 2026 ValuitBiz · SCF Investment JSC · valuitbiz.sandboxstartup.vn', margin, 290);
+        doc.text('Trang ' + p + '/' + totalPages, W - margin, 290, { align: 'right' });
+      }
+
+      // ── SAVE ───────────────────────────────────────────────────
+      const filename = 'BaoCaoDinhGia_' + (orderId !== 'N/A' ? orderId : 'ValuitBiz') + '.pdf';
+      doc.save(filename);
+
+      if (btn) {
+        btn.disabled = false;
+        btn.querySelector('[data-i18n]').textContent = currentLang === 'vn' ? '✅ Đã tải PDF thành công!' : '✅ PDF downloaded!';
+        btn.style.background = 'linear-gradient(135deg,#16A34A,#22C55E)';
+        setTimeout(() => {
+          if (btn) {
+            btn.style.background = 'linear-gradient(135deg,#D98E22,#F0A830)';
+            btn.querySelector('[data-i18n]').textContent = currentLang === 'vn' ? 'Tải Báo Cáo PDF ngay' : 'Download PDF Report now';
+          }
+        }, 4000);
+      }
+
+    } catch(err) {
+      console.error('[PDF]', err);
+      if (btn) {
+        btn.disabled = false;
+        btn.querySelector('[data-i18n]').textContent = currentLang === 'vn' ? 'Tải Báo Cáo PDF ngay' : 'Download PDF Report now';
+      }
+      alert(currentLang === 'vn' ? 'Lỗi tạo PDF. Vui lòng kiểm tra email để nhận báo cáo.' : 'PDF error. Please check your email for the report.');
+    }
   }
 
   /* ================================================================
