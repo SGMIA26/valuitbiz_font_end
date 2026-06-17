@@ -1165,17 +1165,61 @@
             </div>
             <div id="promo-msg" class="promo-msg" style="display:none"></div>
 
-            <div id="price-display" style="text-align:center;margin-bottom:10px">
-              <div style="font-size:11px;color:var(--navy-500);margin-bottom:4px" data-i18n="price_label">Báo cáo định giá chuyên sâu (PDF):</div>
-              <div style="display:flex;align-items:center;justify-content:center;gap:10px">
-                <span id="price-original" style="color:var(--navy-600);font-size:13px;text-decoration:line-through">$100 USD</span>
-                <span id="price-txt" style="color:var(--amber-400);font-weight:700;font-size:20px">$15 USD (~381,000 VNĐ)</span>
+            <!-- ── PROMO CODE INPUT ── -->
+            <div style="margin-bottom:14px">
+              <div style="display:flex;gap:8px;align-items:stretch">
+                <input type="text" id="inp-promo"
+                  class="promo-input"
+                  data-i18n-placeholder="promo_ph"
+                  placeholder="Mã ưu đãi (hỏi AI Trợ lý 🤖)"
+                  maxlength="20"
+                  oninput="this.value=this.value.toUpperCase()"
+                  style="flex:1;font-size:14px;letter-spacing:0.06em;font-weight:500"
+                >
+                <button class="btn-promo" onclick="applyPromo()" data-i18n="promo_btn"
+                  style="padding:10px 20px;font-size:13px;font-weight:700">
+                  Áp dụng
+                </button>
               </div>
-              <div id="price-saving" style="font-size:11px;color:#4ADE80;margin-top:3px">✓ Tiết kiệm $85 — Áp mã từ AI Trợ lý</div>
+              <div id="promo-msg" class="promo-msg" style="display:none;margin-top:8px"></div>
+              <!-- Hint AI -->
+              <div id="promo-hint" style="
+                margin-top:8px;font-size:11.5px;color:var(--navy-500);
+                display:flex;align-items:center;gap:6px;cursor:pointer;
+              " onclick="toggleChat()">
+                <span style="color:var(--amber-400)">🤖</span>
+                <span data-i18n="promo_hint">Chưa có mã? Chat với AI Trợ lý để nhận ưu đãi giảm giá →</span>
+              </div>
+            </div>
+
+            <!-- ── PRICE DISPLAY ── -->
+            <div id="price-display" style="
+              background:rgba(255,255,255,0.03);
+              border:1px solid rgba(255,255,255,0.07);
+              border-radius:var(--radius-md);
+              padding:14px 18px;
+              text-align:center;
+              margin-bottom:14px;
+            ">
+              <div style="font-size:11px;color:var(--navy-500);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em" data-i18n="price_label">
+                Báo cáo định giá chuyên sâu (PDF)
+              </div>
+              <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap">
+                <span id="price-original" style="
+                  color:var(--navy-600);font-size:15px;
+                  text-decoration:line-through;text-decoration-color:rgba(240,80,80,0.7);
+                ">$100 USD</span>
+                <span id="price-txt" style="
+                  color:var(--amber-400);font-weight:700;font-size:24px;
+                ">$100 USD</span>
+              </div>
+              <div id="price-saving" style="
+                font-size:11px;color:var(--navy-600);margin-top:6px;min-height:16px;
+              ">Nhập mã ưu đãi để giảm giá</div>
             </div>
 
             <button class="btn-payment" onclick="requestPayment()" id="btn-pay">
-              <span data-i18n="pay_btn">Nâng cấp Báo cáo Phân tích Chuyên sâu · $15 USD</span>
+              <span data-i18n="pay_btn">Nâng cấp Báo cáo Phân tích Chuyên sâu · $100 USD</span>
             </button>
 
             <p class="payment-note">
@@ -1433,7 +1477,8 @@
       consent_label: 'Tôi đã đọc và hiểu rõ văn bản khước từ trách nhiệm. Tôi muốn nhận Báo cáo phân tích chuyên sâu (PDF) kèm nhận định tối ưu cấu trúc từ chuyên gia.',
       form_name_label: 'Họ và Tên chủ doanh nghiệp', form_name_ph: 'Nguyễn Văn A',
       form_email_label: 'Email nhận báo cáo PDF', form_email_ph: 'name@company.com',
-      promo_ph: 'Mã ưu đãi (nếu có)', promo_btn: 'Áp dụng',
+      promo_ph: 'Mã ưu đãi (hỏi AI Trợ lý 🤖)', promo_btn: 'Áp dụng',
+      promo_hint: 'Chưa có mã? Chat với AI Trợ lý để nhận ưu đãi →',
       price_label: 'Báo cáo chuyên sâu:',
       pay_btn: 'Nâng cấp Báo cáo Phân tích Chuyên sâu · $15 USD',
       pay_note: 'Thanh toán an toàn qua QR Code · Bảo mật SSL/TLS · Dữ liệu được ẩn danh hóa theo NĐ 13/2023',
@@ -1484,7 +1529,8 @@
       consent_label: 'I have read and understood the disclaimer. I want to receive the Full Analysis Report (PDF) with expert restructuring insights.',
       form_name_label: 'Business Owner Full Name', form_name_ph: 'John Smith',
       form_email_label: 'Email to receive PDF report', form_email_ph: 'name@company.com',
-      promo_ph: 'Promo code (optional)', promo_btn: 'Apply',
+      promo_ph: 'Promo code (ask AI Assistant 🤖)', promo_btn: 'Apply',
+      promo_hint: 'No code? Chat with AI Assistant to get your discount →',
       price_label: 'Full report:',
       pay_btn: 'Upgrade to Full Analysis Report · $15 USD',
       pay_note: 'Secure payment via QR Code · SSL/TLS encrypted · Data anonymized',
@@ -1999,68 +2045,144 @@ const POLAR_URL = 'https://buy.polar.sh/polar_cl_etwFklJEGOIVHd4uTnwBxo3xjG2BR2e
      11. PROMO CODE
   ================================================================ */
   const PROMOS = {
-    // Mã chính — user lấy từ AI Trợ lý
-    'JAMELA85':  { type: 'pct', value: 85, finalVND: 381000,
-      desc_vn: '🎉 Giảm 85% — Còn $15 USD (~381,000 VNĐ)', desc_en: '🎉 85% off — Only $15 USD' },
-    // Test mode
-    'JAMELA10K': { type: 'fixed_vnd', value: 10000, finalVND: 10000,
-      desc_vn: '🧪 Test — 10,000 VNĐ', desc_en: '🧪 Test — 10,000 VND' },
+    // ── Mã chính — AI Trợ lý tiết lộ ──────────────────────────
+    'JAMELA85':  {
+      type: 'pct', value: 85, finalVND: 381000,
+      limit: null, // không giới hạn
+      desc_vn: '🎉 Giảm 85% — Chỉ còn $15 USD (~381,000 VNĐ)',
+      desc_en: '🎉 85% off — Only $15 USD (~381,000 VND)',
+    },
+    // ── Mã admin / đối tác — FREE 100% (20 lần) ─────────────────
+    'DGDN100':   {
+      type: 'free100', finalVND: 0,
+      limit: 20, limitKey: 'vb_promo_dgdn100_count',
+      desc_vn: '✅ Mã admin — Miễn phí 100% (định giá ngay)',
+      desc_en: '✅ Admin code — 100% free (instant access)',
+    },
+    // ── Mã test / internal — 10,000 VNĐ (50 lần) ───────────────
+    'BTS10':     {
+      type: 'fixed_vnd', finalVND: 10000,
+      limit: 50, limitKey: 'vb_promo_bts10_count',
+      desc_vn: '🧪 Mã test — Chỉ 10,000 VNĐ',
+      desc_en: '🧪 Test code — Only 10,000 VND',
+    },
   };
 
   const BASE_VND = PRICE_BASE_VND; // $15 USD = 381,000 VNĐ (sau mã JAMELA85)
 
   function applyPromo() {
-    const code = sanitize(document.getElementById('inp-promo').value).toUpperCase();
+    const code  = sanitize(document.getElementById('inp-promo').value).toUpperCase();
     const msgEl = document.getElementById('promo-msg');
-    const promo = PROMOS[code];
-    const lang = currentLang;
+    const lang  = currentLang;
 
     if (!code) { msgEl.style.display = 'none'; return; }
+
+    const promo = PROMOS[code];
     if (!promo) {
       msgEl.textContent = lang === 'vn' ? '❌ Mã ưu đãi không hợp lệ.' : '❌ Invalid promo code.';
       msgEl.className = 'promo-msg promo-err';
       msgEl.style.display = 'block';
-      state.promoCode = null;
-      state.finalPrice = BASE_VND;
-      updatePriceDisplay(BASE_VND);
       return;
     }
 
-    let finalVND = promo.finalVND || BASE_VND;
-    if (!promo.finalVND) {
-      if (promo.type === 'fixed_vnd') finalVND = promo.value;
-      else if (promo.type === 'pct') finalVND = Math.round(PRICE_FULL_VND * (1 - promo.value / 100));
+    // ── Kiểm tra giới hạn sử dụng ──────────────────────────────
+    if (promo.limit && promo.limitKey) {
+      const used = parseInt(localStorage.getItem(promo.limitKey) || '0');
+      if (used >= promo.limit) {
+        msgEl.textContent = lang === 'vn'
+          ? `❌ Mã ${code} đã đạt giới hạn ${promo.limit} lần sử dụng.`
+          : `❌ Code ${code} has reached its ${promo.limit}-use limit.`;
+        msgEl.className = 'promo-msg promo-err';
+        msgEl.style.display = 'block';
+        return;
+      }
     }
 
-    state.promoCode = code;
-    state.finalPrice = finalVND;
+    const finalVND = promo.finalVND ?? BASE_VND;
+    state.promoCode   = code;
+    state.finalPrice  = finalVND;
+    state.promoType   = promo.type;
+
     const desc = lang === 'vn' ? promo.desc_vn : promo.desc_en;
-    msgEl.textContent = `✅ ${desc} → ${finalVND.toLocaleString('vi-VN')} VNĐ`;
     msgEl.className = 'promo-msg promo-ok';
     msgEl.style.display = 'block';
-    updatePriceDisplay(finalVND);
+
+    if (promo.type === 'free100') {
+      // ── Mã FREE 100%: bỏ qua payment, ghi GSheet rồi cho tải PDF ──
+      msgEl.innerHTML = `✅ ${desc} — <strong style="color:#4ADE80">Truy cập ngay!</strong>`;
+      updatePriceDisplay(0);
+      // Auto-proceed sau 1.2 giây
+      setTimeout(() => activateFreeAccess(code, promo), 1200);
+    } else {
+      msgEl.textContent = `✅ ${desc}`;
+      updatePriceDisplay(finalVND);
+    }
   }
+
+  function activateFreeAccess(code, promo) {
+    const lang = currentLang;
+    // Tăng counter sử dụng
+    if (promo.limitKey) {
+      const used = parseInt(localStorage.getItem(promo.limitKey) || '0');
+      localStorage.setItem(promo.limitKey, String(used + 1));
+    }
+    // Tạo orderId FREE
+    const orderId = 'ValuitFREE-' + Date.now().toString(36).toUpperCase().slice(-6);
+    const email   = sanitize(document.getElementById('inp-email')?.value || '');
+    const name    = sanitize(document.getElementById('inp-name')?.value || '');
+
+    // Ghi GSheet
+    fetch('https://script.google.com/macros/s/AKfycbzLJJo1OlwQvY10deHH-SOYmiVFtZm2a7EYU1iLvAmOm0mWmrMrwZO7klqdEYemTO_x2w/exec', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token: 'sandbox2026', action: 'payment',
+        orderId, email, segment: state.segment || '',
+        gateway: 'FreeCode/' + code,
+        currency: 'VND', amountLocal: 0, amountUSD: 0,
+        txnId: 'FREE-' + Date.now(),
+        status: 'PAID', pdfSent: 'PENDING',
+        payload: { promoCode: code, note: 'Free access via admin code' },
+      }),
+      mode: 'no-cors',
+    }).catch(() => {});
+
+    // Set verified và show Thank You
+    _paymentState = { orderId, email, amount: 0, created: Date.now() - 100000, verified: true };
+    showThankYou(email || ADMIN_EMAIL_FALLBACK, orderId);
+  }
+
+  const ADMIN_EMAIL_FALLBACK = 'saigonmia2026@gmail.com';
+
 
   function updatePriceDisplay(vnd) {
     const lang = currentLang;
-    const usd = (vnd / 25400).toFixed(2);
-    // Price text
-    const elTxt = document.getElementById('price-txt');
-    if (elTxt) elTxt.textContent = `$${usd} USD (~${vnd.toLocaleString('vi-VN')} VNĐ)`;
-    // Saving badge
+    const elTxt  = document.getElementById('price-txt');
     const elSave = document.getElementById('price-saving');
-    if (elSave) {
-      const saved = PRICE_FULL_VND - vnd;
-      const savedUsd = (saved / 25400).toFixed(0);
-      elSave.textContent = saved > 0 ? `✓ Tiết kiệm $${savedUsd} (~${saved.toLocaleString('vi-VN')} VNĐ)` : '';
-    }
-    // Button text
+    const elHint = document.getElementById('promo-hint');
     const btnPay = document.getElementById('btn-pay');
-    if (btnPay) {
-      const span = btnPay.querySelector('[data-i18n]');
-      if (span) span.textContent = lang === 'vn'
-        ? `Thanh toán ${vnd.toLocaleString('vi-VN')} VNĐ · Nhận báo cáo PDF`
-        : `Pay ${vnd.toLocaleString('vi-VN')} VND · Get PDF report`;
+
+    if (vnd === 0) {
+      // FREE 100%
+      if (elTxt)  { elTxt.textContent = lang === 'vn' ? 'MIỄN PHÍ 100%' : 'FREE 100%'; elTxt.style.color = '#4ADE80'; }
+      if (elSave) { elSave.textContent = lang === 'vn' ? '✓ Mã admin — Truy cập ngay' : '✓ Admin code — Instant access'; elSave.style.color = '#4ADE80'; }
+      if (elHint) elHint.style.display = 'none';
+      if (btnPay) { const s = btnPay.querySelector('[data-i18n]'); if(s) s.textContent = lang === 'vn' ? 'Truy cập báo cáo miễn phí →' : 'Access report for free →'; }
+    } else if (vnd < PRICE_FULL_VND) {
+      // Có mã giảm giá
+      const usd  = (vnd / 25400).toFixed(2);
+      const saved    = PRICE_FULL_VND - vnd;
+      const savedUsd = (saved / 25400).toFixed(0);
+      if (elTxt)  { elTxt.textContent = `$${usd} USD (~${vnd.toLocaleString('vi-VN')} VNĐ)`; elTxt.style.color = 'var(--amber-400)'; }
+      if (elSave) { elSave.textContent = `✓ Tiết kiệm $${savedUsd} (~${saved.toLocaleString('vi-VN')} VNĐ)`; elSave.style.color = '#4ADE80'; }
+      if (elHint) elHint.style.display = 'none';
+      if (btnPay) { const s = btnPay.querySelector('[data-i18n]'); if(s) s.textContent = lang === 'vn' ? `Thanh toán ${vnd.toLocaleString('vi-VN')} VNĐ · Nhận báo cáo PDF` : `Pay ${vnd.toLocaleString('vi-VN')} VND · Get PDF`; }
+    } else {
+      // Chưa áp mã — hiện $100
+      if (elTxt)  { elTxt.textContent = '$100 USD (2,540,000 VNĐ)'; elTxt.style.color = 'var(--amber-400)'; }
+      if (elSave) { elSave.textContent = lang === 'vn' ? 'Nhập mã ưu đãi để giảm giá' : 'Enter promo code to get discount'; elSave.style.color = 'var(--navy-500)'; }
+      if (elHint) elHint.style.display = 'flex';
+      if (btnPay) { const s = btnPay.querySelector('[data-i18n]'); if(s) s.textContent = lang === 'vn' ? 'Nâng cấp Báo cáo Chuyên sâu · $100 USD' : 'Upgrade Full Report · $100 USD'; }
     }
   }
 
@@ -2102,10 +2224,21 @@ const POLAR_URL = 'https://buy.polar.sh/polar_cl_etwFklJEGOIVHd4uTnwBxo3xjG2BR2e
     try {
       // Tạo orderId và QR trực tiếp client-side
       // Prefix orderId theo promo để SePay/N8N phân biệt
-      const promoPrefix = state.promoCode === 'JAMELA85' ? 'Valuit85'
-                        : state.promoCode === 'JAMELA10K' ? 'ValuitTEST'
+      const promoPrefix = state.promoCode === 'JAMELA85'  ? 'Valuit85'
+                        : state.promoCode === 'BTS10'     ? 'ValuitBTS'
+                        : state.promoCode === 'DGDN100'   ? 'ValuitFREE'
                         : 'Valuit100';
       const orderId = promoPrefix + '-' + Date.now().toString(36).toUpperCase().slice(-6);
+
+      // Mã FREE100 đã xử lý trong applyPromo → không cần requestPayment
+      if (state.promoType === 'free100') return;
+
+      // Tăng counter cho BTS10
+      if (state.promoCode && PROMOS[state.promoCode]?.limitKey) {
+        const key  = PROMOS[state.promoCode].limitKey;
+        const used = parseInt(localStorage.getItem(key) || '0');
+        localStorage.setItem(key, String(used + 1));
+      }
       const amount    = state.finalPrice || BASE_VND;
       const bankAcc   = '9688666686';
       const bankBin   = '970422';
@@ -2874,11 +3007,10 @@ Viết 600-800 từ, chuyên nghiệp, có số liệu.\`;
   ================================================================ */
   (function init() {
     setLang(currentLang);
-    // Reset loading steps style
     document.querySelectorAll('.loading-step').forEach(el => el.classList.remove('active','done'));
+    // Khởi tạo price display với giá gốc $100
+    updatePriceDisplay(PRICE_FULL_VND);
   })();
-
-  </script>
 
   </script>
 
@@ -3036,7 +3168,8 @@ NHIỆM VỤ CHÍNH: Hỗ trợ khách hàng trong quá trình định giá và 
 THÔNG TIN MÃ ƯU ĐÃI (chỉ tiết lộ khi user hỏi về giảm giá, mã ưu đãi, hay thanh toán):
 - Báo cáo định giá chuyên sâu (Full PDF) niêm yết: $100 USD
 - Mã ưu đãi đặc biệt dành cho khách trong phiên này: JAMELA85 (giảm 85%, còn $15 USD)
-- Khi tiết lộ mã, hiển thị theo format: [PROMO_CODE:JAMELA85]
+- Khi tiết lộ mã JAMELA85, hiển thị theo format: [PROMO_CODE:JAMELA85]
+- KHÔNG tiết lộ mã DGDN100 hoặc BTS10 qua chat — đây là mã nội bộ
 
 QUY TẮC:
 1. Trả lời ngắn gọn, thân thiện, chuyên nghiệp
