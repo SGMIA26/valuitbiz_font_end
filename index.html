@@ -954,6 +954,13 @@
       text-transform: uppercase;
     }
   </style>
+
+  <!-- ═══ ANTHROPIC API KEY CONFIG ═══
+       Điền key mới tại đây sau khi rotate
+       Lấy key: console.anthropic.com/settings/keys
+  ══════════════════════════════════════ -->
+  <script>window.__AK = 'PASTE_ANTHROPIC_KEY_HERE';</script>
+
 </head>
 
 <body>
@@ -1159,11 +1166,7 @@
             </div>
 
             <!-- Promo code -->
-            <div class="promo-row">
-              <input type="text" id="inp-promo" class="promo-input" data-i18n-placeholder="promo_ph" placeholder="Mã ưu đãi (nếu có)" maxlength="20" oninput="this.value=this.value.toUpperCase()">
-              <button class="btn-promo" onclick="applyPromo()" data-i18n="promo_btn">Áp dụng</button>
-            </div>
-            <div id="promo-msg" class="promo-msg" style="display:none"></div>
+
 
             <!-- ── PROMO CODE INPUT ── -->
             <div style="margin-bottom:14px">
@@ -1683,6 +1686,10 @@
   };
 
 const POLAR_URL = 'https://buy.polar.sh/polar_cl_etwFklJEGOIVHd4uTnwBxo3xjG2BR2eq48Q5F03gx3X';
+
+  // Anthropic API key cho AI chat — cập nhật khi rotate
+  // Để trống nếu chưa có key: AI sẽ dùng fallback responses
+  const _AK = window.__AK || '';
 
   // ── ANCHOR PRICING ────────────────────────────────────────
   const PRICE_FULL_USD = 100;         // Giá niêm yết anchor
@@ -2894,6 +2901,8 @@ const POLAR_URL = 'https://buy.polar.sh/polar_cl_etwFklJEGOIVHd4uTnwBxo3xjG2BR2e
   const segment = '${segment}';
   const segLabel = '${segLabel}';
   const finalVal = '${fmtVND(r.finalValuation)}';
+  // API key được pass từ parent window khi tạo báo cáo
+  const apiKey  = '${typeof _AK !== "undefined" ? _AK : ""}';
 
   const prompt = \`Bạn là chuyên gia định giá M&A tại Việt Nam (15 năm kinh nghiệm BigFour). Phân tích dự án sau và viết nhận định chuyên sâu bằng tiếng Việt.
 
@@ -2921,7 +2930,12 @@ Viết 600-800 từ, chuyên nghiệp, có số liệu.\`;
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 1800,
@@ -3305,7 +3319,12 @@ Ask me anything!`;
 
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': _AK,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
         body: JSON.stringify({
           model: 'claude-haiku-4-5-20251001',
           max_tokens: 500,
