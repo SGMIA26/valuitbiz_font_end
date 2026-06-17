@@ -959,7 +959,7 @@
        Điền key mới tại đây sau khi rotate
        Lấy key: console.anthropic.com/settings/keys
   ══════════════════════════════════════ -->
-  <script>window.__AK = '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';</script>
+  <script>window.__AK = 'PASTE_ANTHROPIC_KEY_HERE';</script>
 
 </head>
 
@@ -2895,69 +2895,79 @@ const POLAR_URL = 'https://buy.polar.sh/polar_cl_etwFklJEGOIVHd4uTnwBxo3xjG2BR2e
 </div><!-- /page -->
 
 <scr"+"ipt>
-// Gọi Claude Haiku để lấy nhận định chuyên gia
-(async function loadExpertInsight() {
-  const answers = ${JSON.stringify(answers || {})};
-  const segment = '${segment}';
-  const segLabel = '${segLabel}';
-  const finalVal = '${fmtVND(r.finalValuation)}';
-  // API key được pass từ parent window khi tạo báo cáo
-  const apiKey  = '${typeof _AK !== "undefined" ? _AK : ""}';
+(async function() {
+  // Đọc data từ parent window qua sessionStorage
+  var _raw = '{}';
+  try { _raw = window.opener && window.opener.sessionStorage
+    ? window.opener.sessionStorage.getItem('__vb_report') || '{}'
+    : sessionStorage.getItem('__vb_report') || '{}';
+  } catch(e) {}
+  var _d = {};
+  try { _d = JSON.parse(_raw); } catch(e) {}
+  var answers  = _d.answers  || {};
+  var segment  = _d.segment  || '';
+  var segLabel = _d.segLabel || 'Doanh nghiệp';
+  var finalVal = _d.finalVal || 'N/A';
+  var apiKey   = _d.apiKey   || '';
 
-  const prompt = \`Bạn là chuyên gia định giá M&A tại Việt Nam (15 năm kinh nghiệm BigFour). Phân tích dự án sau và viết nhận định chuyên sâu bằng tiếng Việt.
+  if (!apiKey) {
+    document.getElementById('expert-content').innerHTML = '<p style="color:#888">Chưa cấu hình API. Liên hệ <a href="https://zalo.me/1110831222679664093">Zalo OA</a> để nhận tư vấn.</p>';
+    document.getElementById('roadmap-content').innerHTML = '<p style="color:#888">Liên hệ chuyên gia để nhận lộ trình phát triển chi tiết.</p>';
+    return;
+  }
 
-Thông tin dự án:
-- Phân khúc: \${segLabel}
-- Số liệu: \${JSON.stringify(answers)}
-- Giá trị định giá ước tính: \${finalVal}
-
-Yêu cầu viết HTML với 4 phần (dùng tag h3, p, ul, li):
-
-<h3>1. Nhận định về giá trị và tác động của dự án</h3>
-Đánh giá tiềm năng, tác động xã hội/kinh tế/môi trường/nhà đầu tư/cộng đồng (cụ thể theo ngành của dự án)
-
-<h3>2. Điểm mạnh và rủi ro theo góc nhìn M&A</h3>
-SWOT ngắn gọn, 3-4 điểm mỗi mục
-
-<h3>3. Góp ý chiến lược từ chuyên gia</h3>
-3-5 điểm cụ thể để tăng định giá trong 12 tháng tới
-
-<h3>4. Lộ trình Build to Sell — 6-18 tháng</h3>
-6 bước cụ thể có timeline và KPI
-
-Viết 600-800 từ, chuyên nghiệp, có số liệu.\`;
+  var prompt = 'Bạn là chuyên gia định giá M&A Việt Nam 15 năm BigFour. Viết nhận định chuyên sâu bằng HTML (h3, p, ul, li, strong). KHÔNG dùng markdown.\n\n' +
+    'THÔNG TIN DỰ ÁN:\n' +
+    '- Phân khúc: ' + segLabel + '\n' +
+    '- Số liệu nhập: ' + JSON.stringify(answers) + '\n' +
+    '- Giá trị định giá ước tính: ' + finalVal + '\n\n' +
+    'VIẾT 4 PHẦN:\n\n' +
+    '<h3>1. Nhận định giá trị và tác động dự án</h3>\n' +
+    'Đánh giá đóng góp cho xã hội, kinh tế, môi trường, nhà đầu tư, cộng đồng (cụ thể theo ngành)\n\n' +
+    '<h3>2. Phân tích SWOT theo góc nhìn M&A</h3>\n' +
+    '3-4 điểm mỗi mục Strengths/Weaknesses/Opportunities/Threats\n\n' +
+    '<h3>3. Góp ý chiến lược tăng định giá</h3>\n' +
+    '3-5 điểm cụ thể trong 12 tháng, có số liệu mục tiêu\n\n' +
+    '<h3>4. Lộ trình Build to Sell (6-18 tháng)</h3>\n' +
+    '6 bước có timeline + KPI đo lường\n\n' +
+    'Yêu cầu: 600-800 từ, chuyên nghiệp, benchmark HOSE/HNX 2024-2025.';
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
+        'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1800,
-        system: 'Bạn là chuyên gia định giá doanh nghiệp M&A Việt Nam. Viết bằng tiếng Việt chuẩn. Dùng HTML tags h3, p, ul, li. KHÔNG dùng markdown.',
+        max_tokens: 2000,
+        system: 'Chuyên gia M&A Việt Nam. Viết tiếng Việt chuẩn. Chỉ dùng HTML: h3, p, ul, li, strong. KHÔNG dùng ký tự * hay #.',
         messages: [{ role: 'user', content: prompt }]
       })
     });
-    const data = await res.json();
-    const text = data.content?.[0]?.text || '';
+    var data = await res.json();
+    var text = (data.content && data.content[0]) ? data.content[0].text : '';
     if (text) {
       document.getElementById('expert-content').innerHTML = text;
     }
   } catch(e) {
-    document.getElementById('expert-content').innerHTML = \`
-      <h3>Nhận định sơ bộ từ hệ thống</h3>
-      <p>Không thể kết nối API chuyên gia lúc này. Vui lòng liên hệ <a href="https://zalo.me/1110831222679664093">Zalo OA</a> để nhận tư vấn trực tiếp từ chuyên gia ValuitBiz.</p>
-    \`;
+    document.getElementById('expert-content').innerHTML = '<h3>Nhận định sơ bộ</h3><p>Không kết nối được API. Liên hệ <a href="https://zalo.me/1110831222679664093">Zalo OA</a> để tư vấn trực tiếp.</p>';
   }
-})();
-<\/script>
+})();<\/script>
 </body>
 </html>`;
+
+      // ── Pass data sang tab mới qua sessionStorage ─────────────────
+      sessionStorage.setItem('__vb_report', JSON.stringify({
+        answers:  answers || {},
+        segment:  segment || '',
+        segLabel: segLabel || '',
+        finalVal: fmtVND(r ? r.finalValuation : 0),
+        apiKey:   (typeof _AK !== 'undefined') ? _AK : '',
+      }));
 
       // ── Mở trong tab mới để print/save ──────────────────────────
       const win = window.open('', '_blank');
