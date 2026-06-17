@@ -959,7 +959,7 @@
        Điền key mới tại đây sau khi rotate
        Lấy key: console.anthropic.com/settings/keys
   ══════════════════════════════════════ -->
-  <script>window.__AK = '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';</script>
+  <script>window.__AK = 'PASTE_ANTHROPIC_KEY_HERE';</script>
 
 </head>
 
@@ -1606,6 +1606,41 @@
       { id: 'idea_traction', type: 'select', title_vn: 'Đã có khách hàng trả tiền hay người dùng thực tế chưa?', title_en: 'Any paying customers or real users yet?',
         options_vn: [{val:0,label:'Chưa có'},{val:250,label:'Có 1–10 người dùng thử / beta'},{val:500,label:'Có khách hàng trả tiền đều đặn'}],
         options_en: [{val:0,label:'None yet'},{val:250,label:'1–10 trial/beta users'},{val:500,label:'Regular paying customers'}] },
+
+      // ── BỔ SUNG: Câu hỏi cho VC Method & Cost-to-Duplicate ──
+      { id: 'pain_level', type: 'select',
+        title_vn: 'Mức độ "nỗi đau" mà sản phẩm giải quyết?', title_en: 'How critical is the pain point your product solves?',
+        hint_vn: 'Dùng cho Scorecard Method — ảnh hưởng trực tiếp đến multiplier', hint_en: 'Used in Scorecard Method — directly affects the multiplier',
+        options_vn: [{val:'vitamin',label:'Vitamin (Nice-to-have) — tiện ích bổ sung, không có cũng được'},{val:'painkiller',label:'Painkiller (Must-have) — giải quyết nỗi đau nhức nhối trực tiếp'},{val:'antibiotic',label:'Antibiotic (Critical) — giải quyết bài toán sống còn, bắt buộc phải dùng'}],
+        options_en: [{val:'vitamin',label:'Vitamin (Nice-to-have) — supplementary, can live without it'},{val:'painkiller',label:'Painkiller (Must-have) — solves a direct, pressing pain'},{val:'antibiotic',label:'Antibiotic (Critical) — mission-critical, mandatory solution'}] },
+
+      { id: 'moat_level', type: 'select',
+        title_vn: 'Lợi thế cạnh tranh / Rào cản phòng thủ (Moat) của dự án?', title_en: 'Competitive advantage / defensive moat?',
+        hint_vn: 'Dùng trong Scorecard và Cost-to-Duplicate', hint_en: 'Used in Scorecard and Cost-to-Duplicate',
+        options_vn: [{val:'low',label:'Thấp — dễ bị sao chép trong 1–3 tháng'},{val:'medium',label:'Trung bình — có quy trình/cộng đồng người dùng nhất định'},{val:'high',label:'Cao — bằng sáng chế, AI độc quyền hoặc Network Effect mạnh'}],
+        options_en: [{val:'low',label:'Low — easily replicated in 1–3 months'},{val:'medium',label:'Medium — some process/user community advantage'},{val:'high',label:'High — patent, proprietary AI, or strong network effects'}] },
+
+      { id: 'cost_invested', type: 'number',
+        title_vn: 'Tổng chi phí đã đầu tư vào dự án đến nay (triệu VNĐ)?', title_en: 'Total cost invested into the project so far (million VND)?',
+        placeholder_vn: 'Ví dụ: 500 (tức 500 triệu VNĐ)', placeholder_en: 'e.g. 500 (= 500 million VND)',
+        hint_vn: 'Gồm: lương nhóm, thuê server, marketing, nghiên cứu, thiết kế, pháp lý...', hint_en: 'Includes: team salaries, servers, marketing, research, design, legal...' },
+
+      { id: 'revenue_year5', type: 'number',
+        title_vn: 'Doanh thu kỳ vọng ở năm thứ 5 (tỷ VNĐ)?', title_en: 'Expected revenue in year 5 (billion VND)?',
+        placeholder_vn: 'Ví dụ: 50 (tức 50 tỷ VNĐ)', placeholder_en: 'e.g. 50 (= 50 billion VND)',
+        hint_vn: 'Ước tính lạc quan nhưng có cơ sở — dùng cho VC Method tính ngược Exit value', hint_en: 'Optimistic but grounded estimate — used in VC Method to back-calculate exit value' },
+
+      { id: 'exit_multiple', type: 'select',
+        title_vn: 'Bội số định giá ngành khi Exit/IPO (Revenue Multiple)?', title_en: 'Industry revenue multiple at Exit/IPO?',
+        hint_vn: 'Dùng để tính Exit Value = Doanh thu năm 5 × Multiple ngành', hint_en: 'Used to calculate Exit Value = Year-5 Revenue × Industry Multiple',
+        options_vn: [{val:3,label:'3× — Ngành truyền thống (F&B, Bán lẻ, Dịch vụ)'},{val:5,label:'5× — Công nghệ phần mềm, EdTech, HealthTech'},{val:8,label:'8× — SaaS / Marketplace tăng trưởng cao'},{val:12,label:'12× — AI / DeepTech / FinTech đột phá'}],
+        options_en: [{val:3,label:'3× — Traditional (F&B, Retail, Services)'},{val:5,label:'5× — Software, EdTech, HealthTech'},{val:8,label:'8× — High-growth SaaS / Marketplace'},{val:12,label:'12× — AI / DeepTech / FinTech disruptors'}] },
+
+      { id: 'investor_roi', type: 'select',
+        title_vn: 'ROI kỳ vọng của nhà đầu tư (Return on Investment)?', title_en: 'Expected investor ROI target?',
+        hint_vn: 'Nhà đầu tư thiên thần VN thường kỳ vọng 10–20× trong 5 năm', hint_en: 'Vietnamese angel investors typically expect 10–20× return in 5 years',
+        options_vn: [{val:10,label:'10× — Angel/Seed stage, thị trường ổn định'},{val:15,label:'15× — Series A tiêu chuẩn, tăng trưởng tốt'},{val:20,label:'20× — VC chuyên nghiệp, thị trường cạnh tranh cao'}],
+        options_en: [{val:10,label:'10× — Angel/Seed stage, stable market'},{val:15,label:'15× — Standard Series A, good growth'},{val:20,label:'20× — Professional VC, highly competitive market'}] },
     ],
 
     /* ─── STARTUP (Berkus + Funding) ─── */
@@ -1626,6 +1661,51 @@
         options_en: [{val:0,label:'No paying customers yet'},{val:250,label:'1–10 beta or PoC customers'},{val:500,label:'Monthly recurring paying customers'}] },
       { id: 'funding_raised_billion', type: 'number', title_vn: 'Startup đã huy động được tổng cộng bao nhiêu tỷ VNĐ từ nhà đầu tư?', title_en: 'Total funding raised from investors (billion VND)?',
         placeholder_vn: 'Ví dụ: 2. Nhập 0 nếu chưa gọi vốn.', placeholder_en: 'e.g. 2. Enter 0 if no funding yet.', hint_vn: 'Bao gồm angel investor, quỹ đầu tư, cổ đông chiến lược', hint_en: 'Includes angel, VC, and strategic investors' },
+
+      // ── BỔ SUNG: Câu hỏi cho 4 phương pháp đầy đủ ──
+      { id: 'pain_level', type: 'select',
+        title_vn: 'Mức độ "nỗi đau" mà sản phẩm giải quyết?', title_en: 'How critical is the pain point your product solves?',
+        hint_vn: 'Vitamin → Nice-to-have | Painkiller → Must-have | Antibiotic → Sống còn', hint_en: 'Vitamin → Nice-to-have | Painkiller → Must-have | Antibiotic → Critical',
+        options_vn: [{val:'vitamin',label:'Vitamin (Nice-to-have) — tiện ích bổ sung'},{val:'painkiller',label:'Painkiller (Must-have) — giải quyết nỗi đau trực tiếp'},{val:'antibiotic',label:'Antibiotic (Critical) — giải quyết bài toán sống còn'}],
+        options_en: [{val:'vitamin',label:'Vitamin (Nice-to-have) — supplementary utility'},{val:'painkiller',label:'Painkiller (Must-have) — solves pressing pain directly'},{val:'antibiotic',label:'Antibiotic (Critical) — mission-critical solution'}] },
+
+      { id: 'team_structure', type: 'select',
+        title_vn: 'Cơ cấu đội ngũ sáng lập hiện tại (Hustler–Hacker–Hipster)?', title_en: 'Founding team structure (Hustler–Hacker–Hipster)?',
+        hint_vn: 'Hustler=CEO/Sales | Hacker=CTO/Tech | Hipster=Design/UX/Marketing', hint_en: 'Hustler=CEO/Sales | Hacker=CTO/Tech | Hipster=Design/UX/Marketing',
+        options_vn: [{val:0.4,label:'Chỉ có 1 founder (Solo) — rủi ro cao nhất'},{val:0.6,label:'Có 2 trong 3 vai trò (thiếu 1 góc)'},{val:1.0,label:'Đủ cả 3: Hustler + Hacker + Hipster full-time'}],
+        options_en: [{val:0.4,label:'Solo founder — highest risk'},{val:0.6,label:'2 of 3 roles covered (missing one)'},{val:1.0,label:'Full team: Hustler + Hacker + Hipster full-time'}] },
+
+      { id: 'founder_track', type: 'select',
+        title_vn: 'Lịch sử khởi nghiệp / kinh nghiệm của Founders?', title_en: "Founders' entrepreneurship history?",
+        hint_vn: 'Serial Founder đã exit nhận bonus 35% vào Scorecard', hint_en: 'Serial Founder with exit receives 35% Scorecard bonus',
+        options_vn: [{val:1.0,label:'Lần đầu khởi nghiệp — chưa có kinh nghiệm quản lý cao'},{val:1.15,label:'Đã từng là quản lý / chuyên gia ngành 3–5 năm'},{val:1.35,label:'Serial Founder — đã từng khởi nghiệp thành công hoặc Exit'}],
+        options_en: [{val:1.0,label:'First-time founder — no prior senior management experience'},{val:1.15,label:'Experienced manager / industry expert for 3–5 years'},{val:1.35,label:'Serial Founder — previously successfully exited a startup'}] },
+
+      { id: 'moat_level', type: 'select',
+        title_vn: 'Lợi thế cạnh tranh / Rào cản phòng thủ (Moat)?', title_en: 'Competitive moat / defensive advantage?',
+        options_vn: [{val:'low',label:'Thấp — dễ sao chép trong 1–3 tháng'},{val:'medium',label:'Trung bình — quy trình / tệp user trung thành'},{val:'high',label:'Cao — Patent, AI độc quyền, Network Effect'}],
+        options_en: [{val:'low',label:'Low — easily replicated in 1–3 months'},{val:'medium',label:'Medium — process / loyal user base'},{val:'high',label:'High — Patent, proprietary AI, Network Effect'}] },
+
+      { id: 'cost_invested', type: 'number',
+        title_vn: 'Tổng chi phí đã đầu tư vào startup đến nay (triệu VNĐ)?', title_en: 'Total capital invested so far (million VND)?',
+        placeholder_vn: 'Ví dụ: 800 (= 800 triệu VNĐ)', placeholder_en: 'e.g. 800 (= 800 million VND)',
+        hint_vn: 'Lương team, server, marketing, R&D, pháp lý, branding, vận hành', hint_en: 'Team salary, server, marketing, R&D, legal, branding, ops' },
+
+      { id: 'revenue_year5', type: 'number',
+        title_vn: 'Doanh thu kỳ vọng ở năm thứ 5 (tỷ VNĐ)?', title_en: 'Expected revenue in year 5 (billion VND)?',
+        placeholder_vn: 'Ví dụ: 100 (= 100 tỷ VNĐ)', placeholder_en: 'e.g. 100 (= 100 billion VND)',
+        hint_vn: 'Ước tính có cơ sở — dùng cho VC Method tính ngược từ Exit value', hint_en: 'Grounded estimate — VC Method back-calculates from this exit value' },
+
+      { id: 'exit_multiple', type: 'select',
+        title_vn: 'Bội số Revenue khi Exit/IPO — theo ngành?', title_en: 'Revenue multiple at Exit/IPO — by industry?',
+        options_vn: [{val:3,label:'3× — Truyền thống: F&B, Bán lẻ, Dịch vụ'},{val:5,label:'5× — Software, EdTech, HealthTech'},{val:8,label:'8× — SaaS / Marketplace tăng trưởng cao'},{val:12,label:'12× — AI / DeepTech / FinTech đột phá'}],
+        options_en: [{val:3,label:'3× — Traditional: F&B, Retail, Services'},{val:5,label:'5× — Software, EdTech, HealthTech'},{val:8,label:'8× — High-growth SaaS / Marketplace'},{val:12,label:'12× — AI / DeepTech / FinTech disruptors'}] },
+
+      { id: 'investor_roi', type: 'select',
+        title_vn: 'ROI kỳ vọng của nhà đầu tư trong 5 năm?', title_en: 'Target investor ROI over 5 years?',
+        hint_vn: 'Angel VN thường kỳ vọng 10–20×', hint_en: 'Vietnamese angels typically target 10–20×',
+        options_vn: [{val:10,label:'10× — Angel/Seed, thị trường ổn định'},{val:15,label:'15× — Series A chuẩn, tăng trưởng tốt'},{val:20,label:'20× — VC chuyên nghiệp, thị trường cạnh tranh'}],
+        options_en: [{val:10,label:'10× — Angel/Seed, stable market'},{val:15,label:'15× — Standard Series A'},{val:20,label:'20× — Professional VC, high competition'}] },
     ],
 
     /* ─── SMEs ─── */
@@ -1885,48 +1965,164 @@ const POLAR_URL = 'https://buy.polar.sh/polar_cl_etwFklJEGOIVHd4uTnwBxo3xjG2BR2e
   ================================================================ */
 
   function computeIdea(a) {
-    const M = 1e6, CAP = 500 * M;
+    const M = 1e6, B = 1e9, CAP = 500 * M;
+    const vn = currentLang === 'vn';
+
+    // ── 1. BERKUS METHOD ──────────────────────────────────────
     const s1 = Math.min((+a.idea_quality  || 0) * M, CAP);
     const s2 = Math.min((+a.idea_team     || 0) * M, CAP);
-    const s3 = Math.min((+a.idea_tam      || 0) * 1e9 * 0.0005, CAP);
+    const s3 = Math.min((+a.idea_tam      || 0) * B * 0.0005, CAP);
     const s4 = Math.min((+a.idea_ip       || 0) * M, CAP);
     const s5 = Math.min((+a.idea_traction || 0) * M, CAP);
-    const total = s1 + s2 + s3 + s4 + s5;
+    const v_berkus = s1 + s2 + s3 + s4 + s5;
+
+    // ── 2. SCORECARD METHOD ───────────────────────────────────
+    // Base = 2 tỷ VNĐ (benchmark startup ý tưởng tại VN 2024)
+    const BASE_SCORECARD = 2 * B;
+    const painMap  = { vitamin: 0.8, painkiller: 1.0, antibiotic: 1.3 };
+    const moatMap  = { low: 0.85, medium: 1.0, high: 1.25 };
+    const painMult = painMap[a.pain_level]  || 1.0;
+    const moatMult = moatMap[a.moat_level]  || 1.0;
+    // Team score từ idea_team (0-500M → 0–1.0)
+    const teamScore = Math.min((+a.idea_team || 0) / 500, 1.0);
+    // TAM adjustment
+    const tam = +a.idea_tam || 0;
+    const tamAdj = tam > 5000 ? 1.25 : tam > 1000 ? 1.10 : tam > 200 ? 1.0 : 0.85;
+    // Traction adjustment
+    const tractionScore = Math.min((+a.idea_traction || 0) / 500, 1.0);
+    const tractionAdj = tractionScore >= 1 ? 1.20 : tractionScore >= 0.5 ? 1.10 : 1.0;
+    const v_scorecard = Math.round(BASE_SCORECARD * painMult * moatMult * tamAdj * tractionAdj);
+
+    // ── 3. VC METHOD (tính ngược từ Exit) ────────────────────
+    const rev5     = (+a.revenue_year5  || 0) * B;
+    const exitMult = +a.exit_multiple   || 5;
+    const roiTarget= +a.investor_roi    || 15;
+    const exitValue = rev5 * exitMult;
+    const v_vc     = rev5 > 0 ? Math.round(exitValue / roiTarget) : 0;
+
+    // ── 4. COST-TO-DUPLICATE ──────────────────────────────────
+    const costInvested = (+a.cost_invested || 0) * M;
+    // IP & Moat premium
+    const ipPremium    = a.idea_ip >= 250 ? 1.5 : 1.2;
+    const moatPremium  = moatMap[a.moat_level] || 1.0;
+    const v_cost       = costInvested > 0
+      ? Math.round(costInvested * ipPremium * moatPremium)
+      : Math.round(v_berkus * 0.6); // Fallback nếu chưa nhập chi phí
+
+    // ── OPTION B: Khoảng định giá [min, mid, max] ─────────────
+    const allVals    = [v_berkus, v_scorecard, v_cost, v_vc].filter(v => v > 0);
+    const v_min      = Math.round(Math.min(...allVals));
+    const v_max      = v_vc > 0 ? Math.round(Math.max(...allVals)) : Math.round(Math.max(v_berkus, v_scorecard, v_cost));
+    // Mid = weighted: Berkus 30% + Scorecard 30% + Cost 20% + VC 20%
+    const w_vc       = v_vc > 0 ? 0.2 : 0;
+    const w_sum      = 0.3 + 0.3 + 0.2 + w_vc;
+    const v_mid      = Math.round((v_berkus*0.3 + v_scorecard*0.3 + v_cost*0.2 + v_vc*w_vc) / w_sum);
+
     return {
-      segment: 'idea', finalValuation: Math.round(total), pricePerShare: Math.round(total / 1e6),
+      segment: 'idea',
+      finalValuation: v_mid,
+      valMin: v_min,
+      valMid: v_mid,
+      valMax: v_max,
+      pricePerShare: Math.round(v_mid / 1e6),
+      exitValue: Math.round(exitValue),
       methods: [
-        { name: currentLang === 'vn' ? 'Chất lượng ý tưởng (Berkus)' : 'Idea Quality (Berkus)', value: Math.round(s1), weight: 0.20 },
-        { name: currentLang === 'vn' ? 'Đội ngũ sáng lập (Berkus)' : 'Founding Team (Berkus)', value: Math.round(s2), weight: 0.20 },
-        { name: currentLang === 'vn' ? 'Quy mô thị trường TAM (Berkus)' : 'Market Size TAM (Berkus)', value: Math.round(s3), weight: 0.20 },
-        { name: currentLang === 'vn' ? 'Công nghệ lõi / IP (Berkus)' : 'Core Tech / IP (Berkus)', value: Math.round(s4), weight: 0.20 },
-        { name: currentLang === 'vn' ? 'Traction / PoC (Berkus)' : 'Traction / PoC (Berkus)', value: Math.round(s5), weight: 0.20 },
+        { name: vn ? '① Berkus Method' : '① Berkus Method',
+          value: Math.round(v_berkus), weight: 0.30,
+          note: vn ? 'Định giá 5 yếu tố giảm rủi ro · Max 500M/yếu tố' : '5 de-risking factors · Max 500M each' },
+        { name: vn ? '② Scorecard Method (Bill Payne)' : '② Scorecard Method (Bill Payne)',
+          value: Math.round(v_scorecard), weight: 0.30,
+          note: vn ? `Base 2 tỷ × Nỗi đau(${painMult}×) × Moat(${moatMult}×) × TAM(${tamAdj}×)` : `Base 2B × Pain(${painMult}×) × Moat(${moatMult}×) × TAM(${tamAdj}×)` },
+        { name: vn ? '③ Cost-to-Duplicate (Chi phí thay thế)' : '③ Cost-to-Duplicate',
+          value: Math.round(v_cost), weight: 0.20,
+          note: vn ? `Chi phí đã đầu tư × IP premium(${ipPremium}×) × Moat(${moatPremium}×)` : `Capital invested × IP premium(${ipPremium}×) × Moat(${moatPremium}×)` },
+        ...(v_vc > 0 ? [{ name: vn ? '④ VC Method (Tính ngược từ Exit)' : '④ VC Method (Back-from-Exit)',
+          value: Math.round(v_vc), weight: 0.20,
+          note: vn ? `Exit = ${(rev5/B).toFixed(0)} tỷ × ${exitMult}× = ${(exitValue/B).toFixed(0)} tỷ ÷ ROI ${roiTarget}×` : `Exit = ${(rev5/B).toFixed(0)}B × ${exitMult}× = ${(exitValue/B).toFixed(0)}B ÷ ROI ${roiTarget}×` }] : []),
       ]
     };
   }
 
   function computeStartup(a) {
-    const M = 1e6, B = 1e9, CAP = 500 * M;
-    const ideaMap = { idea: 100, mvp: 300, revenue: 500, growth: 500 };
+    const M=1e6, B=1e9, CAP=500*M;
+    const vn = currentLang === 'vn';
+
+    // ── 1. BERKUS + FUNDING MULTIPLE ─────────────────────────
+    const ideaMap = { idea:100, mvp:300, revenue:450, growth:500 };
     const s1 = Math.min((ideaMap[a.idea_stage] || 100) * M, CAP);
-    const s2 = Math.min((+a.team_score || 0) * M, CAP);
-    const s3 = Math.min((+a.tam_billion || 0) * B * 0.0005, CAP);
-    const s4 = Math.min((+a.ip_score || 0) * M, CAP);
-    const s5 = Math.min((+a.product_score || 0) * M, CAP);
-    const berkus = s1 + s2 + s3 + s4 + s5;
-    const raise = (+a.funding_raised_billion || 0) * B;
-    const finalVal = raise > 0 ? berkus * 0.6 + raise * 3 * 0.4 : berkus;
+    const s2 = Math.min((+a.team_score   || 0) * M, CAP);
+    const s3 = Math.min((+a.tam_billion  || 0) * B * 0.0005, CAP);
+    const s4 = Math.min((+a.ip_score     || 0) * M, CAP);
+    const s5 = Math.min((+a.product_score|| 0) * M, CAP);
+    const berkusPure = s1+s2+s3+s4+s5;
+    const raise      = (+a.funding_raised_billion || 0) * B;
+    const v_berkus   = raise > 0
+      ? Math.round(berkusPure*0.6 + raise*3*0.4)
+      : Math.round(berkusPure);
+
+    // ── 2. SCORECARD METHOD (Bill Payne) ──────────────────────
+    const BASE_SC = 5 * B;
+    const painMap = { vitamin:0.80, painkiller:1.00, antibiotic:1.30 };
+    const moatMap = { low:0.80, medium:1.00, high:1.25 };
+    const teamStructMult = +a.team_structure || 0.6;
+    const founderMult    = +a.founder_track  || 1.0;
+    const painMult  = painMap[a.pain_level]  || 1.0;
+    const moatMult  = moatMap[a.moat_level]  || 1.0;
+    const tam = +a.tam_billion || 0;
+    const tamAdj = tam>10000?1.30:tam>3000?1.15:tam>500?1.0:0.85;
+    const product = +a.product_score || 0;
+    const tractionAdj = product>=500?1.25:product>=250?1.10:1.0;
+    const v_scorecard = Math.round(
+      BASE_SC * painMult * moatMult * tamAdj * tractionAdj * teamStructMult * founderMult
+    );
+
+    // ── 3. VC METHOD (Back-from-Exit) ─────────────────────────
+    const rev5      = (+a.revenue_year5 || 0) * B;
+    const exitMult  = +a.exit_multiple  || 5;
+    const roiTarget = +a.investor_roi   || 15;
+    const exitValue = rev5 * exitMult;
+    const v_vc      = rev5 > 0 ? Math.round(exitValue / roiTarget) : 0;
+
+    // ── 4. COST-TO-DUPLICATE ──────────────────────────────────
+    const costInvested = (+a.cost_invested || 0) * M;
+    const ipPremium    = s4>=CAP?1.8:s4>=CAP*0.5?1.4:1.2;
+    const moatPremium  = moatMap[a.moat_level] || 1.0;
+    const totalAssets  = costInvested + raise;
+    const v_cost = totalAssets > 0
+      ? Math.round(totalAssets * ipPremium * moatPremium)
+      : Math.round(v_berkus * 0.65);
+
+    // ── OPTION B: Range [min, mid, max] ──────────────────────
+    const allVals = [v_berkus, v_scorecard, v_cost, v_vc].filter(v=>v>0);
+    const v_min   = Math.round(Math.min(...allVals));
+    const v_max   = v_vc>0 ? Math.round(Math.max(...allVals)) : Math.round(Math.max(v_berkus,v_scorecard,v_cost));
+    const w_vc    = v_vc>0?0.25:0;
+    const w_sum   = 0.25+0.30+0.20+w_vc;
+    const v_mid   = Math.round((v_berkus*0.25+v_scorecard*0.30+v_cost*0.20+v_vc*w_vc)/w_sum);
+
     return {
-      segment: 'startup', finalValuation: Math.round(Math.max(finalVal, 0)), pricePerShare: Math.round(Math.max(finalVal / 1e6, 0)),
-      methods: [
-        { name: currentLang === 'vn' ? 'Ý tưởng / Giai đoạn (Berkus)' : 'Stage / Idea (Berkus)', value: Math.round(s1), weight: 0.20 },
-        { name: currentLang === 'vn' ? 'Đội ngũ & Kinh nghiệm' : 'Team & Experience', value: Math.round(s2), weight: 0.15 },
-        { name: currentLang === 'vn' ? 'Quy mô thị trường (TAM)' : 'Market Size (TAM)', value: Math.round(s3), weight: 0.20 },
-        { name: currentLang === 'vn' ? 'Công nghệ lõi / IP' : 'Core Tech / IP', value: Math.round(s4), weight: 0.15 },
-        { name: currentLang === 'vn' ? 'Traction (Khách hàng trả tiền)' : 'Traction (Paying customers)', value: Math.round(s5), weight: 0.30 },
+      segment:'startup', finalValuation:v_mid,
+      valMin:v_min, valMid:v_mid, valMax:v_max,
+      pricePerShare:Math.round(v_mid/1e6),
+      exitValue:Math.round(exitValue),
+      methods:[
+        { name:vn?'① Berkus + Funding Multiple':'① Berkus + Funding Multiple',
+          value:Math.round(v_berkus), weight:0.25,
+          note:raise>0
+            ?(vn?`Berkus ${(berkusPure/B).toFixed(1)}tỷ×60% + Funding(${(raise/B).toFixed(1)}tỷ×3)×40%`:`Berkus ${(berkusPure/B).toFixed(1)}B×60% + Funding×3×40%`)
+            :(vn?`5 yếu tố Berkus = ${(berkusPure/B).toFixed(2)} tỷ VNĐ`:`5 Berkus factors = ${(berkusPure/B).toFixed(2)}B VND`) },
+        { name:vn?'② Scorecard Method (Bill Payne)':'② Scorecard Method (Bill Payne)',
+          value:Math.round(v_scorecard), weight:0.30,
+          note:vn?`5tỷ × Đội(${teamStructMult}×) × Founder(${founderMult}×) × Pain(${painMult}×) × TAM(${tamAdj}×)`:`5B × Team(${teamStructMult}×) × Founder(${founderMult}×) × Pain(${painMult}×) × TAM(${tamAdj}×)` },
+        { name:vn?'③ Cost-to-Duplicate':'③ Cost-to-Duplicate',
+          value:Math.round(v_cost), weight:0.20,
+          note:vn?`Vốn đã chi ${((totalAssets)/M).toFixed(0)}tr × IP(${ipPremium}×) × Moat(${moatPremium}×)`:`Capital ${((totalAssets)/M).toFixed(0)}M × IP(${ipPremium}×) × Moat(${moatPremium}×)` },
+        ...(v_vc>0?[{ name:vn?'④ VC Method (Tính ngược Exit)':'④ VC Method (Back-from-Exit)',
+          value:Math.round(v_vc), weight:0.25,
+          note:vn?`Exit=${(rev5/B).toFixed(0)}tỷ×${exitMult}x=${(exitValue/B).toFixed(0)}tỷ ÷ ROI ${roiTarget}x`:`Exit=${(rev5/B).toFixed(0)}B×${exitMult}x=${(exitValue/B).toFixed(0)}B ÷ ROI ${roiTarget}x` }]:[]),
       ]
     };
   }
-
   function computeSME(a) {
     const rev    = parseFloat(a.revenue)    * 1e6 || 0;
     const profit = parseFloat(a.net_profit) * 1e6 || 0;
@@ -2008,23 +2204,78 @@ const POLAR_URL = 'https://buy.polar.sh/polar_cl_etwFklJEGOIVHd4uTnwBxo3xjG2BR2e
 
   function renderResult(result) {
     const lang = currentLang;
-    document.getElementById('txt-valuation').textContent = '~ ' + formatVND(result.finalValuation);
-    document.getElementById('txt-per-share').textContent = result.pricePerShare > 0
-      ? `${T[lang].per_share}: ${result.pricePerShare.toLocaleString('vi-VN')} VNĐ / ${lang === 'vn' ? 'cp' : 'sh'}`
-      : '';
+    const vn = lang === 'vn';
 
+    // ── Option B: Hiển thị khoảng [min, mid, max] cho Idea/Startup ──
+    if ((result.segment === 'idea' || result.segment === 'startup') && result.valMin && result.valMax) {
+      const elVal = document.getElementById('txt-valuation');
+      elVal.innerHTML = `
+        <div style="font-size:13px;color:var(--navy-500);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em">
+          ${vn ? 'Khoảng định giá ước tính' : 'Estimated valuation range'}
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap">
+          <div style="text-align:center">
+            <div style="font-size:11px;color:var(--navy-500);margin-bottom:2px">${vn ? 'Thận trọng (Min)' : 'Conservative'}</div>
+            <div style="font-size:18px;font-weight:600;color:#94A3B8">${formatVND(result.valMin)}</div>
+          </div>
+          <div style="color:var(--navy-600);font-size:20px">—</div>
+          <div style="text-align:center">
+            <div style="font-size:11px;color:var(--amber-400);font-weight:600;margin-bottom:2px">★ ${vn ? 'Khuyến nghị (Mid)' : 'Recommended'}</div>
+            <div style="font-size:28px;font-weight:800;color:var(--amber-400)">${formatVND(result.valMid)}</div>
+          </div>
+          <div style="color:var(--navy-600);font-size:20px">—</div>
+          <div style="text-align:center">
+            <div style="font-size:11px;color:var(--navy-500);margin-bottom:2px">${vn ? 'Lạc quan (Max)' : 'Optimistic'}</div>
+            <div style="font-size:18px;font-weight:600;color:#4ADE80">${formatVND(result.valMax)}</div>
+          </div>
+        </div>
+        ${result.exitValue > 0 ? `
+        <div style="margin-top:12px;font-size:12px;color:var(--navy-500);background:rgba(127,119,221,0.08);border:1px solid rgba(127,119,221,0.2);border-radius:8px;padding:8px 14px;display:inline-block">
+          🚀 ${vn ? 'Exit value kỳ vọng năm 5:' : 'Expected year-5 exit value:'}
+          <strong style="color:#AFA9EC">${formatVND(result.exitValue)}</strong>
+        </div>` : ''}`;
+      document.getElementById('txt-per-share').textContent = result.pricePerShare > 0
+        ? `${T[lang].per_share}: ${result.pricePerShare.toLocaleString('vi-VN')} VNĐ / ${vn ? 'cp' : 'sh'}`
+        : '';
+    } else {
+      document.getElementById('txt-valuation').textContent = '~ ' + formatVND(result.finalValuation);
+      document.getElementById('txt-per-share').textContent = result.pricePerShare > 0
+        ? `${T[lang].per_share}: ${result.pricePerShare.toLocaleString('vi-VN')} VNĐ / ${vn ? 'cp' : 'sh'}`
+        : '';
+    }
+
+    const showNote = result.segment === 'idea' || result.segment === 'startup';
     let tbl = `<table class="method-table"><thead><tr>
       <th>${T[lang].method_col}</th>
       <th style="text-align:right">${T[lang].value_col}</th>
-      <th style="text-align:right">${T[lang].weight_col}</th>
+      <th style="text-align:center">${T[lang].weight_col}</th>
+      ${showNote ? `<th style="color:var(--navy-500);font-size:10px">${lang==='vn'?'Chi tiết tính toán':'Calculation detail'}</th>` : ''}
     </tr></thead><tbody>`;
     result.methods.forEach(m => {
-      tbl += `<tr><td>${m.name}</td><td class="val-col">${formatVND(m.value)}</td><td class="weight-col">${(m.weight*100).toFixed(0)}%</td></tr>`;
+      tbl += `<tr>
+        <td style="font-weight:600">${m.name}</td>
+        <td class="val-col">${formatVND(m.value)}</td>
+        <td class="weight-col">${(m.weight*100).toFixed(0)}%</td>
+        ${showNote ? `<td style="font-size:11px;color:var(--navy-400);line-height:1.4">${m.note||''}</td>` : ''}
+      </tr>`;
     });
     if (result.segment === 'enterprise') {
       tbl += `<tr><td style="color:var(--navy-500);font-size:12px">Enterprise Value (EV)</td><td class="val-col" style="color:var(--navy-300)">${formatVND(result.enterpriseValue)}</td><td>–</td></tr>`;
       tbl += `<tr><td style="color:var(--navy-500);font-size:12px">${lang === 'vn' ? 'Trừ Net Debt' : 'Less Net Debt'}</td><td class="val-col" style="color:var(--navy-400)">– ${formatVND(result.netDebt)}</td><td>–</td></tr>`;
       tbl += `<tr><td style="color:var(--navy-500);font-size:12px">EV/EBITDA</td><td class="val-col" style="color:var(--amber-400)">${result.evEbitda}×</td><td>–</td></tr>`;
+    }
+    // Thêm khoảng định giá summary cho Idea/Startup
+    if ((result.segment==='idea'||result.segment==='startup') && result.valMin) {
+      tbl += `<tr style="background:rgba(240,168,48,0.06)">
+        <td colspan="${showNote?4:3}" style="padding:10px 12px">
+          <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+            <span style="font-size:11px;color:var(--navy-500)">${lang==='vn'?'📊 Khoảng định giá tổng hợp:':'📊 Aggregated valuation range:'}</span>
+            <span style="font-size:12px;color:#94A3B8">${lang==='vn'?'Thận trọng:':'Conservative:'} <strong>${formatVND(result.valMin)}</strong></span>
+            <span style="font-size:13px;color:var(--amber-400);font-weight:700">★ ${lang==='vn'?'Khuyến nghị:':'Recommended:'} ${formatVND(result.valMid)}</span>
+            <span style="font-size:12px;color:#4ADE80">${lang==='vn'?'Lạc quan:':'Optimistic:'} <strong>${formatVND(result.valMax)}</strong></span>
+          </div>
+        </td>
+      </tr>`;
     }
     tbl += `</tbody></table>`;
     document.getElementById('method-detail-wrap').innerHTML = tbl;
