@@ -1,1 +1,2111 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ValuitBiz Full — Định Giá Chuyên Sâu Toàn Diện | Chuẩn TT36/2024</title>
+  <meta name="description" content="Báo cáo thẩm định giá doanh nghiệp chuyên sâu theo chuẩn TT36/2024/TT-BTC. 43 câu hỏi đa phương pháp: Berkus, Scorecard, DCF/FCFF, EV/EBITDA, P/E, P/S, P/B.">
+  <meta name="robots" content="index, follow">
 
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    /* ── Design System (identical to index.html) ── */
+    :root {
+      --navy-950: #07101E; --navy-900: #0D1B2E; --navy-800: #14253F;
+      --navy-700: #1B3055; --navy-600: #1E3A6A; --navy-500: #2A527A;
+      --navy-400: #3D6E96; --navy-300: #6A97B8; --navy-200: #A0BFCF;
+      --navy-100: #D4E4ED; --navy-50: #EEF5FA;
+      --amber-600: #C47A1A; --amber-500: #D98E22; --amber-400: #F0A830;
+      --amber-300: #F5BF62; --amber-100: #FAE8C0;
+      --green-success: #16A34A; --red-error: #DC2626;
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body: 'DM Sans', system-ui, sans-serif;
+      --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px;
+      --shadow-card: 0 2px 24px rgba(7,16,30,0.10);
+      --transition: all 0.22s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--navy-950);
+      color: var(--navy-50);
+      min-height: 100vh;
+      line-height: 1.65;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(62,110,150,0.18) 0%, transparent 60%),
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 100% 100%, 60px 60px, 60px 60px;
+    }
+
+    .page-wrapper { max-width: 720px; margin: 0 auto; padding: 40px 20px 80px; }
+
+    /* Header */
+    .site-header { text-align: center; margin-bottom: 40px; }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--navy-400); font-size: 13px; text-decoration: none;
+      margin-bottom: 20px; transition: var(--transition);
+    }
+    .back-link:hover { color: var(--amber-400); }
+
+    .full-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg, rgba(240,168,48,0.12), rgba(217,142,34,0.08));
+      border: 1px solid rgba(240,168,48,0.25);
+      border-radius: 40px; padding: 6px 18px 6px 12px;
+      margin-bottom: 20px; font-size: 12px; font-weight: 600;
+      letter-spacing: 0.06em; color: var(--amber-300);
+      text-transform: uppercase;
+    }
+
+    .full-badge-dot {
+      width: 7px; height: 7px; background: var(--amber-400);
+      border-radius: 50%; animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%,100% { opacity:1; transform:scale(1); }
+      50% { opacity:0.5; transform:scale(0.7); }
+    }
+
+    .site-title {
+      font-family: var(--font-display);
+      font-size: clamp(26px, 5vw, 42px);
+      font-weight: 700; color: #fff;
+      letter-spacing: -0.02em; line-height: 1.15;
+      margin-bottom: 10px;
+    }
+    .site-title .accent { color: var(--amber-400); font-style: italic; }
+
+    .site-subtitle {
+      font-size: 14px; color: var(--navy-300);
+      max-width: 480px; margin: 0 auto;
+      font-weight: 300; line-height: 1.7;
+    }
+
+    /* Legal badge */
+    .legal-badges {
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; margin-top: 16px; flex-wrap: wrap;
+    }
+    .legal-badge {
+      font-size: 11px; color: var(--navy-400);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px; padding: 3px 10px;
+    }
+
+    /* Card */
+    .card {
+      background: rgba(13,27,46,0.85);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+
+    /* Segment selector */
+    .segment-grid {
+      display: grid; grid-template-columns: repeat(2,1fr);
+      gap: 12px; padding: 28px;
+    }
+    @media(max-width:500px){ .segment-grid { grid-template-columns:1fr; } }
+
+    .seg-card {
+      background: rgba(255,255,255,0.03);
+      border: 1.5px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-md);
+      padding: 20px 16px; cursor: pointer;
+      transition: var(--transition); text-align: left;
+      position: relative; overflow: hidden;
+    }
+    .seg-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg,rgba(240,168,48,0.08),transparent 60%);
+      opacity: 0; transition: var(--transition);
+    }
+    .seg-card:hover { border-color: var(--amber-500); transform: translateY(-2px); }
+    .seg-card:hover::before { opacity: 1; }
+
+    .seg-icon { font-size: 22px; margin-bottom: 10px; display: block; }
+    .seg-methods {
+      font-size: 10px; color: var(--amber-500); font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px;
+    }
+    .seg-name {
+      font-family: var(--font-display); font-size: 17px; font-weight: 600;
+      color: rgba(255,255,255,0.92); margin-bottom: 4px;
+    }
+    .seg-desc { font-size: 11px; color: var(--navy-400); line-height: 1.5; }
+    .seg-count {
+      display: inline-block; font-size: 10px;
+      background: rgba(240,168,48,0.10); color: var(--amber-400);
+      border: 1px solid rgba(240,168,48,0.20);
+      border-radius: 10px; padding: 2px 8px; margin-top: 8px;
+    }
+
+    /* Progress */
+    .progress-bar-wrap {
+      padding: 16px 24px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .progress-meta {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 8px; font-size: 12px; color: var(--navy-400);
+    }
+    .progress-track {
+      height: 3px; background: rgba(255,255,255,0.06);
+      border-radius: 2px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg,var(--amber-600),var(--amber-400));
+      border-radius: 2px; transition: width 0.4s ease;
+    }
+
+    /* Question area */
+    .question-wrap { padding: 24px 28px; }
+
+    .q-number {
+      font-size: 11px; color: var(--navy-500); letter-spacing: 0.1em;
+      text-transform: uppercase; margin-bottom: 8px;
+    }
+    .q-method-tag {
+      display: inline-block; font-size: 10px; font-weight: 600;
+      background: rgba(240,168,48,0.08); color: var(--amber-400);
+      border: 1px solid rgba(240,168,48,0.18); border-radius: 4px;
+      padding: 1px 7px; margin-bottom: 10px; letter-spacing: 0.05em;
+    }
+    .q-text {
+      font-family: var(--font-display); font-size: 19px; font-weight: 600;
+      color: rgba(255,255,255,0.92); line-height: 1.4; margin-bottom: 6px;
+    }
+    .q-hint {
+      font-size: 12px; color: var(--navy-400); line-height: 1.6;
+      margin-bottom: 16px; padding: 8px 12px;
+      background: rgba(255,255,255,0.03);
+      border-left: 2px solid rgba(240,168,48,0.25);
+      border-radius: 0 4px 4px 0;
+    }
+
+    /* Options */
+    .option-list { display: flex; flex-direction: column; gap: 8px; }
+    .option-btn {
+      display: flex; align-items: flex-start; gap: 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1.5px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-md); padding: 12px 16px;
+      cursor: pointer; text-align: left; transition: var(--transition);
+      font-family: var(--font-body); color: rgba(255,255,255,0.80);
+      font-size: 13px; line-height: 1.5; width: 100%;
+    }
+    .option-btn:hover { border-color: var(--amber-500); background: rgba(240,168,48,0.05); }
+    .option-btn.selected {
+      border-color: var(--amber-400); background: rgba(240,168,48,0.08);
+      color: #fff;
+    }
+    .opt-marker {
+      width: 18px; height: 18px; flex-shrink: 0;
+      border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; color: var(--amber-400); margin-top: 1px;
+      transition: var(--transition);
+    }
+    .option-btn.selected .opt-marker {
+      background: var(--amber-400); border-color: var(--amber-400); color: var(--navy-950);
+    }
+
+    /* Number input */
+    .q-input-wrap { position: relative; margin-bottom: 8px; }
+    .q-input {
+      width: 100%; background: rgba(255,255,255,0.04);
+      border: 1.5px solid rgba(255,255,255,0.10);
+      border-radius: var(--radius-md); color: rgba(255,255,255,0.92);
+      font-family: var(--font-body); font-size: 15px;
+      padding: 12px 90px 12px 16px; transition: var(--transition);
+    }
+    .q-input:focus { outline: none; border-color: rgba(240,168,48,0.40); background: rgba(240,168,48,0.04); }
+    .q-unit { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--navy-500); }
+    .q-live {
+      font-size: 12px; color: var(--navy-400); padding: 4px 0;
+      min-height: 20px; transition: var(--transition);
+    }
+    .q-live.filled { color: var(--amber-400); }
+    .q-live.warning { color: #F87171; }
+
+    /* Text input */
+    .q-textarea {
+      width: 100%; background: rgba(255,255,255,0.04);
+      border: 1.5px solid rgba(255,255,255,0.10);
+      border-radius: var(--radius-md); color: rgba(255,255,255,0.92);
+      font-family: var(--font-body); font-size: 14px;
+      padding: 12px 16px; resize: vertical; min-height: 80px;
+      transition: var(--transition); line-height: 1.6;
+    }
+    .q-textarea:focus { outline: none; border-color: rgba(240,168,48,0.40); }
+
+    /* Sector 2-tier (reuse from index.html styles) */
+    .privacy-bar {
+      display: flex; gap: 8px; align-items: flex-start;
+      background: rgba(240,168,48,0.04); border: 1px solid rgba(240,168,48,0.12);
+      border-radius: var(--radius-sm); padding: 10px 14px;
+      font-size: 12px; color: var(--navy-300); line-height: 1.5; margin-bottom: 12px;
+    }
+    .sector-wrap { margin-bottom: 10px; }
+    .sector-select, .subsector-select {
+      width: 100%; background: rgba(255,255,255,0.04);
+      border: 1.5px solid rgba(255,255,255,0.10);
+      border-radius: var(--radius-md); color: rgba(255,255,255,0.85);
+      font-family: var(--font-body); font-size: 14px;
+      padding: 11px 14px; cursor: pointer;
+    }
+    .subsector-row { margin-top: 10px; }
+    .subsector-label { font-size: 12px; color: var(--navy-400); margin-bottom: 5px; }
+    .other-text-row { margin-top: 10px; }
+
+    /* Nav buttons */
+    .q-nav {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 28px; border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .btn-back {
+      background: none; border: 1px solid rgba(255,255,255,0.10);
+      border-radius: var(--radius-md); color: var(--navy-400);
+      font-family: var(--font-body); font-size: 13px;
+      padding: 9px 18px; cursor: pointer; transition: var(--transition);
+    }
+    .btn-back:hover { border-color: rgba(255,255,255,0.20); color: #fff; }
+    .btn-next {
+      background: linear-gradient(135deg, var(--amber-600), var(--amber-400));
+      border: none; border-radius: var(--radius-md); color: var(--navy-950);
+      font-family: var(--font-body); font-size: 14px; font-weight: 600;
+      padding: 11px 28px; cursor: pointer; transition: var(--transition);
+    }
+    .btn-next:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(240,168,48,0.3); }
+
+    /* Loading */
+    .loading-screen { padding: 60px 28px; text-align: center; }
+    .loading-title { font-family: var(--font-display); font-size: 22px; color: #fff; margin-bottom: 8px; }
+    .loading-sub { font-size: 13px; color: var(--navy-400); margin-bottom: 32px; }
+    .loading-steps { display: flex; flex-direction: column; gap: 10px; max-width: 320px; margin: 0 auto; text-align: left; }
+    .lstep { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--navy-500); }
+    .lstep.active { color: var(--amber-400); }
+    .lstep.done { color: var(--green-success); }
+    .lstep-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+    /* Result */
+    .result-screen { padding: 28px; }
+    .result-badge {
+      display: inline-block; font-size: 11px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      background: rgba(240,168,48,0.10); color: var(--amber-400);
+      border: 1px solid rgba(240,168,48,0.20); border-radius: 20px;
+      padding: 3px 12px; margin-bottom: 14px;
+    }
+    .result-label { font-size: 12px; color: var(--navy-400); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+    .result-value {
+      font-family: var(--font-display); font-size: clamp(28px,6vw,46px);
+      font-weight: 700; color: var(--amber-400); margin-bottom: 6px;
+    }
+    .result-per-share { font-size: 13px; color: var(--navy-400); margin-bottom: 20px; }
+
+    /* Range bars */
+    .range-bars { display: flex; gap: 8px; margin-bottom: 20px; }
+    .range-item { flex: 1; text-align: center; padding: 10px 6px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); }
+    .range-item.mid { background: rgba(240,168,48,0.08); border-color: rgba(240,168,48,0.25); }
+    .range-lbl { font-size: 10px; color: var(--navy-500); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+    .range-item.mid .range-lbl { color: var(--amber-400); }
+    .range-val { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.8); }
+    .range-item.mid .range-val { color: var(--amber-400); font-size: 15px; }
+
+    /* Method table */
+    .method-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; }
+    .method-table th { text-align: left; padding: 7px 10px; font-size: 11px; color: var(--navy-500); text-transform: uppercase; letter-spacing: 0.07em; border-bottom: 1px solid rgba(255,255,255,0.07); }
+    .method-table td { padding: 9px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); color: rgba(255,255,255,0.80); }
+    .method-table td.val { text-align: right; color: var(--amber-400); font-weight: 600; }
+    .method-table td.wt { text-align: center; color: var(--navy-400); }
+
+    /* Disclaimer */
+    .disclaimer-box {
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 20px;
+    }
+    .disclaimer-title { font-size: 11px; font-weight: 700; color: #F87171; letter-spacing: 0.08em; margin-bottom: 6px; }
+    .disclaimer-body { font-size: 12px; color: var(--navy-400); line-height: 1.6; }
+
+    /* Consent + Payment */
+    .consent-row { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 16px; }
+    .consent-row input[type=checkbox] { margin-top: 3px; flex-shrink: 0; accent-color: var(--amber-400); }
+    .consent-label { font-size: 12px; color: var(--navy-300); line-height: 1.5; cursor: pointer; }
+
+    .lead-form { margin-top: 16px; }
+    .form-group { margin-bottom: 12px; }
+    .form-label { font-size: 12px; color: var(--navy-400); margin-bottom: 5px; display: block; }
+    .form-input {
+      width: 100%; background: rgba(255,255,255,0.04);
+      border: 1.5px solid rgba(255,255,255,0.10);
+      border-radius: var(--radius-md); color: rgba(255,255,255,0.90);
+      font-family: var(--font-body); font-size: 14px;
+      padding: 10px 14px; transition: var(--transition);
+    }
+    .form-input:focus { outline: none; border-color: rgba(240,168,48,0.40); }
+
+    /* Promo */
+    .promo-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .promo-input { flex: 1; }
+    .promo-btn {
+      background: rgba(240,168,48,0.12); border: 1px solid rgba(240,168,48,0.25);
+      border-radius: var(--radius-md); color: var(--amber-400);
+      font-family: var(--font-body); font-size: 13px; font-weight: 600;
+      padding: 10px 16px; cursor: pointer; white-space: nowrap; transition: var(--transition);
+    }
+    .promo-btn:hover { background: rgba(240,168,48,0.20); }
+    .promo-msg { font-size: 12px; padding: 6px 10px; border-radius: 6px; margin-bottom: 10px; display: none; }
+    .promo-ok { background: rgba(22,163,74,0.12); color: #4ADE80; border: 1px solid rgba(22,163,74,0.25); }
+    .promo-err { background: rgba(220,38,38,0.12); color: #F87171; border: 1px solid rgba(220,38,38,0.25); }
+
+    /* Price display */
+    .price-block { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .price-label { font-size: 13px; color: var(--navy-400); }
+    .price-value { font-size: 15px; font-weight: 700; color: var(--amber-400); }
+    .price-saving { font-size: 12px; color: var(--navy-400); text-align: right; }
+
+    /* Pay button */
+    .btn-pay {
+      width: 100%; background: linear-gradient(135deg,var(--amber-600),var(--amber-400));
+      border: none; border-radius: var(--radius-md); color: var(--navy-950);
+      font-family: var(--font-display); font-size: 16px; font-weight: 700;
+      padding: 14px; cursor: pointer; transition: var(--transition); letter-spacing: 0.02em;
+    }
+    .btn-pay:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(240,168,48,0.35); }
+    .btn-pay:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* Thank you */
+    .thankyou-screen { padding: 40px 28px; text-align: center; }
+    .ty-icon { font-size: 40px; margin-bottom: 16px; }
+    .ty-title { font-family: var(--font-display); font-size: 24px; color: #fff; margin-bottom: 8px; }
+    .ty-sub { font-size: 14px; color: var(--navy-300); margin-bottom: 24px; line-height: 1.6; }
+    .btn-pdf {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg,var(--amber-600),var(--amber-400));
+      color: var(--navy-950); font-family: var(--font-body);
+      font-size: 14px; font-weight: 700; padding: 13px 28px;
+      border-radius: var(--radius-md); cursor: pointer; border: none;
+      transition: var(--transition); margin-bottom: 12px; width: 100%; justify-content: center;
+    }
+    .btn-pdf:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(240,168,48,0.35); }
+
+    /* Screen transitions */
+    .screen { display: none; }
+    .screen.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    .hidden { display: none !important; }
+
+    /* Footer */
+    .site-footer { text-align: center; padding: 32px 20px; }
+    .footer-disclaimer { font-size: 11px; color: var(--navy-600); line-height: 1.6; max-width: 560px; margin: 0 auto 12px; }
+    .footer-links { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+    .footer-links a { font-size: 12px; color: var(--navy-500); text-decoration: none; }
+    .footer-links a:hover { color: var(--amber-400); }
+
+    /* Sector benchmark badge */
+    #sector-benchmark { display: none; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+
+  <div class="page-wrapper">
+
+    <!-- HEADER -->
+    <header class="site-header">
+      <a href="/" class="back-link">← Quay lại ValuitBiz sơ khảo</a>
+      <div class="full-badge">
+        <div class="full-badge-dot"></div>
+        ValuitBiz Full · Định giá chuyên sâu
+      </div>
+      <h1 class="site-title">
+        Thẩm định giá<br><span class="accent">Toàn diện &amp; Chuẩn M&amp;A</span>
+      </h1>
+      <p class="site-subtitle">
+        43 câu hỏi đa phương pháp · Berkus · Scorecard · DCF/FCFF · EV/EBITDA · P/E · P/S · P/B<br>
+        Chuẩn <strong>TT36/2024/TT-BTC</strong> — Thông tư mới nhất Bộ Tài chính VN
+      </p>
+      <div class="legal-badges">
+        <span class="legal-badge">TT36/2024/TT-BTC</span>
+        <span class="legal-badge">TT37/2024 — Tài sản vô hình</span>
+        <span class="legal-badge">Luật Giá 2023</span>
+        <span class="legal-badge">NĐ 13/2023 — Bảo mật DL</span>
+      </div>
+    </header>
+
+    <!-- MAIN CARD -->
+    <div class="card">
+
+      <!-- SCREEN 1: SEGMENT SELECT -->
+      <div id="screen-segment" class="screen active">
+        <div style="padding:24px 28px 16px; border-bottom:1px solid rgba(255,255,255,0.05);">
+          <div style="font-family:var(--font-display);font-size:18px;font-weight:600;color:rgba(255,255,255,0.9);margin-bottom:4px;">
+            Chọn loại hình doanh nghiệp
+          </div>
+          <div style="font-size:13px;color:var(--navy-400);">
+            Hệ thống sẽ áp dụng bộ phương pháp và câu hỏi phù hợp với giai đoạn phát triển
+          </div>
+        </div>
+        <div class="segment-grid">
+          <button class="seg-card" onclick="startFull('idea')">
+            <span class="seg-icon">💡</span>
+            <div class="seg-methods">Berkus · Scorecard · Cost-to-Dup · VC</div>
+            <div class="seg-name">Ý tưởng / Pre-seed</div>
+            <div class="seg-desc">Chưa có sản phẩm hoặc doanh thu. Định giá tiềm năng ý tưởng, đội ngũ và thị trường.</div>
+            <span class="seg-count">17 câu hỏi</span>
+          </button>
+
+          <button class="seg-card" onclick="startFull('startup')">
+            <span class="seg-icon">🚀</span>
+            <div class="seg-methods">Berkus · Scorecard · VC Method · P/S</div>
+            <div class="seg-name">Startup / MVP</div>
+            <div class="seg-desc">Có sản phẩm và doanh thu sơ khởi, đang tăng trưởng. Định giá theo tiềm năng scale.</div>
+            <span class="seg-count">15 câu hỏi</span>
+          </button>
+
+          <button class="seg-card" onclick="startFull('sme')">
+            <span class="seg-icon">🏢</span>
+            <div class="seg-methods">P/E · P/S · P/B · Gordon · FCFE · EV/EBITDA</div>
+            <div class="seg-name">SME — Doanh nghiệp vừa nhỏ</div>
+            <div class="seg-desc">Hoạt động ổn định, có BCTC. Định giá đa phương pháp thị trường chuẩn M&A VN.</div>
+            <span class="seg-count">11 câu hỏi</span>
+          </button>
+
+          <button class="seg-card" onclick="startFull('enterprise')">
+            <span class="seg-icon">💎</span>
+            <div class="seg-methods">DCF/FCFF · WACC · EV/EBITDA · P/E · P/B</div>
+            <div class="seg-name">Enterprise — Doanh nghiệp lớn</div>
+            <div class="seg-desc">Doanh thu >$5M. DCF 5 năm + Terminal Value + Cross-validation theo TT36/2024.</div>
+            <span class="seg-count">10 câu hỏi</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- SCREEN 2: QUESTIONS -->
+      <div id="screen-questions" class="screen">
+        <div class="progress-bar-wrap">
+          <div class="progress-meta">
+            <span id="seg-label" style="font-weight:600;color:var(--amber-400);">SME</span>
+            <span id="q-count-label" style="color:var(--navy-500);">Câu 1 / 11</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+          </div>
+        </div>
+
+        <div class="question-wrap">
+          <div id="question-render"></div>
+        </div>
+
+        <div class="q-nav">
+          <button class="btn-back" id="btn-back" onclick="prevStep()">← Quay lại</button>
+          <button class="btn-next" id="btn-next" onclick="nextStep()">Tiếp theo →</button>
+        </div>
+      </div>
+
+      <!-- SCREEN 3: LOADING -->
+      <div id="screen-loading" class="screen">
+        <div class="loading-screen">
+          <div class="loading-title">Đang tính toán định giá...</div>
+          <div class="loading-sub">Áp dụng đa phương pháp chuẩn TT36/2024</div>
+          <div class="loading-steps">
+            <div class="lstep" id="lstep-0"><div class="lstep-dot"></div>Thu thập & chuẩn hoá dữ liệu đầu vào</div>
+            <div class="lstep" id="lstep-1"><div class="lstep-dot"></div>Tải hệ số ngành từ ValuitBiz Hub 2026</div>
+            <div class="lstep" id="lstep-2"><div class="lstep-dot"></div>Chạy đa phương pháp định giá</div>
+            <div class="lstep" id="lstep-3"><div class="lstep-dot"></div>Tổng hợp weighted average & range</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCREEN 4: RESULT -->
+      <div id="screen-result" class="screen">
+        <div class="result-screen">
+          <div class="result-badge">Định giá chuyên sâu hoàn tất · TT36/2024</div>
+
+          <!-- Main value -->
+          <div class="result-label">Giá trị vốn chủ sở hữu ước tính — Tham chiếu nội bộ</div>
+          <div class="result-value" id="txt-valuation">~</div>
+          <div class="result-per-share" id="txt-per-share"></div>
+
+          <!-- Range -->
+          <div id="range-wrap" class="range-bars" style="display:none">
+            <div class="range-item"><div class="range-lbl">Thận trọng</div><div class="range-val" id="range-min">—</div></div>
+            <div class="range-item mid"><div class="range-lbl">★ Khuyến nghị</div><div class="range-val" id="range-mid">—</div></div>
+            <div class="range-item"><div class="range-lbl">Lạc quan</div><div class="range-val" id="range-max">—</div></div>
+          </div>
+
+          <!-- Method table -->
+          <div id="method-table-wrap"></div>
+
+          <!-- Disclaimer -->
+          <div class="disclaimer-box">
+            <div class="disclaimer-title">⚠ PHẠM VI & GIỚI HẠN BÁO CÁO</div>
+            <div class="disclaimer-body" id="disclaimer-body">
+              Kết quả được tạo tự động bằng mô hình định lượng đa phương pháp dựa trên số liệu người dùng cung cấp và hệ số benchmark từ HOSE/HNX qua ValuitBiz Hub 2026. Đây là tham chiếu nội bộ chiến lược — KHÔNG phải Chứng thư Thẩm định Giá theo Luật Giá 2023 và TT36/2024/TT-BTC của Bộ Tài chính Việt Nam.
+            </div>
+          </div>
+
+          <!-- Consent -->
+          <label class="consent-row">
+            <input type="checkbox" id="chk-consent" onchange="toggleLeadForm()">
+            <span class="consent-label">Tôi đã đọc và hiểu rõ phạm vi giới hạn trên. Tôi muốn nhận <strong>Báo cáo Thẩm định Giá chuyên sâu (PDF)</strong> — bao gồm phân tích 6 phương pháp, độ nhạy WACC, benchmarking ngành và khuyến nghị chiến lược M&A.</span>
+          </label>
+
+          <!-- Lead form (hidden until consent) -->
+          <div id="lead-form" style="display:none">
+            <div class="form-group">
+              <label class="form-label">Họ và Tên chủ doanh nghiệp / CEO</label>
+              <input type="text" id="inp-name" class="form-input" placeholder="Nguyễn Văn A">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email nhận báo cáo PDF</label>
+              <input type="email" id="inp-email" class="form-input" placeholder="name@company.com">
+            </div>
+
+            <!-- Promo -->
+            <div class="promo-row">
+              <input type="text" id="inp-promo" class="form-input promo-input" placeholder="Mã ưu đãi (hỏi AI Trợ lý tại trang chính 🤖)" style="text-transform:uppercase">
+              <button class="promo-btn" onclick="applyPromo()">Áp dụng</button>
+            </div>
+            <div id="promo-msg" class="promo-msg"></div>
+
+            <!-- Price -->
+            <div class="price-block">
+              <span class="price-label">Báo cáo thẩm định chuyên sâu:</span>
+              <div>
+                <div class="price-value" id="price-txt">$100 USD</div>
+                <div class="price-saving" id="price-saving">Nhập mã ưu đãi để giảm giá</div>
+              </div>
+            </div>
+
+            <!-- Pay button -->
+            <button class="btn-pay" id="btn-pay" onclick="requestPayment()">
+              <span id="pay-btn-txt">Nhận Báo cáo PDF · $100 USD</span>
+            </button>
+            <div style="font-size:11px;color:var(--navy-600);text-align:center;margin-top:8px;">
+              Thanh toán QR (VNĐ) hoặc Thẻ/PayPal (USD) · SSL/TLS · NĐ 13/2023
+            </div>
+            <div style="font-size:11px;color:var(--navy-600);text-align:center;margin-top:4px;">
+              Đã thanh toán chưa nhận? <a href="https://zalo.me/1110831222679664093" target="_blank" style="color:var(--amber-400);">Hỗ trợ Zalo →</a>
+            </div>
+          </div>
+
+          <!-- Restart -->
+          <div style="text-align:center;margin-top:20px;">
+            <button onclick="resetAll()" style="background:none;border:none;color:var(--navy-500);font-size:12px;cursor:pointer;font-family:var(--font-body);">← Định giá doanh nghiệp khác</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCREEN 5: THANK YOU -->
+      <div id="screen-thankyou" class="screen">
+        <div class="thankyou-screen">
+          <div class="ty-icon">✅</div>
+          <div class="ty-title">Cảm ơn! Báo cáo đang được soạn thảo</div>
+          <div class="ty-sub">
+            Báo cáo thẩm định chuyên sâu sẽ gửi đến<br>
+            <strong style="color:var(--amber-400)" id="ty-email">email của bạn</strong><br>
+            trong vòng 5 phút.
+          </div>
+
+          <a id="polar-link" href="#" target="_blank" style="
+            display:inline-block;background:linear-gradient(135deg,#5B47F5,#7C3AED);
+            color:#fff;text-decoration:none;padding:12px 24px;
+            border-radius:var(--radius-md);font-weight:600;font-size:13px;
+            margin-bottom:12px;width:100%;text-align:center;
+          ">💳 Thanh toán $15 USD bằng thẻ / PayPal →</a>
+          <div style="font-size:11px;color:var(--navy-600);margin-bottom:24px;">Powered by Polar · Stripe · PayPal</div>
+
+          <button id="btn-download-pdf" class="btn-pdf" onclick="downloadFullPDF()" style="display:none">
+            ⬇ Tải Báo cáo PDF ngay
+          </button>
+
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">
+            <a href="https://advisory.sandboxstartup.vn" target="_blank" style="display:block;text-align:center;font-size:13px;color:var(--amber-400);text-decoration:none;">📅 Đặt lịch tư vấn M&A miễn phí →</a>
+            <a href="/" style="display:block;text-align:center;font-size:12px;color:var(--navy-500);text-decoration:none;">← Quay lại trang chủ ValuitBiz</a>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /card -->
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <p class="footer-disclaimer">
+        ⚠ ValuitBiz Full là công cụ mô phỏng định giá tự động. Kết quả không phải chứng thư thẩm định giá theo Luật Giá 2023 và TT36/2024/TT-BTC. Không có giá trị pháp lý trong M&A, IPO, thế chấp hoặc kê khai thuế. Dữ liệu bảo mật theo NĐ 13/2023/NĐ-CP.
+      </p>
+      <div class="footer-links">
+        <a href="/chinh-sach-bao-mat">Chính sách bảo mật</a>
+        <a href="/dieu-khoan">Điều khoản</a>
+        <a href="https://zalo.me/1110831222679664093" target="_blank">Hỗ trợ Zalo</a>
+        <a href="/">← ValuitBiz sơ khảo</a>
+      </div>
+      <p style="margin-top:12px;font-size:11px;color:var(--navy-700);">© 2026 ValuitBiz Full · SCF Investment JSC · SandboxStartUp.VN</p>
+    </footer>
+
+  </div><!-- /page-wrapper -->
+
+  <script>
+  'use strict';
+
+  /* ── CONFIG ── */
+  const HUB_API    = 'https://script.google.com/macros/s/AKfycbxk-cBHxldDYBlVn6Cj9rOw7xZHohXtAtnDN3m9Hc_3gReIe4m1WVljbl0YiPWP-Ex_2w/exec';
+  const PAY_API    = 'https://script.google.com/macros/s/AKfycbzLJJo1OlwQvY10deHH-SOYmiVFtZm2a7EYU1iLvAmOm0mWmrMrwZO7klqdEYemTO_x2w/exec';
+  const POLAR_URL  = 'https://buy.polar.sh/polar_cl_etwFklJEGOIVHd4uTnwBxo3xjG2BR2eq48Q5F03gx3X';
+  const ORDER_PFX  = 'ValuitFULL';
+  const PRICE_FULL = 2540000;   // $100 hiển thị
+  const PRICE_BASE = 381000;    // $15 sau JAMELA85
+
+  const PROMOS = {
+    'JAMELA85': { type:'pct', value:85, finalVND:381000,
+      desc:'🎉 Giảm 85% — Chỉ còn $15 USD (~381,000 VNĐ)' },
+    'DGDN100':  { type:'free100', finalVND:0, limit:20, limitKey:'vb_full_dgdn100',
+      desc:'✅ Mã admin — Miễn phí 100%' },
+    'BTS10':    { type:'fixed', finalVND:10000, limit:50, limitKey:'vb_full_bts10',
+      desc:'🧪 Mã test — Chỉ 10,000 VNĐ' },
+  };
+
+  /* ── STATE ── */
+  let st = {
+    segment: '', step: 0, answers: {},
+    calcResult: null, promoCode: null,
+    finalPrice: PRICE_FULL, promoType: null,
+  };
+  let _payState = { orderId:'', email:'', amount:0, verified:false };
+  let _pdfDone  = false;
+
+  /* ── HUB DEFAULTS ── */
+  const HUB_DEF = {
+    cong_nghe_phan_mem:{ pe:25, ps:5.0, pb:6.0, ev:22, wacc:14.0 },
+    thuong_mai_dien_tu:{ pe:null, ps:3.0, pb:5.0, ev:35, wacc:15.0 },
+    f_b:               { pe:18, ps:2.0, pb:3.0, ev:14, wacc:11.5 },
+    san_xuat:          { pe:14, ps:1.2, pb:1.8, ev:9,  wacc:11.5 },
+    thuong_mai:        { pe:12, ps:0.9, pb:1.5, ev:8,  wacc:11.0 },
+    y_te:              { pe:25, ps:4.0, pb:4.0, ev:20, wacc:13.0 },
+    logistics:         { pe:15, ps:1.2, pb:1.8, ev:12, wacc:12.0 },
+    giao_duc:          { pe:20, ps:3.5, pb:3.5, ev:18, wacc:13.5 },
+    nong_nghiep:       { pe:12, ps:1.0, pb:1.3, ev:9,  wacc:10.5 },
+    xay_dung:          { pe:12, ps:0.8, pb:1.5, ev:8,  wacc:12.5 },
+    tai_chinh:         { pe:15, ps:2.5, pb:1.5, ev:15, wacc:10.0 },
+    other:             { pe:16, ps:2.0, pb:2.8, ev:12, wacc:12.5 },
+  };
+
+  function getHubMult(sectorId) {
+    return HUB_DEF[sectorId] || HUB_DEF.other;
+  }
+
+  /* ── SECTOR TAXONOMY (same as index.html) ── */
+  const SECTOR_TAXONOMY = {
+    cong_nghe:   { label_vn:'Công nghệ & Phần mềm', label_en:'Tech & Software', icon:'💻', benchmark_pe:25, benchmark_ps:5,
+      subs_vn:['SaaS / Phần mềm thuê bao','AI & Machine Learning','Fintech & Thanh toán số','EdTech / Học trực tuyến','HealthTech / Y tế số','E-commerce Platform','Cybersecurity','Cloud & Infrastructure'],
+      subs_en:['SaaS / Subscription Software','AI & Machine Learning','Fintech & Digital Payment','EdTech / Online Learning','HealthTech / Digital Health','E-commerce Platform','Cybersecurity','Cloud & Infrastructure'] },
+    san_xuat:    { label_vn:'Sản xuất & Chế biến', label_en:'Manufacturing', icon:'🏭', benchmark_pe:14, benchmark_ps:1.2,
+      subs_vn:['Sản xuất hàng tiêu dùng','Chế biến thực phẩm & đồ uống','Sản xuất điện tử & linh kiện','Dệt may & thời trang','Vật liệu xây dựng','Hóa chất & nhựa','Cơ khí & thiết bị'],
+      subs_en:['Consumer goods manufacturing','Food & beverage processing','Electronics & components','Textile & fashion','Construction materials','Chemicals & plastics','Machinery & equipment'] },
+    thuong_mai:  { label_vn:'Thương mại & Phân phối', label_en:'Trading & Distribution', icon:'🛒', benchmark_pe:12, benchmark_ps:0.9,
+      subs_vn:['Bán lẻ đa kênh (Omnichannel)','Phân phối độc quyền (Exclusive)','Xuất nhập khẩu','Marketplace / Sàn TMĐT','Bán buôn B2B'],
+      subs_en:['Omnichannel retail','Exclusive distribution','Import/Export','Marketplace / E-commerce','B2B wholesale'] },
+    f_b:         { label_vn:'F&B & Chuỗi dịch vụ', label_en:'F&B & Service Chains', icon:'🍜', benchmark_pe:18, benchmark_ps:2.0,
+      subs_vn:['Chuỗi nhà hàng / Quán cafe','Cloud kitchen & Delivery','Thực phẩm đóng gói & FMCG','Franchise F&B','Catering & Event'],
+      subs_en:['Restaurant / Cafe chain','Cloud kitchen & Delivery','Packaged food & FMCG','F&B Franchise','Catering & Event'] },
+    y_te:        { label_vn:'Y tế & Sức khỏe', label_en:'Healthcare & Medical', icon:'🏥', benchmark_pe:25, benchmark_ps:4.0,
+      subs_vn:['Bệnh viện / Phòng khám tư','Dược phẩm & Thiết bị y tế','Nha khoa chuỗi','Sức khỏe tinh thần & Wellness','Xét nghiệm & Chẩn đoán hình ảnh'],
+      subs_en:['Private hospital / Clinic','Pharma & Medical devices','Dental chain','Mental health & Wellness','Lab & Diagnostic imaging'] },
+    giao_duc:    { label_vn:'Giáo dục & Đào tạo', label_en:'Education & Training', icon:'📚', benchmark_pe:20, benchmark_ps:3.5,
+      subs_vn:['Trường học tư / Quốc tế','Trung tâm ngoại ngữ & kỹ năng','EdTech / Nền tảng học trực tuyến','Đào tạo nghề & Chuyên nghiệp','Du học & Tư vấn giáo dục'],
+      subs_en:['Private / International school','Language & skills center','EdTech / Online learning platform','Vocational & Professional training','Study abroad & Education consulting'] },
+    logistics:   { label_vn:'Logistics & Vận tải', label_en:'Logistics & Transport', icon:'🚚', benchmark_pe:15, benchmark_ps:1.2,
+      subs_vn:['Chuyển phát nhanh (Last-mile)','Kho bãi & Chuỗi lạnh','Vận tải đường bộ / biển / hàng không','Nền tảng logistics (Aggregator)','Công nghệ chuỗi cung ứng'],
+      subs_en:['Last-mile delivery','Warehousing & Cold chain','Road / Sea / Air freight','Logistics aggregator platform','Supply chain technology'] },
+    nong_nghiep: { label_vn:'Nông nghiệp & Agritech', label_en:'Agriculture & Agritech', icon:'🌾', benchmark_pe:12, benchmark_ps:1.0,
+      subs_vn:['Trồng trọt & Chăn nuôi quy mô lớn','Thủy sản & Nuôi trồng','Agritech & Nông nghiệp công nghệ cao','Chế biến & Xuất khẩu nông sản','Phân bón & Nông dược'],
+      subs_en:['Large-scale farming & livestock','Aquaculture & fisheries','Agritech & Smart farming','Agricultural processing & export','Fertilizer & Agrochemicals'] },
+    xay_dung:    { label_vn:'Xây dựng & Hạ tầng', label_en:'Construction & Infrastructure', icon:'🏗️', benchmark_pe:12, benchmark_ps:0.8,
+      subs_vn:['Tổng thầu xây dựng dân dụng & công nghiệp','Hạ tầng kỹ thuật & Công trình công cộng','Vật liệu xây dựng cao cấp','Thiết kế kiến trúc & Tư vấn','M&E & Cơ điện lạnh'],
+      subs_en:['Civil & industrial general contractor','Technical infrastructure & Public works','Premium construction materials','Architectural design & Consulting','M&E & HVAC systems'] },
+    tai_chinh:   { label_vn:'Tài chính & Bảo hiểm', label_en:'Finance & Insurance', icon:'🏦', benchmark_pe:15, benchmark_ps:2.5,
+      subs_vn:['Ngân hàng thương mại','Công ty chứng khoán & Quản lý quỹ','Bảo hiểm nhân thọ & Phi nhân thọ','Fintech cho vay tiêu dùng','Kế toán kiểm toán & Tư vấn tài chính'],
+      subs_en:['Commercial banking','Securities & Fund management','Life & Non-life insurance','Consumer lending fintech','Accounting audit & Financial advisory'] },
+    realestate:  { label_vn:'Bất động sản', label_en:'Real Estate', icon:'🏘️', redirect: true,
+      subs_vn:[], subs_en:[] },
+    other:       { label_vn:'Ngành khác', label_en:'Other Industry', icon:'🔷', benchmark_pe:16, benchmark_ps:2.0,
+      subs_vn:[], subs_en:[] },
+  };
+
+  /* ── FIELD UNITS ── */
+  const FIELD_UNITS = {
+    tam_billion:'ty', revenue_year5:'ty', revenue:'trieu',
+    net_profit:'trieu', equity:'trieu', cost_invested:'trieu',
+    funding_raised_billion:'ty', ebitda:'ty', total_debt:'ty',
+    cash:'ty', fcf_year1:'ty', capex:'ty',
+    active_users:'users', total_shares:'shares', total_shares_ent:'shares',
+  };
+
+  /* ── QUESTIONS — 43 total ── */
+  const QUESTIONS = {
+
+    idea: [
+      { id:'idea_quality', type:'select',
+        title_vn:'Ý tưởng đã được nghiên cứu và kiểm chứng thị trường chưa?',
+        title_en:'Has your idea been market-researched and validated?',
+        tag:'Berkus · Yếu tố 1',
+        hint_vn:'Sound Idea: mức độ nghiên cứu ảnh hưởng trực tiếp đến giá trị nền tảng Berkus.',
+        hint_en:'Sound Idea: research depth directly impacts Berkus base valuation.',
+        options_vn:[
+          {val:100,label:'Chưa — mới ở giai đoạn ý tưởng ban đầu'},
+          {val:250,label:'Đã có nghiên cứu thị trường sơ bộ, có cơ sở'},
+          {val:500,label:'Đã có phản hồi tích cực từ khách hàng tiềm năng'},
+        ],
+        options_en:[
+          {val:100,label:'No — still at initial concept stage'},
+          {val:250,label:'Basic market research done with rationale'},
+          {val:500,label:'Positive feedback from potential customers'},
+        ]},
+
+      { id:'idea_team', type:'select',
+        title_vn:'Đội ngũ sáng lập có kinh nghiệm liên quan không?',
+        title_en:'Does the founding team have relevant experience?',
+        tag:'Berkus · Yếu tố 2',
+        hint_vn:'Founding Team: nhân tố quan trọng nhất quyết định xác suất thành công của dự án.',
+        hint_en:'Founding Team: single most critical factor for project success probability.',
+        options_vn:[
+          {val:0,  label:'Chưa có kinh nghiệm trực tiếp trong lĩnh vực này'},
+          {val:250,label:'Có kinh nghiệm một phần hoặc từ ngành liên quan'},
+          {val:500,label:'Founder đã làm trong ngành 3–5+ năm hoặc từng exit'},
+        ],
+        options_en:[
+          {val:0,  label:'No direct experience in this field'},
+          {val:250,label:'Partial or adjacent industry experience'},
+          {val:500,label:'Founder has 3–5+ years in sector or prior exit'},
+        ]},
+
+      { id:'idea_tam', type:'number',
+        title_vn:'Tổng quy mô thị trường mục tiêu (TAM) ước tính (tỷ VNĐ)?',
+        title_en:'Estimated Total Addressable Market — TAM (billion VND)?',
+        tag:'Berkus · Yếu tố 3',
+        placeholder_vn:'VD: 5000 (= 5,000 tỷ VNĐ ~ $200M)',
+        placeholder_en:'e.g. 5000 (= ~$200M)',
+        hint_vn:'TAM = tổng doanh thu nếu chiếm 100% thị trường. Dùng quy mô VN hoặc ASEAN nếu có kế hoạch mở rộng.',
+        hint_en:'TAM = total revenue if capturing 100% of market. Use ASEAN scope if expansion planned.' },
+
+      { id:'idea_ip', type:'select',
+        title_vn:'Mức độ bảo vệ công nghệ lõi / sở hữu trí tuệ (IP)?',
+        title_en:'How protected is your core technology / IP?',
+        tag:'Berkus · Yếu tố 4',
+        hint_vn:'Core Technology/IP: rào cản cạnh tranh và lợi thế phòng thủ dài hạn.',
+        hint_en:'Core Technology/IP: competitive barrier and long-term defensive advantage.',
+        options_vn:[
+          {val:0,  label:'Chưa có IP, ý tưởng dễ bị sao chép'},
+          {val:250,label:'Có lợi thế kỹ thuật nhưng chưa đăng ký bảo hộ'},
+          {val:500,label:'Đã đăng ký bằng sáng chế / quy trình độc quyền / trade secret'},
+        ],
+        options_en:[
+          {val:0,  label:'No IP, idea easily replicable'},
+          {val:250,label:'Technical advantage but not formally protected'},
+          {val:500,label:'Patent filed / proprietary process / trade secret'},
+        ]},
+
+      { id:'idea_traction', type:'select',
+        title_vn:'Traction hiện tại — đã có khách hàng trả tiền chưa?',
+        title_en:'Current traction — any paying customers yet?',
+        tag:'Berkus · Yếu tố 5',
+        hint_vn:'Traction là bằng chứng thị trường thực tế mạnh nhất. Khách hàng trả tiền > LOI > beta users.',
+        hint_en:'Traction is the strongest real-world market evidence. Paying > LOI > beta users.',
+        options_vn:[
+          {val:0,  label:'Chưa có — chỉ là ý tưởng / prototype'},
+          {val:250,label:'Có 1–10 người dùng thử / beta tester'},
+          {val:500,label:'Có khách hàng trả tiền đều đặn, doanh thu > 0'},
+        ],
+        options_en:[
+          {val:0,  label:'None — idea / prototype stage only'},
+          {val:250,label:'1–10 trial users / beta testers'},
+          {val:500,label:'Paying customers, revenue > 0'},
+        ]},
+
+      { id:'pain_level', type:'select',
+        title_vn:'Mức độ "nỗi đau" mà sản phẩm giải quyết?',
+        title_en:'Severity of the pain point your product solves?',
+        tag:'Scorecard Method',
+        hint_vn:'Vitamin = nice-to-have. Painkiller = must-have. Antibiotic = critical / bắt buộc.',
+        hint_en:'Vitamin = nice-to-have. Painkiller = must-have. Antibiotic = critical / mandatory.',
+        options_vn:[
+          {val:'vitamin',   label:'Vitamin (Nice-to-have) — tiện ích bổ sung, không có cũng được'},
+          {val:'painkiller',label:'Painkiller (Must-have) — giải quyết nỗi đau nhức nhối trực tiếp'},
+          {val:'antibiotic',label:'Antibiotic (Critical) — giải quyết bài toán sống còn, bắt buộc'},
+        ],
+        options_en:[
+          {val:'vitamin',   label:'Vitamin (Nice-to-have) — supplementary, can live without it'},
+          {val:'painkiller',label:'Painkiller (Must-have) — solves a direct, pressing pain'},
+          {val:'antibiotic',label:'Antibiotic (Critical) — mission-critical, mandatory solution'},
+        ]},
+
+      { id:'moat_level', type:'select',
+        title_vn:'Lợi thế cạnh tranh / Economic Moat?',
+        title_en:'Competitive advantage / Economic Moat?',
+        tag:'Scorecard · Cost-to-Dup',
+        hint_vn:'Moat cao → premium lớn trong Cost-to-Duplicate và Scorecard multiplier.',
+        hint_en:'High moat → large premium in Cost-to-Duplicate and Scorecard multiplier.',
+        options_vn:[
+          {val:'low',   label:'Thấp — có thể bị sao chép trong 1–3 tháng'},
+          {val:'medium',label:'Trung bình — có quy trình / cộng đồng người dùng nhất định'},
+          {val:'high',  label:'Cao — bằng sáng chế, AI độc quyền, Network Effect mạnh'},
+        ],
+        options_en:[
+          {val:'low',   label:'Low — easily replicated in 1–3 months'},
+          {val:'medium',label:'Medium — some process / user community advantage'},
+          {val:'high',  label:'High — patent, proprietary AI, or strong network effects'},
+        ]},
+
+      { id:'cost_invested', type:'number',
+        title_vn:'Tổng vốn đã đầu tư vào dự án đến nay (triệu VNĐ)?',
+        title_en:'Total capital invested into the project so far (million VND)?',
+        tag:'Cost-to-Duplicate',
+        placeholder_vn:'VD: 500 (= 500 triệu VNĐ ~ $20K)',
+        placeholder_en:'e.g. 500 (= ~$20K)',
+        hint_vn:'Gồm: lương nhóm, thuê server, marketing, R&D, thiết kế, pháp lý. Dùng để tính lower bound.',
+        hint_en:'Includes: team salaries, servers, marketing, R&D, design, legal. Used for lower bound.' },
+
+      { id:'revenue_year5', type:'number',
+        title_vn:'Doanh thu kỳ vọng tại năm thứ 5 (tỷ VNĐ)?',
+        title_en:'Expected revenue in Year 5 (billion VND)?',
+        tag:'VC Back-from-Exit',
+        placeholder_vn:'VD: 50 (= 50 tỷ VNĐ ~ $2M)',
+        placeholder_en:'e.g. 50 (= ~$2M)',
+        hint_vn:'VC Method tính ngược từ Exit Value. Ước tính lạc quan có cơ sở từ growth rate hiện tại.',
+        hint_en:'VC Method back-calculates from Exit Value. Optimistic but grounded on current growth.' },
+
+      { id:'exit_multiple', type:'select',
+        title_vn:'Bội số định giá ngành khi Exit/IPO (Revenue Multiple)?',
+        title_en:'Industry revenue multiple at Exit/IPO?',
+        tag:'VC Back-from-Exit',
+        hint_vn:'Exit Value = Rev năm 5 × Multiple. SaaS: 5-8×; F&B: 3×; AI/Fintech: 10-15×',
+        hint_en:'Exit Value = Year-5 Rev × Multiple. SaaS: 5-8×; F&B: 3×; AI/Fintech: 10-15×',
+        options_vn:[
+          {val:3, label:'3× — F&B, Bán lẻ, Dịch vụ truyền thống'},
+          {val:5, label:'5× — Phần mềm, EdTech, HealthTech'},
+          {val:8, label:'8× — SaaS / Marketplace tăng trưởng cao'},
+          {val:12,label:'12× — AI / DeepTech / FinTech đột phá'},
+        ],
+        options_en:[
+          {val:3, label:'3× — F&B, Retail, Traditional Services'},
+          {val:5, label:'5× — Software, EdTech, HealthTech'},
+          {val:8, label:'8× — High-growth SaaS / Marketplace'},
+          {val:12,label:'12× — AI / DeepTech / FinTech disruptors'},
+        ]},
+
+      { id:'investor_roi', type:'select',
+        title_vn:'ROI kỳ vọng của nhà đầu tư?',
+        title_en:'Expected investor ROI target?',
+        tag:'VC Back-from-Exit',
+        hint_vn:'Angel VN kỳ vọng 10-20× trong 5 năm. ROI càng cao → định giá hiện tại càng thấp.',
+        hint_en:'VN Angels expect 10-20× in 5 years. Higher ROI = lower current implied valuation.',
+        options_vn:[
+          {val:10,label:'10× — Angel/Seed, thị trường ổn định'},
+          {val:15,label:'15× — Series A tiêu chuẩn'},
+          {val:20,label:'20× — VC chuyên nghiệp, early stage'},
+        ],
+        options_en:[
+          {val:10,label:'10× — Angel/Seed, stable market'},
+          {val:15,label:'15× — Standard Series A'},
+          {val:20,label:'20× — Professional VC, early stage'},
+        ]},
+
+      { id:'funding_raised_billion', type:'number',
+        title_vn:'Đã gọi được vốn bên ngoài bao nhiêu? (tỷ VNĐ, nhập 0 nếu chưa)',
+        title_en:'External funding raised so far? (billion VND, enter 0 if none)',
+        tag:'Funding Multiplier',
+        placeholder_vn:'VD: 2.5 (= 2.5 tỷ ~ $100K). Nhập 0 nếu bootstrapped.',
+        placeholder_en:'e.g. 2.5 (= ~$100K). Enter 0 if bootstrapped.',
+        hint_vn:'Có funding từ VC/Angel uy tín = market-validated valuation. Funding Val = Vốn × 3.',
+        hint_en:'Credible VC/Angel funding = market-validated valuation. Funding Val = Capital × 3.' },
+
+      { id:'bm_type', type:'sector2tier',
+        title_vn:'Lĩnh vực & Mô hình kinh doanh của dự án?',
+        title_en:'Business sector & model of your project?',
+        tag:'Benchmark ngành',
+        hint_vn:'Chọn ngành để hệ thống áp dụng đúng multiple và benchmark. Khác → AI tự nhận diện.',
+        hint_en:'Select sector for correct multiples. Other → AI auto-classifies.' },
+
+      { id:'customer_segment', type:'text',
+        title_vn:'① LEAN CANVAS — Phân khúc KH: Ai là người THỰC SỰ trả tiền?',
+        title_en:'① LEAN CANVAS — Customer Segments: Who actually pays?',
+        tag:'Lean Canvas',
+        placeholder_vn:'VD: SME ngành F&B, 20-100 NV, đang dùng Excel quản lý kho...',
+        placeholder_en:'e.g. F&B SMEs, 20-100 staff, currently using Excel...',
+        hint_vn:'Cụ thể: ngành, quy mô, hành vi hiện tại. Càng chi tiết AI phân tích càng chính xác.',
+        hint_en:'Be specific: sector, size, current behavior. More detail = sharper AI analysis.' },
+
+      { id:'problem', type:'text',
+        title_vn:'② LEAN CANVAS — Vấn đề: 3 nỗi đau lớn nhất khách hàng đang gặp?',
+        title_en:'② LEAN CANVAS — Problem: Top 3 pain points your customers face?',
+        tag:'Lean Canvas',
+        placeholder_vn:'1) Mất 3h/ngày nhập liệu thủ công\n2) Sai sót gây thiếu hàng\n3) Không có báo cáo real-time',
+        placeholder_en:'1) 3hrs/day manual entry\n2) Errors cause stockouts\n3) No real-time reports',
+        hint_vn:'Dùng số liệu cụ thể: thời gian lãng phí, chi phí phát sinh, tỷ lệ lỗi...',
+        hint_en:'Use specific numbers: wasted time, extra costs, error rates...' },
+
+      { id:'uvp', type:'text',
+        title_vn:'③ LEAN CANVAS — Giá trị độc nhất (UVP): Tại sao chọn bạn?',
+        title_en:'③ LEAN CANVAS — Unique Value Proposition: Why choose you?',
+        tag:'Lean Canvas',
+        placeholder_vn:'VD: Tự động hoá 80% nhập liệu, tiết kiệm 2.5h/ngày, không cần IT',
+        placeholder_en:'e.g. Automates 80% data entry, saves 2.5hrs/day, no IT required',
+        hint_vn:'Công thức: [Làm gì] + [Cho ai] + [Lợi ích đo được] + [Khác đối thủ ở điểm nào]',
+        hint_en:'Formula: [What] + [For whom] + [Measurable benefit] + [Unlike competitors]' },
+
+      { id:'unfair_advantage', type:'text',
+        title_vn:'④ LEAN CANVAS — Lợi thế không thể sao chép (Unfair Advantage)?',
+        title_en:'④ LEAN CANVAS — Unfair Advantage: What cannot be easily copied?',
+        tag:'Lean Canvas',
+        placeholder_vn:'VD: 10 năm ngành F&B + 500 KH beta + patent thuật toán tối ưu kho',
+        placeholder_en:'e.g. 10yr F&B experience + 500 beta customers + warehouse algorithm patent',
+        hint_vn:'Không phải "làm tốt hơn" mà là "vị trí độc quyền không ai có được".',
+        hint_en:'Not "doing better" — but "uniquely positioned, cannot be replicated".' },
+    ],
+
+    startup: [
+      { id:'revenue', type:'number',
+        title_vn:'Doanh thu 12 tháng gần nhất (triệu VNĐ)?',
+        title_en:'Revenue last 12 months (million VND)?',
+        tag:'P/S Multiple',
+        placeholder_vn:'VD: 500 (= 500 triệu VNĐ ~ $20K/năm)',
+        placeholder_en:'e.g. 500 (= ~$20K/year)',
+        hint_vn:'Dùng LTM (Last Twelve Months). Doanh thu thuần sau chiết khấu. Nhập 0 nếu pre-revenue.',
+        hint_en:'Use LTM net revenue after discounts. Enter 0 if pre-revenue.' },
+
+      { id:'mom_growth', type:'number',
+        title_vn:'Tốc độ tăng trưởng MoM trung bình (% / tháng)?',
+        title_en:'Average Month-over-Month growth rate (% / month)?',
+        tag:'Growth Signal',
+        placeholder_vn:'VD: 15 (= 15%/tháng). 10%+ là xuất sắc.',
+        placeholder_en:'e.g. 15 (= 15%/month). 10%+ is exceptional.',
+        hint_vn:'MoM growth là chỉ số quan trọng nhất của startup giai đoạn đầu. Ảnh hưởng Scorecard multiplier.',
+        hint_en:'MoM growth is the #1 metric for early-stage startups. Affects Scorecard multiplier.' },
+
+      { id:'biz_model', type:'select',
+        title_vn:'Mô hình doanh thu chính?',
+        title_en:'Primary revenue model?',
+        tag:'Method Selection',
+        hint_vn:'Mô hình ảnh hưởng đến multiple và trọng số phương pháp định giá.',
+        hint_en:'Revenue model affects applicable multiples and method weights.',
+        options_vn:[
+          {val:'saas',       label:'SaaS / Subscription — thu phí định kỳ tháng/năm'},
+          {val:'marketplace',label:'Marketplace / Platform — thu phí giao dịch (take rate)'},
+          {val:'one_time',   label:'Bán sản phẩm / dịch vụ một lần'},
+          {val:'freemium',   label:'Freemium → Premium conversion'},
+          {val:'project',    label:'Dịch vụ theo dự án / hợp đồng'},
+          {val:'franchise',  label:'Nhượng quyền / Franchise'},
+        ],
+        options_en:[
+          {val:'saas',       label:'SaaS / Subscription — recurring monthly/annual fees'},
+          {val:'marketplace',label:'Marketplace / Platform — transaction fee (take rate)'},
+          {val:'one_time',   label:'One-time product / service sale'},
+          {val:'freemium',   label:'Freemium → Premium conversion'},
+          {val:'project',    label:'Project-based / contract services'},
+          {val:'franchise',  label:'Franchise model'},
+        ]},
+
+      { id:'active_users', type:'number',
+        title_vn:'Số người dùng / khách hàng đang hoạt động?',
+        title_en:'Current active users / customers?',
+        tag:'Traction Signal',
+        placeholder_vn:'VD: 250 (active trong tháng gần nhất)',
+        placeholder_en:'e.g. 250 (active in last month)',
+        hint_vn:'DAU/MAU ratio và retention rate là signal chất lượng tăng trưởng.',
+        hint_en:'DAU/MAU ratio and retention signal growth quality.' },
+
+      { id:'team_structure', type:'select',
+        title_vn:'Cấu trúc đội ngũ sáng lập?',
+        title_en:'Founding team structure?',
+        tag:'Scorecard · Team',
+        hint_vn:'Hustler = Business/Sales, Hacker = Engineering, Hipster = Design/UX/Product',
+        hint_en:'Hustler = Business/Sales, Hacker = Engineering, Hipster = Design/UX/Product',
+        options_vn:[
+          {val:0.6, label:'Solo founder — 1 người đảm nhận tất cả'},
+          {val:0.85,label:'Hustler (biz) + Hacker (tech) — 2 người'},
+          {val:1.0, label:'Đủ 3 vai trò Hustler + Hacker + Hipster'},
+          {val:1.2, label:'Đủ 3 vai trò + có advisor/mentor ngành uy tín'},
+        ],
+        options_en:[
+          {val:0.6, label:'Solo founder — one person does everything'},
+          {val:0.85,label:'Hustler (biz) + Hacker (tech) — 2 co-founders'},
+          {val:1.0, label:'Full Hustler + Hacker + Hipster'},
+          {val:1.2, label:'Full team + credible industry advisors'},
+        ]},
+
+      { id:'founder_track', type:'select',
+        title_vn:'Track record của đội ngũ sáng lập?',
+        title_en:'Founding team track record?',
+        tag:'Scorecard · Team',
+        hint_vn:'Serial founder có exit trước nhận premium lớn từ investor.',
+        hint_en:'Serial founders with prior exits command significant investor premiums.',
+        options_vn:[
+          {val:0.8,label:'First-time founder, chưa có kinh nghiệm startup'},
+          {val:1.0,label:'Có kinh nghiệm ngành 3-5 năm, lần đầu làm startup'},
+          {val:1.2,label:'Từng làm startup trước (dù chưa exit thành công)'},
+          {val:1.5,label:'Serial founder — đã từng exit / IPO thành công'},
+        ],
+        options_en:[
+          {val:0.8,label:'First-time founder, no startup experience'},
+          {val:1.0,label:'3-5 years industry experience, first startup'},
+          {val:1.2,label:'Prior startup experience (even without successful exit)'},
+          {val:1.5,label:'Serial founder — prior successful exit / IPO'},
+        ]},
+
+      { id:'pain_level', type:'select',
+        title_vn:'Mức độ nỗi đau mà startup giải quyết?',
+        title_en:'Severity of pain point your startup solves?',
+        tag:'Scorecard · Market',
+        options_vn:[
+          {val:'vitamin',   label:'Vitamin — nice-to-have, tiện ích bổ sung'},
+          {val:'painkiller',label:'Painkiller — must-have, giải quyết nỗi đau trực tiếp'},
+          {val:'antibiotic',label:'Antibiotic — critical, bắt buộc phải có'},
+        ],
+        options_en:[
+          {val:'vitamin',   label:'Vitamin — supplementary, nice-to-have'},
+          {val:'painkiller',label:'Painkiller — must-have, solves direct pain'},
+          {val:'antibiotic',label:'Antibiotic — critical, mandatory for survival'},
+        ]},
+
+      { id:'moat_level', type:'select',
+        title_vn:'Economic Moat / Lợi thế cạnh tranh?',
+        title_en:'Economic Moat / Competitive advantage?',
+        tag:'Scorecard · Product',
+        options_vn:[
+          {val:'low',   label:'Thấp — dễ bị sao chép trong 1–3 tháng'},
+          {val:'medium',label:'Trung bình — có switching cost hoặc network effect nhỏ'},
+          {val:'high',  label:'Cao — patent / proprietary data / network effect mạnh'},
+        ],
+        options_en:[
+          {val:'low',   label:'Low — easily replicated in 1–3 months'},
+          {val:'medium',label:'Medium — switching cost or minor network effect'},
+          {val:'high',  label:'High — patent / proprietary data / strong network effect'},
+        ]},
+
+      { id:'cost_invested', type:'number',
+        title_vn:'Tổng vốn đã đầu tư vào startup (triệu VNĐ)?',
+        title_en:'Total capital invested into startup (million VND)?',
+        tag:'Cost-to-Duplicate',
+        placeholder_vn:'VD: 2000 (= 2 tỷ VNĐ)',
+        placeholder_en:'e.g. 2000 (= 2 billion VND)',
+        hint_vn:'Cost-to-Dup: chi phí để xây lại từ đầu. Lower bound của định giá.',
+        hint_en:'Cost-to-Dup: cost to rebuild from scratch. Valuation lower bound.' },
+
+      { id:'revenue_year5', type:'number',
+        title_vn:'Doanh thu kỳ vọng tại năm thứ 5 (tỷ VNĐ)?',
+        title_en:'Expected revenue at Year 5 (billion VND)?',
+        tag:'VC Method',
+        placeholder_vn:'VD: 100 (= 100 tỷ ~ $4M)',
+        placeholder_en:'e.g. 100 (= ~$4M)',
+        hint_vn:'VC Method: Exit Value = Rev×5 × Multiple. Dựa trên growth rate MoM hiện tại.',
+        hint_en:'VC Method: Exit Value = Rev×5 × Multiple. Base on current MoM growth.' },
+
+      { id:'exit_multiple', type:'select',
+        title_vn:'Bội số định giá ngành khi Exit?',
+        title_en:'Industry valuation multiple at Exit?',
+        tag:'VC Method',
+        options_vn:[
+          {val:3, label:'3× Rev — F&B, Bán lẻ truyền thống'},
+          {val:5, label:'5× Rev — Phần mềm, EdTech, HealthTech'},
+          {val:8, label:'8× Rev — SaaS / Marketplace tăng trưởng cao'},
+          {val:12,label:'12× Rev — AI / Fintech / DeepTech'},
+        ],
+        options_en:[
+          {val:3, label:'3× Rev — F&B, Traditional Retail'},
+          {val:5, label:'5× Rev — Software, EdTech, HealthTech'},
+          {val:8, label:'8× Rev — High-growth SaaS / Marketplace'},
+          {val:12,label:'12× Rev — AI / Fintech / DeepTech'},
+        ]},
+
+      { id:'investor_roi', type:'select',
+        title_vn:'ROI kỳ vọng của nhà đầu tư?',
+        title_en:'Target investor ROI?',
+        tag:'VC Method',
+        options_vn:[
+          {val:10,label:'10× — Angel/Seed'},
+          {val:15,label:'15× — Series A tiêu chuẩn'},
+          {val:20,label:'20× — VC early stage'},
+        ],
+        options_en:[
+          {val:10,label:'10× — Angel/Seed'},
+          {val:15,label:'15× — Standard Series A'},
+          {val:20,label:'20× — Early stage VC'},
+        ]},
+
+      { id:'funding_raised_billion', type:'number',
+        title_vn:'Đã gọi được vốn bên ngoài bao nhiêu? (tỷ VNĐ)',
+        title_en:'External funding raised? (billion VND)',
+        tag:'Funding Multiplier',
+        placeholder_vn:'VD: 5 (= 5 tỷ ~ $200K). Nhập 0 nếu bootstrapped.',
+        placeholder_en:'e.g. 5 (= ~$200K). Enter 0 if bootstrapped.',
+        hint_vn:'Funding từ VC/Angel uy tín = market-validated signal. Funding Val = Vốn × 3.',
+        hint_en:'Credible VC/Angel funding = market-validated signal. Funding Val = Capital × 3.' },
+
+      { id:'bm_type', type:'sector2tier',
+        title_vn:'Lĩnh vực & Mô hình kinh doanh?',
+        title_en:'Business sector & model?',
+        tag:'Sector Benchmark',
+        hint_vn:'Chọn ngành để áp dụng P/S benchmark đúng từ HOSE/HNX.',
+        hint_en:'Select sector to apply correct P/S benchmark from HOSE/HNX.' },
+
+      { id:'tam_billion', type:'number',
+        title_vn:'Quy mô thị trường mục tiêu TAM (tỷ VNĐ)?',
+        title_en:'Total Addressable Market TAM (billion VND)?',
+        tag:'Scorecard · Market',
+        placeholder_vn:'VD: 10000 (= 10 nghìn tỷ ~ $400M)',
+        placeholder_en:'e.g. 10000 (= ~$400M)',
+        hint_vn:'TAM lớn → Scorecard TAM multiplier cao hơn. SAM/SOM cho investor pitch.',
+        hint_en:'Larger TAM → higher Scorecard TAM multiplier. SAM/SOM for investor pitches.' },
+    ],
+
+    sme: [
+      { id:'bm_type', type:'sector2tier',
+        title_vn:'Ngành hoạt động & Mô hình kinh doanh chính?',
+        title_en:'Primary industry sector & business model?',
+        tag:'Sector Benchmark',
+        hint_vn:'Quyết định P/E, P/S, P/B từ HOSE/HNX áp dụng. BĐS → chuyển GlobalValuate.',
+        hint_en:'Determines P/E, P/S, P/B from HOSE/HNX. Real estate → GlobalValuate.' },
+
+      { id:'biz_model', type:'select',
+        title_vn:'Mô hình kinh doanh cụ thể?',
+        title_en:'Specific business model?',
+        tag:'Method Weights',
+        hint_vn:'SaaS → P/S dominant; Marketplace → GMV; Sản xuất → P/B + EV/EBITDA.',
+        hint_en:'SaaS → P/S dominant; Marketplace → GMV; Manufacturing → P/B + EV/EBITDA.',
+        options_vn:[
+          {val:'fb_chain',     label:'Chuỗi F&B / Bán lẻ — mô hình chuỗi nhân rộng'},
+          {val:'saas',         label:'SaaS / Phần mềm thuê bao — recurring revenue'},
+          {val:'manufacturing',label:'Sản xuất truyền thống — tài sản nặng'},
+          {val:'marketplace',  label:'Marketplace / Nền tảng — thu phí giao dịch'},
+          {val:'trading',      label:'Thương mại / Phân phối — biên thấp, vòng quay cao'},
+          {val:'service',      label:'Dịch vụ chuyên môn / Tư vấn'},
+          {val:'franchise',    label:'Franchise / Nhượng quyền thương hiệu'},
+          {val:'other',        label:'Mô hình khác'},
+        ],
+        options_en:[
+          {val:'fb_chain',     label:'F&B Chain / Retail — scalable chain model'},
+          {val:'saas',         label:'SaaS / Subscription Software — recurring revenue'},
+          {val:'manufacturing',label:'Traditional Manufacturing — asset-heavy'},
+          {val:'marketplace',  label:'Marketplace / Platform — transaction fee model'},
+          {val:'trading',      label:'Trading / Distribution — low margin, high turnover'},
+          {val:'service',      label:'Professional Services / Consulting'},
+          {val:'franchise',    label:'Franchise / Brand licensing'},
+          {val:'other',        label:'Other business model'},
+        ]},
+
+      { id:'bctc_transparency', type:'select',
+        title_vn:'Mức độ minh bạch Báo cáo Tài chính (BCTC)?',
+        title_en:'Financial Statement transparency level?',
+        tag:'Transparency Discount · TT36',
+        hint_vn:'TT36/2024: Tier A=100%, B=50%, C=25% giá trị định giá. Ảnh hưởng lớn đến kết quả cuối.',
+        hint_en:'TT36/2024: Tier A=100%, B=50%, C=25% of valuation. Major impact on final result.',
+        options_vn:[
+          {val:'A',label:'A — Kiểm toán độc lập / Minh bạch cao (hệ số 100%)'},
+          {val:'B',label:'B — Sổ sách nội bộ, tương đối rõ ràng (hệ số 50%)'},
+          {val:'C',label:'C — Số liệu sơ bộ, chưa đầy đủ (hệ số 25%)'},
+        ],
+        options_en:[
+          {val:'A',label:'A — Independently audited / High transparency (100% factor)'},
+          {val:'B',label:'B — Internal books, reasonably clear (50% factor)'},
+          {val:'C',label:'C — Preliminary / Incomplete data (25% factor)'},
+        ]},
+
+      { id:'revenue', type:'number',
+        title_vn:'Doanh thu thuần 12 tháng gần nhất (triệu VNĐ)?',
+        title_en:'Net revenue last 12 months (million VND)?',
+        tag:'P/S Multiple',
+        placeholder_vn:'VD: 25000 (= 25 tỷ VNĐ ~ $1M)',
+        placeholder_en:'e.g. 25000 (= 25 billion VND ~ $1M)',
+        hint_vn:'Doanh thu thuần sau chiết khấu, hoàn hàng. Dùng cho P/S Multiple.',
+        hint_en:'Net revenue after discounts and returns. Used for P/S Multiple.' },
+
+      { id:'net_profit', type:'number',
+        title_vn:'Lợi nhuận ròng sau thuế TNDN (triệu VNĐ)?',
+        title_en:'Net profit after corporate income tax (million VND)?',
+        tag:'P/E · Gordon DDM',
+        placeholder_vn:'VD: 3000 (= 3 tỷ). Nhập số âm nếu lỗ: -500',
+        placeholder_en:'e.g. 3000 (= 3B VND). Negative if loss: -500',
+        hint_vn:'Nếu âm → P/E=0, Gordon=0. Trọng số tự động dịch sang P/S và P/B.',
+        hint_en:'If negative → P/E=0, Gordon=0. Weights auto-shift to P/S and P/B.' },
+
+      { id:'equity', type:'number',
+        title_vn:'Vốn chủ sở hữu / Book Value (triệu VNĐ)?',
+        title_en:'Equity / Book Value (million VND)?',
+        tag:'P/B Multiple',
+        placeholder_vn:'VD: 15000 (= 15 tỷ VNĐ)',
+        placeholder_en:'e.g. 15000 (= 15 billion VND)',
+        hint_vn:'VCSH từ Bảng CĐKT. Dùng cho P/B Multiple. Quan trọng với DN sản xuất / tài chính.',
+        hint_en:'Shareholders equity from Balance Sheet. Used for P/B Multiple.' },
+
+      { id:'total_shares', type:'number',
+        title_vn:'Số cổ phần lưu hành (cổ phần)? — Tùy chọn',
+        title_en:'Shares outstanding? — Optional',
+        tag:'Per-share Calc',
+        placeholder_vn:'VD: 1000000 (= 1 triệu cổ phần)',
+        placeholder_en:'e.g. 1000000 (= 1 million shares)',
+        hint_vn:'Để tính giá trị mỗi cổ phần. Để trống nếu chưa xác định.',
+        hint_en:'Used to calculate value per share. Leave blank if undetermined.' },
+
+      { id:'dividend_pct', type:'number',
+        title_vn:'Tỷ lệ chi trả cổ tức (% lợi nhuận ròng)? — Tùy chọn',
+        title_en:'Dividend payout ratio (% of net profit)? — Optional',
+        tag:'Gordon DDM',
+        placeholder_vn:'VD: 30 (= chi 30% LNST). Nhập 0 nếu không chia cổ tức.',
+        placeholder_en:'e.g. 30 (= pay 30% of net profit). Enter 0 if no dividends.',
+        hint_vn:'Gordon DDM: D0 = LNST × payout ratio. Gordon không áp transparency discount.',
+        hint_en:'Gordon DDM: D0 = Net profit × payout ratio. Gordon bypasses transparency discount.' },
+
+      { id:'ebitda', type:'number',
+        title_vn:'EBITDA ước tính (triệu VNĐ)? — Tùy chọn',
+        title_en:'Estimated EBITDA (million VND)? — Optional',
+        tag:'EV/EBITDA',
+        placeholder_vn:'VD: 5000 (= 5 tỷ). EBITDA = LNST + Thuế + Lãi vay + Khấu hao',
+        placeholder_en:'e.g. 5000 (= 5B VND). EBITDA = Net profit + Tax + Interest + D&A',
+        hint_vn:'Dùng cho EV/EBITDA cross-check. Quan trọng với SME có vay nợ ngân hàng.',
+        hint_en:'Used for EV/EBITDA cross-check. Important for SMEs with bank debt.' },
+
+      { id:'total_debt', type:'number',
+        title_vn:'Tổng nợ vay có lãi suất (triệu VNĐ)? — Tùy chọn',
+        title_en:'Total interest-bearing debt (million VND)? — Optional',
+        tag:'Net Debt',
+        placeholder_vn:'VD: 10000 (= 10 tỷ). Nợ ngân hàng + trái phiếu + thuê tài chính.',
+        placeholder_en:'e.g. 10000 (= 10B VND). Bank loans + bonds + finance leases.',
+        hint_vn:'KHÔNG tính nợ thương mại (Accounts Payable). Dùng tính Net Debt.',
+        hint_en:'Exclude trade payables (Accounts Payable). Used to calculate Net Debt.' },
+
+      { id:'cash', type:'number',
+        title_vn:'Tiền mặt & tương đương tiền (triệu VNĐ)? — Tùy chọn',
+        title_en:'Cash & cash equivalents (million VND)? — Optional',
+        tag:'Net Debt',
+        placeholder_vn:'VD: 3000 (= 3 tỷ)',
+        placeholder_en:'e.g. 3000 (= 3B VND)',
+        hint_vn:'Net Debt = Nợ vay − Tiền mặt. Equity Value = Enterprise Value − Net Debt.',
+        hint_en:'Net Debt = Total debt − Cash. Equity Value = Enterprise Value − Net Debt.' },
+    ],
+
+    enterprise: [
+      { id:'bm_type', type:'sector2tier',
+        title_vn:'Ngành hoạt động & Mô hình kinh doanh?',
+        title_en:'Industry sector & business model?',
+        tag:'WACC · Beta ngành',
+        hint_vn:'Quyết định WACC, beta ngành, phương pháp ưu tiên theo TT36/2024.',
+        hint_en:'Determines WACC, sector beta, and priority methods per TT36/2024.' },
+
+      { id:'bctc_transparency', type:'select',
+        title_vn:'Mức độ kiểm toán BCTC?',
+        title_en:'Financial statement audit level?',
+        tag:'Reliability Factor · TT36',
+        hint_vn:'TT36/2024 yêu cầu BCTC kiểm toán cho định giá chính thức M&A/IPO.',
+        hint_en:'TT36/2024 requires audited FS for official M&A/IPO valuation.',
+        options_vn:[
+          {val:'A',label:'A — Kiểm toán Big4 / Top10 (độ tin cậy cao nhất)'},
+          {val:'B',label:'B — Kiểm toán công ty địa phương (tin cậy tốt)'},
+          {val:'C',label:'C — Chưa kiểm toán / Tự lập (cần lưu ý giới hạn)'},
+        ],
+        options_en:[
+          {val:'A',label:'A — Big4 / Top10 audited (highest reliability)'},
+          {val:'B',label:'B — Local firm audited (good reliability)'},
+          {val:'C',label:'C — Unaudited / Self-prepared (note limitations)'},
+        ]},
+
+      { id:'ebitda', type:'number',
+        title_vn:'EBITDA năm gần nhất (tỷ VNĐ)?',
+        title_en:'EBITDA most recent year (billion VND)?',
+        tag:'EV/EBITDA Cross-check',
+        placeholder_vn:'VD: 50 (= 50 tỷ ~ $2M). EBITDA = LNST + CIT + Lãi vay + Khấu hao',
+        placeholder_en:'e.g. 50 (= ~$2M). EBITDA = Net income + CIT + Interest + D&A',
+        hint_vn:'Dùng cho EV/EBITDA cross-check với FCFF DCF. Cặp phổ biến nhất trong M&A VN.',
+        hint_en:'Used for EV/EBITDA cross-check against FCFF DCF. Most common VN M&A pair.' },
+
+      { id:'fcf_year1', type:'number',
+        title_vn:'FCFF năm hiện tại — Dòng tiền tự do DN (tỷ VNĐ)?',
+        title_en:'Current year FCFF — Free Cash Flow to Firm (billion VND)?',
+        tag:'DCF · FCFF',
+        placeholder_vn:'VD: 30 (= 30 tỷ). FCFF = EBIT×(1-20%) + Khấu hao − CapEx − ΔVLĐ',
+        placeholder_en:'e.g. 30 (= 30B VND). FCFF = EBIT×(1-20%) + D&A − CapEx − ΔWCR',
+        hint_vn:'Nền tảng của DCF FCFF. Nếu âm → dùng năm tới khi DN đạt breakeven.',
+        hint_en:'Core input for FCFF DCF. If negative → use next-year estimate at breakeven.' },
+
+      { id:'growth_rate', type:'number',
+        title_vn:'Tốc độ tăng trưởng FCFF dự báo 5 năm tới (%/năm)?',
+        title_en:'Projected FCFF growth rate next 5 years (%/year)?',
+        tag:'DCF · Growth',
+        placeholder_vn:'VD: 15 (= 15%/năm). Tăng trưởng kép trong giai đoạn dự báo.',
+        placeholder_en:'e.g. 15 (= 15%/year CAGR over forecast period).',
+        hint_vn:'Bảo thủ: GDP+5% là hợp lý. >30% cần backlog/hợp đồng minh chứng rõ ràng.',
+        hint_en:'Conservative: GDP+5% is reasonable. >30% requires clear backlog evidence.' },
+
+      { id:'wacc', type:'number',
+        title_vn:'WACC — Chi phí vốn bình quân gia quyền (%)?',
+        title_en:'WACC — Weighted Average Cost of Capital (%)?',
+        tag:'DCF · Discount Rate',
+        placeholder_vn:'VD: 12.5. Để trống → Hub tự tính WACC theo ngành (khuyến nghị).',
+        placeholder_en:'e.g. 12.5. Leave blank → Hub auto-calculates sector WACC (recommended).',
+        hint_vn:'WACC = Ke×E/(D+E) + Kd×(1-t)×D/(D+E). Hub cung cấp benchmark ngành.',
+        hint_en:'WACC = Ke×E/(D+E) + Kd×(1-t)×D/(D+E). Hub provides sector benchmark.' },
+
+      { id:'total_debt', type:'number',
+        title_vn:'Tổng nợ vay có lãi suất (tỷ VNĐ)?',
+        title_en:'Total interest-bearing debt (billion VND)?',
+        tag:'Net Debt · EV→Equity',
+        placeholder_vn:'VD: 200 (= 200 tỷ ~ $8M)',
+        placeholder_en:'e.g. 200 (= ~$8M)',
+        hint_vn:'Nợ ngân hàng + Trái phiếu + Thuê tài chính. Dùng tính Net Debt.',
+        hint_en:'Bank loans + Bonds + Finance leases. Used to calculate Net Debt.' },
+
+      { id:'cash', type:'number',
+        title_vn:'Tiền mặt & Đầu tư tài chính ngắn hạn (tỷ VNĐ)?',
+        title_en:'Cash & Short-term financial investments (billion VND)?',
+        tag:'Net Debt · EV→Equity',
+        placeholder_vn:'VD: 50 (= 50 tỷ)',
+        placeholder_en:'e.g. 50 (= 50B VND)',
+        hint_vn:'Equity Value = Enterprise Value − Net Debt. Net Debt = Nợ vay − Tiền mặt.',
+        hint_en:'Equity Value = Enterprise Value − Net Debt. Net Debt = Debt − Cash.' },
+
+      { id:'capex', type:'number',
+        title_vn:'Chi đầu tư TSCĐ — CapEx trung bình năm (tỷ VNĐ)?',
+        title_en:'Average annual CapEx (billion VND)?',
+        tag:'FCFF Calc',
+        placeholder_vn:'VD: 20 (= 20 tỷ/năm). Lấy trung bình 3 năm gần nhất.',
+        placeholder_en:'e.g. 20 (= 20B VND/year). Use 3-year average.',
+        hint_vn:'CapEx = Mua sắm, xây dựng TSCĐ. FCFF = EBIT(1-t) + DA − CapEx − ΔWCR.',
+        hint_en:'CapEx = PP&E acquisitions. FCFF = EBIT(1-t) + DA − CapEx − ΔWCR.' },
+
+      { id:'total_shares_ent', type:'number',
+        title_vn:'Số cổ phần lưu hành (cổ phần)? — Tùy chọn',
+        title_en:'Shares outstanding? — Optional',
+        tag:'Per-share Calc',
+        placeholder_vn:'VD: 50000000 (= 50 triệu cổ phần)',
+        placeholder_en:'e.g. 50000000 (= 50 million shares)',
+        hint_vn:'Dùng tính Equity Value per share (giá trị mỗi cổ phần).',
+        hint_en:'Used to calculate Equity Value per share.' },
+    ],
+  };
+
+  /* ── SCREENS ── */
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* ── START ── */
+  function startFull(segment) {
+    st.segment = segment;
+    st.step = 0;
+    st.answers = {};
+    st.calcResult = null;
+    showScreen('screen-questions');
+    renderQ();
+  }
+
+  function resetAll() {
+    st = { segment:'', step:0, answers:{}, calcResult:null, promoCode:null, finalPrice:PRICE_FULL, promoType:null };
+    _payState = { orderId:'', email:'', amount:0, verified:false };
+    _pdfDone = false;
+    document.getElementById('lead-form').style.display = 'none';
+    document.getElementById('chk-consent').checked = false;
+    showScreen('screen-segment');
+  }
+
+  /* ── RENDER QUESTION ── */
+  function renderQ() {
+    const qs = QUESTIONS[st.segment];
+    const q  = qs[st.step];
+    const total = qs.length;
+
+    // Progress
+    document.getElementById('progress-fill').style.width = (st.step / total * 100) + '%';
+    document.getElementById('seg-label').textContent = ({idea:'Ý tưởng',startup:'Startup',sme:'SME',enterprise:'Enterprise'}[st.segment] || '');
+    document.getElementById('q-count-label').textContent = 'Câu ' + (st.step+1) + ' / ' + total;
+
+    const isLast = st.step === total - 1;
+    const btnNext = document.getElementById('btn-next');
+    btnNext.textContent = isLast ? 'Xem kết quả →' : 'Tiếp theo →';
+    btnNext.style.display = (q.type === 'select') ? 'none' : 'flex';
+    document.getElementById('btn-back').classList.toggle('hidden', st.step === 0);
+
+    // Render
+    let html = '';
+    html += '<div class="q-number">Câu ' + (st.step+1) + ' / ' + total + '</div>';
+    if (q.tag) html += '<div class="q-method-tag">' + q.tag + '</div>';
+    html += '<div class="q-text">' + (q.title_vn || q.title || '') + '</div>';
+    if (q.hint_vn) html += '<div class="q-hint">' + q.hint_vn + '</div>';
+
+    if (q.type === 'sector2tier') {
+      html += renderSectorField();
+    } else if (q.type === 'select') {
+      const opts = q.options_vn || [];
+      html += '<div class="option-list">';
+      opts.forEach((opt, i) => {
+        const sel = String(st.answers[q.id]) === String(opt.val);
+        html += '<button class="option-btn ' + (sel?'selected':'') + '" onclick="selectOpt(' + i + ')">'
+          + '<span class="opt-marker">' + (sel?'✓':'') + '</span>'
+          + '<span>' + opt.label + '</span></button>';
+      });
+      html += '</div>';
+    } else if (q.type === 'number') {
+      const unit = FIELD_UNITS[q.id];
+      const unitMap = { ty:'tỷ VNĐ', trieu:'triệu VNĐ', shares:'cổ phần', users:'người', ty_usd:'tỷ VNĐ' };
+      const unitLabel = unit ? (unitMap[unit] || '') : '';
+      const saved = st.answers[q.id] ?? '';
+      html += '<div class="q-input-wrap">'
+        + '<input type="text" inputmode="decimal" id="q-input" class="q-input" placeholder="' + (q.placeholder_vn||'') + '" value="' + saved + '" autocomplete="off" maxlength="20" onkeydown="handleKey(event)" oninput="liveUpdate(\'' + q.id + '\',this.value)"'
+        + (unitLabel ? ' style="padding-right:90px"' : '') + '>'
+        + (unitLabel ? '<span class="q-unit">' + unitLabel + '</span>' : '')
+        + '</div>'
+        + '<div class="q-live ' + (saved?'filled':'') + '" id="live-' + q.id + '">'
+        + (saved ? fmtLive(q.id, saved) : '← Nhập số, hệ thống tự quy đổi')
+        + '</div>';
+    } else if (q.type === 'text') {
+      const saved = st.answers[q.id] || '';
+      html += '<textarea id="q-input" class="q-textarea" placeholder="' + (q.placeholder_vn||'') + '" onkeydown="handleKey(event)" rows="3">' + saved + '</textarea>';
+    }
+
+    document.getElementById('question-render').innerHTML = html;
+    if (q.type !== 'select' && q.type !== 'sector2tier') {
+      setTimeout(() => { const el = document.getElementById('q-input'); if(el) el.focus(); }, 80);
+    }
+    // Restore sector if needed
+    if (q.type === 'sector2tier' && st.answers[q.id]) {
+      const ms = document.getElementById('sector-select-main');
+      if (ms) { ms.value = st.answers[q.id]; onSectorChange(st.answers[q.id]); }
+    }
+  }
+
+  function renderSectorField() {
+    const vn = true;
+    let html = '<div class="privacy-bar"><span>🔒</span><span><strong>Bảo mật dữ liệu</strong> — Thông tin chỉ phục vụ tính toán định giá, bảo mật theo NĐ 13/2023/NĐ-CP.</span></div>';
+    html += '<div class="sector-wrap"><select class="sector-select" id="sector-select-main" onchange="onSectorChange(this.value)">';
+    html += '<option value="">— Chọn lĩnh vực hoạt động —</option>';
+    Object.entries(SECTOR_TAXONOMY).forEach(([key, s]) => {
+      const label = s.label_vn;
+      const redir = s.redirect ? ' ↗ (Hệ thống riêng)' : '';
+      html += '<option value="' + key + '">' + s.icon + ' ' + label + redir + '</option>';
+    });
+    html += '</select></div>';
+    html += '<div id="sector-benchmark" style="display:none;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;"></div>';
+    html += '<div id="subsector-row" class="subsector-row" style="display:none"><div class="subsector-label">② Phân nhóm cụ thể</div><select class="subsector-select" id="sector-select-sub" onchange="st.answers.bm_sub=this.value"></select></div>';
+    html += '<div id="other-text-row" class="other-text-row" style="display:none"><div class="subsector-label">Mô tả ngành / mô hình kinh doanh của bạn</div><input type="text" id="sector-other-input" class="q-input" placeholder="VD: Nền tảng kết nối thợ sửa chữa với chủ nhà..." oninput="st.answers.bm_other=this.value"></div>';
+    return html;
+  }
+
+  function onSectorChange(val) {
+    if (val === 'realestate') {
+      if (confirm('BĐS sử dụng hệ thống chuyên biệt GlobalValuate.\n→ Chuyển đến globalvaluate.sandboxstartup.vn?')) {
+        window.open('https://globalvaluate.sandboxstartup.vn/', '_blank');
+      }
+      document.getElementById('sector-select-main').value = '';
+      return;
+    }
+    const q = QUESTIONS[st.segment][st.step];
+    st.answers[q.id] = val;
+    st.answers.bm_sub = '';
+
+    const subRow   = document.getElementById('subsector-row');
+    const subSel   = document.getElementById('sector-select-sub');
+    const otherRow = document.getElementById('other-text-row');
+    const benchEl  = document.getElementById('sector-benchmark');
+
+    if (val === 'other' || val === '') {
+      if (subRow)   subRow.style.display   = 'none';
+      if (otherRow) otherRow.style.display = val === 'other' ? 'block' : 'none';
+      if (benchEl)  benchEl.style.display  = 'none';
+    } else if (SECTOR_TAXONOMY[val]) {
+      const sec  = SECTOR_TAXONOMY[val];
+      const subs = sec.subs_vn || [];
+      if (otherRow) otherRow.style.display = 'none';
+      if (subs.length > 0) {
+        if (subRow) subRow.style.display = 'block';
+        if (subSel) {
+          subSel.innerHTML = subs.map(s => '<option value="' + s + '">' + s + '</option>').join('');
+          st.answers.bm_sub = subs[0];
+        }
+      } else {
+        if (subRow) subRow.style.display = 'none';
+      }
+      if (benchEl && sec.benchmark_pe) {
+        benchEl.style.display = 'flex';
+        benchEl.innerHTML = '<span style="font-size:11px;color:var(--navy-500)">📊 Hub benchmark:</span>'
+          + '<span style="font-size:11px;background:rgba(240,168,48,0.1);border:1px solid rgba(240,168,48,0.2);border-radius:4px;padding:2px 8px;color:var(--amber-400)">P/E: ' + sec.benchmark_pe + '×</span>'
+          + '<span style="font-size:11px;background:rgba(127,119,221,0.1);border:1px solid rgba(127,119,221,0.2);border-radius:4px;padding:2px 8px;color:#AFA9EC">P/S: ' + sec.benchmark_ps + '×</span>'
+          + '<span style="font-size:10px;color:var(--navy-600)">(HOSE/HNX 2024-2025)</span>';
+      }
+      // Auto advance for sector2tier
+      setTimeout(() => {
+        const qs = QUESTIONS[st.segment];
+        if (st.step < qs.length - 1) { st.step++; renderQ(); }
+        else startLoading();
+      }, 400);
+    }
+  }
+
+  /* ── SELECT OPTION ── */
+  function selectOpt(idx) {
+    const q = QUESTIONS[st.segment][st.step];
+    const opts = q.options_vn || [];
+    st.answers[q.id] = opts[idx].val;
+    document.querySelectorAll('.option-btn').forEach((b,i) => {
+      b.classList.toggle('selected', i === idx);
+      b.querySelector('.opt-marker').textContent = i === idx ? '✓' : '';
+    });
+    setTimeout(() => {
+      const qs = QUESTIONS[st.segment];
+      if (st.step < qs.length - 1) { st.step++; renderQ(); }
+      else startLoading();
+    }, 280);
+  }
+
+  /* ── NAVIGATION ── */
+  function nextStep() {
+    const q = QUESTIONS[st.segment][st.step];
+    if (q.type === 'sector2tier') {
+      const ms = document.getElementById('sector-select-main');
+      const ss = document.getElementById('sector-select-sub');
+      const oi = document.getElementById('sector-other-input');
+      if (ms) st.answers[q.id] = ms.value || st.answers[q.id] || '';
+      if (ss && ss.offsetParent) st.answers.bm_sub = ss.value;
+      if (oi && oi.offsetParent) st.answers.bm_other = oi.value;
+    }
+    const inp = document.getElementById('q-input');
+    if (inp) st.answers[q.id] = inp.value.trim();
+
+    const val = st.answers[q.id];
+    if ((val === undefined || val === '') && q.type !== 'number') {
+      if (inp) { inp.style.borderColor = '#DC2626'; setTimeout(() => inp.style.borderColor = '', 1200); }
+      return;
+    }
+    const qs = QUESTIONS[st.segment];
+    if (st.step < qs.length - 1) { st.step++; renderQ(); }
+    else startLoading();
+  }
+
+  function prevStep() {
+    if (st.step > 0) { st.step--; renderQ(); }
+    else showScreen('screen-segment');
+  }
+
+  function handleKey(e) { if (e.key === 'Enter') nextStep(); }
+
+  /* ── LIVE VALUE DISPLAY ── */
+  function fmtLive(fieldId, raw) {
+    const unit = FIELD_UNITS[fieldId];
+    const val  = parseFloat(String(raw).replace(/,/g,''));
+    if (!unit || isNaN(val)) return '';
+    if (unit === 'shares') return val.toLocaleString('vi-VN') + ' cổ phần';
+    if (unit === 'users')  return val.toLocaleString('vi-VN') + ' người dùng';
+    const vnd = unit === 'ty' ? val * 1e9 : val * 1e6;
+    if (vnd >= 1e12) return '= ' + (vnd/1e12).toFixed(2) + ' nghìn tỷ VNĐ';
+    if (vnd >= 1e9)  return '= ' + (vnd/1e9).toFixed(2) + ' tỷ VNĐ';
+    if (vnd >= 1e6)  return '= ' + (vnd/1e6).toFixed(0) + ' triệu VNĐ';
+    return '= ' + vnd.toLocaleString('vi-VN') + ' VNĐ';
+  }
+
+  function liveUpdate(fieldId, raw) {
+    const el = document.getElementById('live-' + fieldId);
+    if (!el) return;
+    const q = QUESTIONS[st.segment][st.step];
+    if (q) st.answers[q.id] = raw;
+    if (!raw) { el.className = 'q-live'; el.textContent = '← Nhập số, hệ thống tự quy đổi'; return; }
+    const result = fmtLive(fieldId, raw);
+    el.className = 'q-live filled';
+    el.textContent = result || raw;
+  }
+
+  /* ── LOADING & COMPUTE ── */
+  function startLoading() {
+    showScreen('screen-loading');
+    const steps = ['lstep-0','lstep-1','lstep-2','lstep-3'];
+    let i = 0;
+    const iv = setInterval(() => {
+      if (i > 0) { document.getElementById(steps[i-1]).classList.remove('active'); document.getElementById(steps[i-1]).classList.add('done'); }
+      if (i < steps.length) { document.getElementById(steps[i]).classList.add('active'); i++; }
+      else {
+        clearInterval(iv);
+        setTimeout(() => {
+          const r = computeFull(st.segment, st.answers);
+          st.calcResult = r;
+          renderResult(r);
+          showScreen('screen-result');
+        }, 400);
+      }
+    }, 600);
+  }
+
+  /* ── VALUATION ENGINES ── */
+  function computeFull(seg, a) {
+    if (seg === 'idea')       return computeIdea(a);
+    if (seg === 'startup')    return computeStartup(a);
+    if (seg === 'sme')        return computeSME(a);
+    if (seg === 'enterprise') return computeEnterprise(a);
+    return { finalValuation: 0, methods: [] };
+  }
+
+  function computeIdea(a) {
+    const M=1e6, B=1e9, CAP=500*M;
+    const s1 = Math.min((+a.idea_quality||0)*M, CAP);
+    const s2 = Math.min((+a.idea_team||0)*M, CAP);
+    const s3 = Math.min((+a.idea_tam||0)*B*0.0005, CAP);
+    const s4 = Math.min((+a.idea_ip||0)*M, CAP);
+    const s5 = Math.min((+a.idea_traction||0)*M, CAP);
+    const v_berkus = s1+s2+s3+s4+s5;
+
+    const BASE_SC = 2*B;
+    const painMap = {vitamin:0.8,painkiller:1.0,antibiotic:1.3};
+    const moatMap = {low:0.85,medium:1.0,high:1.25};
+    const tam = +a.idea_tam||0;
+    const tamAdj = tam>5000?1.25:tam>1000?1.10:tam>200?1.0:0.85;
+    const painMult = painMap[a.pain_level]||1.0;
+    const moatMult = moatMap[a.moat_level]||1.0;
+    const tractionAdj = (s5>=CAP)?1.20:(s5>=CAP*0.5)?1.10:1.0;
+    const v_scorecard = Math.round(BASE_SC*painMult*moatMult*tamAdj*tractionAdj);
+
+    const rev5 = (+a.revenue_year5||0)*B;
+    const exitMult = +a.exit_multiple||5;
+    const roi = +a.investor_roi||15;
+    const exitVal = rev5*exitMult;
+    const v_vc = rev5>0 ? Math.round(exitVal/roi) : 0;
+
+    const cost = (+a.cost_invested||0)*M;
+    const ipPrem = a.idea_ip>=250?1.5:1.2;
+    const moatPrem = moatMap[a.moat_level]||1.0;
+    const v_cost = cost>0 ? Math.round(cost*ipPrem*moatPrem) : Math.round(v_berkus*0.6);
+
+    const raise = (+a.funding_raised_billion||0)*B;
+    const v_funding = raise>0 ? Math.round(raise*3) : 0;
+
+    const all = [v_berkus,v_scorecard,v_cost,...(v_vc>0?[v_vc]:[]),...(v_funding>0?[v_funding]:[])].filter(v=>v>0);
+    const wSum = 0.35+0.30+0.20+(v_vc>0?0.15:0);
+    const v_mid = Math.round((v_berkus*0.35+v_scorecard*0.30+v_cost*0.20+(v_vc>0?v_vc*0.15:0))/Math.min(wSum,1));
+    const final = raise>0 ? Math.round(v_mid*0.6+v_funding*0.4) : v_mid;
+
+    return {
+      segment:'idea', finalValuation:final,
+      valMin:Math.min(...all), valMid:final, valMax:Math.max(...all),
+      pricePerShare:Math.round(final/1e6),
+      exitValue:Math.round(exitVal),
+      methods:[
+        {name:'① Berkus Method (5 yếu tố)', value:Math.round(v_berkus), weight:0.35, note:'Sound Idea + Team + TAM + IP + Traction · Max 2.5 tỷ'},
+        {name:'② Scorecard Method (Bill Payne)', value:Math.round(v_scorecard), weight:0.30, note:'Base 2tỷ × Pain('+painMult+'×) × Moat('+moatMult+'×) × TAM('+tamAdj+'×)'},
+        {name:'③ Cost-to-Duplicate', value:Math.round(v_cost), weight:0.20, note:'Chi phí đầu tư × IP premium('+ipPrem+'×) × Moat('+moatPrem+'×)'},
+        ...(v_vc>0?[{name:'④ VC Back-from-Exit', value:Math.round(v_vc), weight:0.15, note:'Exit '+(rev5/B).toFixed(0)+'tỷ×'+exitMult+'x='+(exitVal/B).toFixed(0)+'tỷ ÷ ROI '+roi+'×'}]:[]),
+        ...(v_funding>0?[{name:'⑤ Funding Valuation (×3)', value:Math.round(v_funding), weight:0, note:'Vốn đã gọi '+(raise/B).toFixed(1)+'tỷ × 3 = '+(v_funding/B).toFixed(1)+'tỷ'}]:[]),
+      ]
+    };
+  }
+
+  function computeStartup(a) {
+    const M=1e6, B=1e9, CAP=500*M;
+    const BASE_SC = 5*B;
+    const painMap = {vitamin:0.8,painkiller:1.0,antibiotic:1.3};
+    const moatMap = {low:0.85,medium:1.0,high:1.25};
+    const teamMult = +a.team_structure||0.85;
+    const founderMult = +a.founder_track||1.0;
+    const painMult = painMap[a.pain_level]||1.0;
+    const moatMult = moatMap[a.moat_level]||1.0;
+    const tam = +a.tam_billion||0;
+    const tamAdj = tam>10000?1.3:tam>3000?1.15:tam>500?1.0:0.85;
+    const mom = +a.mom_growth||0;
+    const momAdj = mom>=15?1.25:mom>=10?1.15:mom>=5?1.05:1.0;
+    const v_scorecard = Math.round(BASE_SC*teamMult*founderMult*painMult*moatMult*tamAdj*momAdj);
+
+    const rev = (+a.revenue||0)*M;
+    const sectorId = a.bm_type||'other';
+    const mult = getHubMult(sectorId);
+    const v_ps = rev>0 ? Math.round(rev*mult.ps) : 0;
+
+    const rev5 = (+a.revenue_year5||0)*B;
+    const exitMult = +a.exit_multiple||5;
+    const roi = +a.investor_roi||15;
+    const exitVal = rev5*exitMult;
+    const v_vc = rev5>0 ? Math.round(exitVal/roi) : 0;
+
+    const cost = (+a.cost_invested||0)*M;
+    const ipPrem = moatMult>=1.25?1.8:moatMult>=1.0?1.4:1.2;
+    const raise = (+a.funding_raised_billion||0)*B;
+    const v_cost = cost>0 ? Math.round(cost*ipPrem*moatMult) : Math.round(v_scorecard*0.5);
+    const v_funding = raise>0 ? Math.round(raise*3) : 0;
+
+    const all = [v_scorecard,v_cost,...(v_ps>0?[v_ps]:[]),...(v_vc>0?[v_vc]:[])].filter(v=>v>0);
+    const v_mid = all.length>0 ? Math.round(all.reduce((s,v)=>s+v,0)/all.length) : 0;
+    const final = raise>0 ? Math.round(v_mid*0.6+v_funding*0.4) : v_mid;
+
+    return {
+      segment:'startup', finalValuation:final,
+      valMin:all.length?Math.min(...all):0, valMid:final, valMax:all.length?Math.max(...all):0,
+      pricePerShare:Math.round(final/1e6),
+      exitValue:Math.round(exitVal),
+      methods:[
+        {name:'① Scorecard Method', value:Math.round(v_scorecard), weight:0.30, note:'Base 5tỷ × Team('+teamMult+'×) × Founder('+founderMult+'×) × Pain('+painMult+'×) × TAM('+tamAdj+'×) × MoM('+momAdj+'×)'},
+        {name:'② Cost-to-Duplicate', value:Math.round(v_cost), weight:0.20, note:'Vốn đầu tư × IP('+ipPrem+'×) × Moat('+moatMult+'×)'},
+        ...(v_ps>0?[{name:'③ P/S Multiple ('+mult.ps+'×)', value:Math.round(v_ps), weight:0.25, note:'Rev '+(rev/M).toFixed(0)+'tr × P/S '+mult.ps+' (HOSE '+sectorId+')'}]:[]),
+        ...(v_vc>0?[{name:'④ VC Back-from-Exit', value:Math.round(v_vc), weight:0.25, note:'Exit '+(rev5/B).toFixed(0)+'tỷ×'+exitMult+'×='+(exitVal/B).toFixed(0)+'tỷ ÷ ROI '+roi+'×'}]:[]),
+        ...(v_funding>0?[{name:'⑤ Funding Valuation (×3)', value:Math.round(v_funding), weight:0, note:'Vốn gọi '+(raise/B).toFixed(1)+'tỷ × 3'}]:[]),
+      ]
+    };
+  }
+
+  function computeSME(a) {
+    const rev    = (+a.revenue||0)*1e6;
+    const profit = (+a.net_profit||0)*1e6;
+    const equity = (+a.equity||0)*1e6;
+    const shares = parseInt(a.total_shares)||1000000;
+    const divPct = (+a.dividend_pct||0)/100;
+    const bctc   = a.bctc_transparency||'B';
+    const model  = a.biz_model||'other';
+    const sectorId = a.bm_type||'other';
+    const mult = getHubMult(sectorId);
+
+    let w = { pe:0.20, ps:0.20, pb:0.15, gordon:0.10, fcfe:0.10, ev:0.25 };
+    if (profit <= 0) {
+      w.pe=0; w.gordon=0;
+      if (model==='saas'||model==='marketplace') { w.ps=0.55; w.pb=0.20; w.fcfe=0.15; w.ev=0.10; }
+      else { w.ps=0.40; w.pb=0.35; w.fcfe=0.15; w.ev=0.10; }
+    }
+    const discMap = {A:1.0, B:0.5, C:0.25};
+    const df = discMap[bctc]||0.5;
+
+    const v_pe = profit>0 ? profit*(mult.pe||16) : 0;
+    const v_ps = rev*(mult.ps||2.0);
+    const v_pb = equity*(mult.pb||2.8);
+    const d0   = profit>0 ? profit*divPct : 0;
+    const v_gordon = (profit>0&&divPct>0) ? (d0*1.05)/0.10 : 0;
+
+    const ebitda = (+a.ebitda||0)*1e9;
+    const debt   = (+a.total_debt||0)*1e6;
+    const cash   = (+a.cash||0)*1e6;
+    const netDebt = debt-cash;
+    const v_ev = ebitda>0 ? Math.max(ebitda*(mult.ev||12)-netDebt,0) : 0;
+
+    const finalVal = (v_pe*w.pe + v_ps*w.ps + v_pb*w.pb + v_ev*w.ev)*df + v_gordon*w.gordon;
+
+    return {
+      segment:'sme', finalValuation:Math.round(Math.max(finalVal,0)),
+      pricePerShare:Math.round(Math.max(finalVal/shares,0)),
+      bctc, discountFactor:df,
+      methods:[
+        {name:'① P/E × '+(mult.pe||16), value:Math.round(v_pe), weight:w.pe, note:'LNST '+(profit/1e6).toFixed(0)+'tr × P/E '+(mult.pe||16)+' (HOSE '+sectorId+')'},
+        {name:'② P/S × '+(mult.ps||2.0), value:Math.round(v_ps), weight:w.ps, note:'DT '+(rev/1e6).toFixed(0)+'tr × P/S '+(mult.ps||2.0)},
+        {name:'③ P/B × '+(mult.pb||2.8), value:Math.round(v_pb), weight:w.pb, note:'VCSH '+(equity/1e6).toFixed(0)+'tr × P/B '+(mult.pb||2.8)},
+        {name:'④ Gordon DDM (g=5%,Ke=10%)', value:Math.round(v_gordon), weight:w.gordon, note:'D0='+(d0/1e6).toFixed(0)+'tr × 1.05 / 0.10'},
+        ...(v_ev>0?[{name:'⑤ EV/EBITDA × '+(mult.ev||12), value:Math.round(v_ev), weight:w.ev, note:'EBITDA '+(ebitda/1e9).toFixed(1)+'tỷ × '+(mult.ev||12)+' − NetDebt '+(netDebt/1e6).toFixed(0)+'tr'}]:[]),
+        {name:'Hệ số Minh bạch BCTC', value:0, weight:0, note:'Tier '+bctc+' → ×'+df+' ('+({A:'100%',B:'50%',C:'25%'}[bctc]||'')+'). Gordon không áp discount.'},
+      ]
+    };
+  }
+
+  function computeEnterprise(a) {
+    const B    = 1e9;
+    const ebitda = (+a.ebitda||0)*B;
+    const debt   = (+a.total_debt||0)*B;
+    const cash   = (+a.cash||0)*B;
+    const fcf1   = (+a.fcf_year1||0)*B;
+    const g5     = (+a.growth_rate||12)/100;
+    const sectorId = a.bm_type||'other';
+    const hubW   = getHubMult(sectorId);
+    const wacc   = (+a.wacc||hubW.wacc||12.5)/100;
+    const capex  = (+a.capex||0)*B;
+    const shares = parseInt(a.total_shares_ent)||50000000;
+    const gT     = 0.03;
+
+    let dcfPV = 0;
+    for (let yr=1; yr<=5; yr++) dcfPV += fcf1*Math.pow(1+g5,yr-1)/Math.pow(1+wacc,yr);
+    const fcf6 = fcf1*Math.pow(1+g5,5);
+    const termV  = wacc>gT ? fcf6/(wacc-gT) : 0;
+    const termPV = termV/Math.pow(1+wacc,5);
+    const ev_dcf = dcfPV+termPV;
+
+    const evEbitda = hubW.ev||12;
+    const ev_mult  = ebitda>0 ? ebitda*evEbitda : 0;
+
+    const ev_final = (fcf1>0&&ev_dcf>0) ? (ev_dcf*0.60+ev_mult*0.40) : (ev_mult||ev_dcf);
+    const netDebt  = debt-cash;
+    const equityVal = Math.max(ev_final-netDebt, 0);
+
+    return {
+      segment:'enterprise', finalValuation:Math.round(equityVal),
+      pricePerShare:Math.round(equityVal/shares),
+      enterpriseValue:Math.round(ev_final), netDebt:Math.round(netDebt),
+      evEbitdaRatio: ebitda>0 ? (ev_final/ebitda).toFixed(1) : 'N/A',
+      methods:[
+        {name:'① FCFF DCF (5 năm + Terminal Value)', value:Math.round(ev_dcf), weight:0.60, note:'PV FCF 5yr = '+(dcfPV/B).toFixed(1)+'tỷ + TV = '+(termPV/B).toFixed(1)+'tỷ | WACC='+(wacc*100).toFixed(1)+'% g='+(g5*100).toFixed(0)+'%'},
+        ...(ev_mult>0?[{name:'② EV/EBITDA × '+evEbitda+' (Cross-check)', value:Math.round(ev_mult), weight:0.40, note:'EBITDA '+(ebitda/B).toFixed(1)+'tỷ × '+evEbitda+' (Hub benchmark '+sectorId+')'}]:[]),
+        {name:'Enterprise Value tổng hợp', value:Math.round(ev_final), weight:0, note:'DCF 60% + EV/EBITDA 40%'},
+        {name:'Trừ Net Debt', value:-Math.round(netDebt), weight:0, note:'Nợ vay '+(debt/B).toFixed(1)+'tỷ − Tiền mặt '+(cash/B).toFixed(1)+'tỷ'},
+      ]
+    };
+  }
+
+  /* ── FORMAT VND ── */
+  function fmtVND(n) {
+    const abs = Math.abs(n);
+    if (abs>=1e12) return (n/1e12).toFixed(2)+' nghìn tỷ VNĐ';
+    if (abs>=1e9)  return (n/1e9).toFixed(2)+' tỷ VNĐ';
+    if (abs>=1e6)  return (n/1e6).toFixed(0)+' triệu VNĐ';
+    return n.toLocaleString('vi-VN')+' VNĐ';
+  }
+
+  /* ── RENDER RESULT ── */
+  function renderResult(r) {
+    // Main value
+    document.getElementById('txt-valuation').textContent = '~ '+fmtVND(r.finalValuation);
+    document.getElementById('txt-per-share').textContent = r.pricePerShare>0
+      ? 'Giá trị mỗi cổ phần: '+r.pricePerShare.toLocaleString('vi-VN')+' VNĐ/cp' : '';
+
+    // Range
+    const rangeWrap = document.getElementById('range-wrap');
+    if (r.valMin && r.valMax && r.valMin !== r.finalValuation) {
+      rangeWrap.style.display = 'flex';
+      document.getElementById('range-min').textContent = fmtVND(r.valMin);
+      document.getElementById('range-mid').textContent = fmtVND(r.valMid||r.finalValuation);
+      document.getElementById('range-max').textContent = fmtVND(r.valMax);
+    } else { rangeWrap.style.display = 'none'; }
+
+    // Method table
+    let tbl = '<table class="method-table"><thead><tr><th>Phương pháp</th><th style="text-align:right">Giá trị</th><th style="text-align:center">Trọng số</th></tr></thead><tbody>';
+    r.methods.forEach(m => {
+      tbl += '<tr><td><strong>'+m.name+'</strong>'+(m.note?'<br><small style="color:var(--navy-500);font-size:11px">'+m.note+'</small>':'')+'</td>'
+        +'<td class="val">'+fmtVND(m.value)+'</td>'
+        +'<td class="wt">'+(m.weight>0?(m.weight*100).toFixed(0)+'%':'—')+'</td></tr>';
+    });
+    if (r.segment==='enterprise') {
+      tbl += '<tr><td colspan="3" style="padding:8px 10px;font-size:12px;color:var(--navy-500)">EV/EBITDA check: <strong style="color:var(--amber-400)">'+r.evEbitdaRatio+'×</strong></td></tr>';
+    }
+    tbl += '</tbody></table>';
+    document.getElementById('method-table-wrap').innerHTML = tbl;
+
+    // Price display
+    updatePriceDisplay(PRICE_FULL);
+  }
+
+  /* ── CONSENT & FORM ── */
+  function toggleLeadForm() {
+    const checked = document.getElementById('chk-consent').checked;
+    document.getElementById('lead-form').style.display = checked ? 'block' : 'none';
+    if (checked) document.getElementById('lead-form').scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+
+  /* ── PROMO ── */
+  function applyPromo() {
+    const code = (document.getElementById('inp-promo').value||'').toUpperCase().trim();
+    const msg  = document.getElementById('promo-msg');
+    if (!code) { msg.style.display='none'; return; }
+    const promo = PROMOS[code];
+    if (!promo) {
+      msg.textContent='❌ Mã ưu đãi không hợp lệ.';
+      msg.className='promo-msg promo-err'; msg.style.display='block'; return;
+    }
+    if (promo.limit && promo.limitKey) {
+      const used = parseInt(localStorage.getItem(promo.limitKey)||'0');
+      if (used >= promo.limit) {
+        msg.textContent='❌ Mã đã đạt giới hạn '+promo.limit+' lần.';
+        msg.className='promo-msg promo-err'; msg.style.display='block'; return;
+      }
+    }
+    st.promoCode = code; st.finalPrice = promo.finalVND; st.promoType = promo.type;
+    msg.textContent='✅ '+promo.desc;
+    msg.className='promo-msg promo-ok'; msg.style.display='block';
+
+    if (promo.type==='free100') {
+      updatePriceDisplay(0);
+      setTimeout(() => activateFree(code, promo), 1000);
+    } else {
+      updatePriceDisplay(promo.finalVND);
+    }
+  }
+
+  function activateFree(code, promo) {
+    if (promo.limitKey) {
+      const used = parseInt(localStorage.getItem(promo.limitKey)||'0');
+      localStorage.setItem(promo.limitKey, String(used+1));
+    }
+    const orderId = ORDER_PFX+'-FREE-'+Date.now().toString(36).toUpperCase().slice(-6);
+    const email   = (document.getElementById('inp-email')||{}).value||'';
+    postPayment({orderId, email, gateway:'FreeCode/'+code, amountUSD:0, amountVND:0, status:'PAID'});
+    _payState = {orderId, email, amount:0, verified:true};
+    showThankYou(email, orderId);
+  }
+
+  function updatePriceDisplay(vnd) {
+    const elTxt  = document.getElementById('price-txt');
+    const elSave = document.getElementById('price-saving');
+    const btnTxt = document.getElementById('pay-btn-txt');
+    if (vnd===0) {
+      if(elTxt)  { elTxt.textContent='MIỄN PHÍ 100%'; elTxt.style.color='#4ADE80'; }
+      if(elSave) { elSave.textContent='✓ Mã admin — Truy cập ngay'; elSave.style.color='#4ADE80'; }
+      if(btnTxt) btnTxt.textContent='Truy cập báo cáo miễn phí →';
+    } else if (vnd < PRICE_FULL) {
+      const usd = (vnd/25400).toFixed(2);
+      const saved = ((PRICE_FULL-vnd)/25400).toFixed(0);
+      if(elTxt)  { elTxt.textContent='$'+usd+' USD (~'+vnd.toLocaleString('vi-VN')+' VNĐ)'; elTxt.style.color='var(--amber-400)'; }
+      if(elSave) { elSave.textContent='✓ Tiết kiệm $'+saved+' USD'; elSave.style.color='#4ADE80'; }
+      if(btnTxt) btnTxt.textContent='Thanh toán '+vnd.toLocaleString('vi-VN')+' VNĐ · Nhận báo cáo PDF';
+    } else {
+      if(elTxt)  { elTxt.textContent='$100 USD (2,540,000 VNĐ)'; elTxt.style.color='var(--amber-400)'; }
+      if(elSave) { elSave.textContent='Nhập mã ưu đãi để giảm giá'; elSave.style.color='var(--navy-500)'; }
+      if(btnTxt) btnTxt.textContent='Nhận Báo cáo PDF · $100 USD';
+    }
+  }
+
+  /* ── PAYMENT ── */
+  let _orderAttempts = [];
+  function checkRateLimit() {
+    const now = Date.now();
+    _orderAttempts = _orderAttempts.filter(t=>now-t<600000);
+    if (_orderAttempts.length>=5) return false;
+    _orderAttempts.push(now); return true;
+  }
+
+  async function requestPayment() {
+    if (!checkRateLimit()) { alert('Quá nhiều lần thử. Vui lòng chờ 10 phút.'); return; }
+    const name  = (document.getElementById('inp-name').value||'').trim();
+    const email = (document.getElementById('inp-email').value||'').trim();
+    if (!name) { document.getElementById('inp-name').style.borderColor='#DC2626'; document.getElementById('inp-name').focus(); return; }
+    if (!email||!email.includes('@')) { document.getElementById('inp-email').style.borderColor='#DC2626'; document.getElementById('inp-email').focus(); return; }
+    if (st.promoType==='free100') return;
+
+    const btn = document.getElementById('btn-pay');
+    btn.disabled=true;
+    document.getElementById('pay-btn-txt').textContent='Đang xử lý...';
+
+    try {
+      const pPfx = st.promoCode==='JAMELA85'?ORDER_PFX+'85':st.promoCode==='BTS10'?ORDER_PFX+'BTS':ORDER_PFX+'100';
+      const orderId = pPfx+'-'+Date.now().toString(36).toUpperCase().slice(-6);
+
+      if (st.promoCode && PROMOS[st.promoCode]?.limitKey) {
+        const k = PROMOS[st.promoCode].limitKey;
+        localStorage.setItem(k, String(parseInt(localStorage.getItem(k)||'0')+1));
+      }
+
+      const amount   = st.finalPrice||PRICE_FULL;
+      const bankAcc  = '9688666686';
+      const bankBin  = '970422';
+      const noteText = orderId+(st.promoCode?' PROMO'+st.promoCode:'');
+      const qrUrl    = 'https://img.vietqr.io/image/'+bankBin+'-'+bankAcc+'-compact2.jpg?amount='+amount+'&addInfo='+encodeURIComponent(noteText)+'&accountName='+encodeURIComponent('SCF INVESTMENT JS CO');
+
+      postPayment({orderId, email, name, segment:st.segment, gateway:'SePay/QR', amountVND:amount, amountUSD:+(amount/25400).toFixed(2), status:'PENDING'});
+      _payState = {orderId, email, amount, created:Date.now(), verified:false};
+
+      const polarFull = POLAR_URL+'?metadata[orderId]='+orderId+'&metadata[email]='+encodeURIComponent(email)+'&metadata[segment]='+st.segment;
+
+      document.getElementById('lead-form').innerHTML = '<div style="text-align:center;padding:16px 0">'
+        +'<p style="font-size:13px;color:var(--navy-300);margin-bottom:10px">Quét mã QR · Nội dung: <strong style="color:var(--amber-400)">'+noteText+'</strong></p>'
+        +'<img src="'+qrUrl+'" alt="QR" style="width:200px;height:200px;border-radius:10px;border:2px solid rgba(240,168,48,0.3)">'
+        +'<p style="margin-top:10px;font-size:20px;font-weight:700;color:var(--amber-400)">'+amount.toLocaleString('vi-VN')+' VNĐ</p>'
+        +'<p style="font-size:12px;color:var(--navy-500);margin-bottom:16px">Mã đơn: <code style="color:var(--amber-300)">'+orderId+'</code></p>'
+        +'<div style="margin:12px 0;font-size:11px;color:var(--navy-600)">— HOẶC THANH TOÁN QUỐC TẾ —</div>'
+        +'<a href="'+polarFull+'" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#5B47F5,#7C3AED);color:#fff;padding:11px 22px;border-radius:8px;font-weight:600;font-size:13px;text-decoration:none;margin-bottom:12px">💳 Thanh toán $15 USD bằng thẻ / PayPal →</a>'
+        +'<button onclick="verifyAndShow()" style="display:block;width:100%;padding:13px;background:rgba(22,163,74,0.12);border:1.5px solid rgba(22,163,74,0.35);border-radius:8px;color:#4ADE80;font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;margin-bottom:6px">✅ Tôi đã chuyển khoản → Nhận báo cáo</button>'
+        +'<p style="font-size:11px;color:var(--navy-500)">Báo cáo gửi đến <strong style="color:var(--amber-400)">'+email+'</strong> trong 5 phút</p>'
+        +'</div>';
+    } catch(err) {
+      btn.disabled=false;
+      document.getElementById('pay-btn-txt').textContent='Nhận Báo cáo PDF · $100 USD';
+      alert('Lỗi kết nối. Vui lòng thử lại.');
+    }
+  }
+
+  function postPayment(data) {
+    fetch(PAY_API, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({token:'sandbox2026', action:'payment', ...data}),
+    }).catch(()=>{});
+  }
+
+  async function verifyAndShow() {
+    if (_payState.verified) { showThankYou(_payState.email, _payState.orderId); return; }
+    try {
+      const res  = await fetch(PAY_API+'?action=checkPayment&orderId='+encodeURIComponent(_payState.orderId)+'&token=sandbox2026');
+      const data = await res.json();
+      if (data.paid) {
+        _payState.verified = true;
+        showThankYou(_payState.email, _payState.orderId);
+      } else {
+        if (confirm('Chưa nhận được xác nhận thanh toán.\n\nNếu đã chuyển khoản, vui lòng chờ thêm 1-2 phút.\nBấm OK để thử lại, Cancel để liên hệ hỗ trợ.')) {
+          verifyAndShow();
+        } else {
+          window.open('https://zalo.me/1110831222679664093','_blank');
+        }
+      }
+    } catch {
+      if (confirm('Không kết nối được server.\nBấm OK để thử lại hoặc Cancel để liên hệ hỗ trợ.')) verifyAndShow();
+    }
+  }
+
+  function showThankYou(email, orderId) {
+    const el = document.getElementById('ty-email');
+    if (el) el.textContent = email||'email của bạn';
+    const polarLink = document.getElementById('polar-link');
+    if (polarLink) polarLink.href = POLAR_URL+'?metadata[orderId]='+encodeURIComponent(orderId)+'&metadata[email]='+encodeURIComponent(email||'');
+    showScreen('screen-thankyou');
+    setTimeout(() => {
+      document.getElementById('btn-download-pdf').style.display = 'block';
+    }, 2000);
+  }
+
+  /* ── PDF DOWNLOAD ── */
+  function downloadFullPDF() {
+    if (_pdfDone) { alert('Báo cáo đã được tải. Kiểm tra email nếu cần bản sao.'); return; }
+    _pdfDone = true;
+    const r = st.calcResult;
+    if (!r) return;
+    const win = window.open('', '_blank');
+    win.document.write(buildPDFHTML(r));
+    win.document.close();
+    setTimeout(() => { win.print(); }, 800);
+  }
+
+  function buildPDFHTML(r) {
+    const now = new Date().toLocaleDateString('vi-VN');
+    const segNames = {idea:'Ý tưởng / Pre-seed', startup:'Startup / MVP', sme:'SME — Doanh nghiệp vừa nhỏ', enterprise:'Enterprise — Doanh nghiệp lớn'};
+    let rows = r.methods.map(m =>
+      '<tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:13px">'+m.name+'<br><small style="color:#888">'+( m.note||'')+'</small></td>'
+      +'<td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;font-weight:600;color:#C47A1A;font-size:13px">'+fmtVND(m.value)+'</td>'
+      +'<td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:center;color:#666;font-size:13px">'+(m.weight>0?(m.weight*100).toFixed(0)+'%':'—')+'</td></tr>'
+    ).join('');
+
+    return '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>ValuitBiz Full Report</title>'
+      +'<style>body{font-family:Georgia,serif;max-width:800px;margin:0 auto;padding:40px;color:#1a1a2e}'
+      +'.header{text-align:center;border-bottom:3px solid #C47A1A;padding-bottom:20px;margin-bottom:30px}'
+      +'.title{font-size:28px;font-weight:700;color:#07101E}'
+      +'.sub{font-size:14px;color:#666;margin-top:6px}'
+      +'.section{margin-bottom:24px}'
+      +'.section-title{font-size:16px;font-weight:700;color:#C47A1A;border-bottom:1px solid #C47A1A;padding-bottom:6px;margin-bottom:12px}'
+      +'.value-box{background:#FEF6E4;border:2px solid #F0A830;border-radius:8px;padding:20px;text-align:center;margin:20px 0}'
+      +'.main-value{font-size:36px;font-weight:700;color:#C47A1A}'
+      +'.method-table{width:100%;border-collapse:collapse;font-size:13px}'
+      +'.method-table th{background:#07101E;color:#F0A830;padding:8px 12px;text-align:left}'
+      +'.disclaimer{background:#FFF3CD;border:1px solid #FFD700;border-radius:6px;padding:14px;font-size:12px;color:#555;line-height:1.6}'
+      +'</style></head><body>'
+      +'<div class="header"><div class="title">ValuitBiz Full — Báo cáo Thẩm định Giá Chuyên sâu</div>'
+      +'<div class="sub">Chuẩn TT36/2024/TT-BTC · Ngày '+now+' · '+segNames[r.segment]+'</div></div>'
+      +'<div class="section"><div class="section-title">I. Kết quả Định giá Tổng hợp</div>'
+      +'<div class="value-box"><div style="font-size:13px;color:#888;margin-bottom:8px">Giá trị Vốn chủ sở hữu ước tính</div>'
+      +'<div class="main-value">~'+fmtVND(r.finalValuation)+'</div>'
+      +(r.valMin&&r.valMax?'<div style="font-size:13px;color:#666;margin-top:8px">Biên độ: '+fmtVND(r.valMin)+' — '+fmtVND(r.valMax)+'</div>':'')
+      +'</div></div>'
+      +'<div class="section"><div class="section-title">II. Phân tích Đa phương pháp</div>'
+      +'<table class="method-table"><thead><tr><th>Phương pháp</th><th style="text-align:right">Giá trị</th><th style="text-align:center">Trọng số</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
+      +'<div class="section"><div class="section-title">III. Cơ sở pháp lý & Giới hạn</div>'
+      +'<div class="disclaimer">Kết quả được tạo tự động bằng mô hình định lượng đa phương pháp dựa trên số liệu người dùng cung cấp và hệ số benchmark từ HOSE/HNX qua ValuitBiz Hub 2026. Đây là tham chiếu nội bộ chiến lược.<br><br><strong>KHÔNG phải</strong> Chứng thư Thẩm định Giá theo Luật Giá 2023 (Luật số 16/2023/QH15) và Thông tư 36/2024/TT-BTC của Bộ Tài chính Việt Nam. Không có giá trị pháp lý trong M&A, IPO, thế chấp hoặc kê khai thuế.<br><br>Chuẩn tham chiếu: TT36/2024, TT37/2024 (Tài sản vô hình), TT32/2024 (3 cách tiếp cận), NĐ 13/2023/NĐ-CP (Bảo vệ DLCN).</div></div>'
+      +'<div style="text-align:center;margin-top:30px;font-size:11px;color:#999">© 2026 ValuitBiz Full · SCF Investment JSC · SandboxStartUp.VN · valuitbiz.sandboxstartup.vn/valuitfull/</div>'
+      +'</body></html>';
+  }
+
+  </script>
+</body>
+</html>
