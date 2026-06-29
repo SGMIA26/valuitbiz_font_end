@@ -2742,7 +2742,7 @@ const POLAR_URL = 'https://buy.polar.sh/polar_cl_etwFklJEGOIVHd4uTnwBxo3xjG2BR2e
     var today = new Date().toISOString().split('T')[0];
     var t = {
       title: vn ? 'Hệ số định giá ngành — Tra cứu Simplize' : 'Industry Valuation Ratios — Verify via Simplize',
-      subtitle: vn ? 'Nhập hệ số thực tế từ HOSE để kết quả chính xác nhất. Để trống → dùng Hub benchmark.' : 'Enter live HOSE ratios for best accuracy. Leave blank → use Hub benchmark.',
+      subtitle: vn ? 'Vào Simplize → chọn đúng ngành → nhập hệ số P/E, P/S, P/B bên dưới. Nếu để trống hệ thống dùng hệ số mặc định Q2/2026' : 'Go to Simplize → select the right sector → enter P/E, P/S, P/B below. Leave blank to use system defaults (Q2/2026)',
       step1: vn ? 'Mở Simplize theo ngành của doanh nghiệp' : 'Open Simplize for your industry',
       step1p: vn ? 'Hệ thống tự mở đúng trang ngành. Tìm hàng ngành → đọc cột P/E, P/B' : 'System opens the correct sector page. Find your row → read P/E, P/B columns',
       openLink: vn ? 'Mở Simplize · Chọn ngành' : 'Open Simplize · Select sector',
@@ -3192,6 +3192,23 @@ const POLAR_URL = 'https://buy.polar.sh/polar_cl_etwFklJEGOIVHd4uTnwBxo3xjG2BR2e
     }
 
     document.getElementById('question-render').innerHTML = html;
+    // Nếu sector2tier đã có giá trị lưu → inject Simplize block và pre-fill inputs
+    if (q.type === 'sector2tier') {
+      const savedSector = state.answers[q.id] || '';
+      if (savedSector && savedSector !== 'realestate' && savedSector !== '') {
+        const sgWrap = document.getElementById('simplize-guide-block-wrap');
+        if (sgWrap && !document.getElementById('simplize-guide-block')) {
+          sgWrap.innerHTML = getSimplizeBlockHTML(lang);
+        }
+        updateSimplizeBlock(savedSector);
+        ['market_pe','market_pb','market_ps'].forEach(function(id) {
+          const el = document.getElementById(id);
+          const val = state.answers[id];
+          if (el && val !== undefined && val !== '') { el.value = val; el.classList.add('has-value'); }
+        });
+        updateSimplizeStatus();
+      }
+    }
     if (q.type !== 'select') {
       setTimeout(() => { const inp = document.getElementById('q-input'); if(inp) inp.focus(); }, 80);
     }
@@ -3224,6 +3241,11 @@ const POLAR_URL = 'https://buy.polar.sh/polar_cl_etwFklJEGOIVHd4uTnwBxo3xjG2BR2e
       if (mainSel) state.answers[q.id] = mainSel.value || state.answers[q.id] || '';
       if (subSel && subSel.offsetParent)  state.answers.bm_sub   = subSel.value;
       if (otherIn && otherIn.offsetParent) state.answers.bm_other = otherIn.value;
+      // Lưu hệ số thị trường vào state.answers
+      ['market_pe','market_pb','market_ps'].forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) state.answers[id] = el.value !== '' ? parseFloat(el.value) : '';
+      });
     }
     const inputEl = document.getElementById('q-input');
     if (inputEl) {
