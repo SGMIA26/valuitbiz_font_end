@@ -1178,23 +1178,107 @@
     };
 
     // ── Hàm load Hub data (cache 6h) ──
+    // Strategy: localStorage cache → direct fetch (no-cors fallback) → JSONP → static defaults
     window.loadHubData = async function(segment, sectorId) {
-      const key = `hub_${segment}_${sectorId}`;
-      const ts  = window.__HUB_CACHE_TS[key] || 0;
-      if (window.__HUB_CACHE[key] && Date.now() - ts < HUB_TTL) {
-        return window.__HUB_CACHE[key];
-      }
+      const key    = 'vb_hub_' + segment + '_' + sectorId;
+      const tsKey  = key + '_ts';
+      const HUB_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+
+      // ── 1. Check localStorage cache (persists across sessions) ──
       try {
-        const url = `${window.HUB_API_URL}?action=getFullHub&segment=${segment}&sector=${sectorId}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        if (data && !data.error) {
-          window.__HUB_CACHE[key] = data;
-          window.__HUB_CACHE_TS[key] = Date.now();
-          return data;
+        const cached = localStorage.getItem(key);
+        const ts     = parseInt(localStorage.getItem(tsKey) || '0', 10);
+        if (cached && (Date.now() - ts < HUB_TTL_MS)) {
+          const parsed = JSON.parse(cached);
+          console.log('[Hub] ✅ Loaded from localStorage cache');
+          return parsed;
         }
-      } catch(e) { console.warn('[Hub] Fetch failed, using defaults:', e.message); }
-      return null;
+      } catch(_) {}
+
+      // ── 2. Direct fetch with no-cors mode not viable for JSON
+      //       Try standard fetch first (works if Apps Script CORS is set) ──
+      const directUrl = window.HUB_API_URL
+        + '?action=getFullHub&segment=' + encodeURIComponent(segment)
+        + '&sector=' + encodeURIComponent(sectorId);
+
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 8000); // 8s timeout
+        const res  = await fetch(directUrl, {
+          method: 'GET',
+          signal: ctrl.signal,
+          mode:   'cors',
+          cache:  'no-store',
+        });
+        clearTimeout(timer);
+        if (res.ok) {
+          // Apps Script trả ContentService TEXT/plain → parse thủ công
+          const text = await res.text();
+          const data = JSON.parse(text.replace(/^[^{[]*/, '').replace(/[^}\]]*$/, ''));
+          if (data && !data.error) {
+            // Save to localStorage
+            try {
+              localStorage.setItem(key, JSON.stringify(data));
+              localStorage.setItem(tsKey, String(Date.now()));
+            } catch(_) {}
+            console.log('[Hub] ✅ Fetched directly from Apps Script');
+            return data;
+          }
+        }
+      } catch(e) {
+        console.warn('[Hub] Direct fetch failed (' + e.message + '), trying JSONP...');
+      }
+
+      // ── 3. JSONP fallback (bypasses CORS completely) ──
+      try {
+        const jsonpData = await new Promise((resolve, reject) => {
+          const cbName = '_hubCb_' + Date.now();
+          const script = document.createElement('script');
+          const timeout = setTimeout(() => {
+            delete window[cbName];
+            document.head.removeChild(script);
+            reject(new Error('JSONP timeout'));
+          }, 10000);
+
+          window[cbName] = function(data) {
+            clearTimeout(timeout);
+            delete window[cbName];
+            document.head.removeChild(script);
+            resolve(data);
+          };
+
+          script.src = directUrl + '&callback=' + cbName;
+          script.onerror = () => {
+            clearTimeout(timeout);
+            delete window[cbName];
+            reject(new Error('JSONP script error'));
+          };
+          document.head.appendChild(script);
+        });
+
+        if (jsonpData && !jsonpData.error) {
+          try {
+            localStorage.setItem(key, JSON.stringify(jsonpData));
+            localStorage.setItem(tsKey, String(Date.now()));
+          } catch(_) {}
+          console.log('[Hub] ✅ Fetched via JSONP');
+          return jsonpData;
+        }
+      } catch(e) {
+        console.warn('[Hub] JSONP also failed (' + e.message + '), using static defaults');
+      }
+
+      // ── 4. Static defaults (always available, no network needed) ──
+      console.info('[Hub] Using static defaults — results still valid via fallback data');
+      return null; // caller will use window.__HUB_DEFAULTS
+    };
+
+    // ── Force clear Hub cache (debug helper) ──
+    window.clearHubCache = function() {
+      Object.keys(localStorage).filter(k => k.startsWith('vb_hub_')).forEach(k => localStorage.removeItem(k));
+      window.__HUB_CACHE    = {};
+      window.__HUB_CACHE_TS = {};
+      console.log('[Hub] Cache cleared');
     };
 
     // ── Lấy market multiples: user input > Hub > default ──
@@ -1859,608 +1943,556 @@
   ================================================================ */
   const QUESTIONS = {
 
-  /* ════════════════════════════════════════════════════
+  /* ════════════════════════════════════════════════════════════════
      Ý TƯỞNG / PRE-SEED
-     PP: Berkus + Scorecard + Cost-to-Duplicate + VC Method
-     Lean Canvas 9 ô + Funding
-  ════════════════════════════════════════════════════ */
+     Lean Canvas 9 ô — text inputs, Founder info, Investor policy
+     PP tính sau: Berkus + Scorecard + Cost-to-Duplicate + VC Method
+  ════════════════════════════════════════════════════════════════ */
   idea: [
-    { id: 'idea_quality', type: 'select',
-      title_vn: 'Ý tưởng đã được nghiên cứu và kiểm chứng thị trường chưa?',
-      title_en: 'Has your idea been market-researched and validated?',
-      hint_vn: 'Berkus Factor 1 — Sound Idea: mức độ nghiên cứu ảnh hưởng đến giá trị nền tảng',
-      hint_en: 'Berkus Factor 1 — Sound Idea: research depth impacts base valuation',
-      options_vn: [
-        {val:100, label:'Chưa — mới ở giai đoạn ý tưởng ban đầu'},
-        {val:250, label:'Đã có nghiên cứu thị trường sơ bộ, có cơ sở'},
-        {val:500, label:'Đã có phản hồi tích cực từ khách hàng tiềm năng'},
-      ],
-      options_en: [
-        {val:100, label:'No — still at initial concept stage'},
-        {val:250, label:'Basic market research done with rationale'},
-        {val:500, label:'Positive feedback from potential customers'},
-      ]},
 
-    { id: 'idea_team', type: 'select',
-      title_vn: 'Đội ngũ sáng lập có kinh nghiệm liên quan không?',
-      title_en: 'Does the founding team have relevant experience?',
-      hint_vn: 'Berkus Factor 2 — Founding Team: nhân tố quan trọng nhất quyết định xác suất thành công',
-      hint_en: 'Berkus Factor 2 — Founding Team: most critical factor for execution probability',
-      options_vn: [
-        {val:0,   label:'Chưa có kinh nghiệm trực tiếp trong lĩnh vực này'},
-        {val:250, label:'Có kinh nghiệm một phần hoặc từ ngành liên quan'},
-        {val:500, label:'Founder đã từng làm trong ngành 3–5+ năm hoặc từng exit'},
-      ],
-      options_en: [
-        {val:0,   label:'No direct experience in this field'},
-        {val:250, label:'Partial or adjacent industry experience'},
-        {val:500, label:'Founder has 3–5+ years in sector or prior exit'},
-      ]},
+    /* ── NHÓM 1: Phân khúc khách hàng ── */
+    { id: 'customer_segment_pain', type: 'text',
+      title_vn: '① Ai là người đang gặp rắc rối lớn nhất mà bạn muốn giải quyết?',
+      title_en: '① Who faces the biggest problem you want to solve?',
+      placeholder_vn: 'VD: Chủ SME ngành F&B 20–50 nhân viên đang mất 3h/ngày nhập liệu thủ công',
+      placeholder_en: 'e.g. F&B SME owners with 20-50 staff losing 3hrs/day to manual data entry',
+      hint_vn: 'Lean Canvas — Customer Segments: càng cụ thể (ngành, quy mô, hành vi) AI phân tích càng chính xác.',
+      hint_en: 'Lean Canvas — Customer Segments: the more specific (sector, size, behavior) the sharper the AI analysis.' },
 
-    { id: 'idea_tam', type: 'number',
-      title_vn: 'Tổng quy mô thị trường mục tiêu (TAM) ước tính (tỷ VNĐ)?',
-      title_en: 'Estimated Total Addressable Market — TAM (billion VND)?',
-      placeholder_vn: 'VD: 5000 (= 5,000 tỷ VNĐ ~ $200M)',
-      placeholder_en: 'e.g. 5000 (= 5,000 billion VND ~ $200M)',
-      hint_vn: 'Berkus Factor 3 — Market Size: TAM = tổng doanh thu nếu chiếm 100% thị trường. Tính theo quy mô thị trường VN hoặc ASEAN nếu có kế hoạch mở rộng.',
-      hint_en: 'Berkus Factor 3 — Market Size: TAM = total revenue if capturing 100% of the market.' },
+    { id: 'customer_potential', type: 'text',
+      title_vn: '② Khách hàng tiềm năng của bạn là ai?',
+      title_en: '② Who are your potential customers?',
+      placeholder_vn: 'VD: Chủ nhà hàng, quản lý chuỗi cafe, CEO startup F&B tại TP.HCM và Hà Nội',
+      placeholder_en: 'e.g. Restaurant owners, cafe chain managers, F&B startup CEOs in HCMC & Hanoi',
+      hint_vn: 'Mô tả rõ nhân khẩu học, địa lý, quy mô và khả năng chi trả.',
+      hint_en: 'Describe demographics, geography, scale and payment ability.' },
 
-    { id: 'idea_ip', type: 'select',
-      title_vn: 'Mức độ bảo vệ công nghệ lõi / sở hữu trí tuệ (IP)?',
-      title_en: 'How protected is your core technology / IP?',
-      hint_vn: 'Berkus Factor 4 — Core Technology/IP: rào cản cạnh tranh & lợi thế phòng thủ',
-      hint_en: 'Berkus Factor 4 — Core Technology/IP: competitive barrier & defensive advantage',
-      options_vn: [
-        {val:0,   label:'Chưa có IP, ý tưởng dễ bị sao chép'},
-        {val:250, label:'Có lợi thế kỹ thuật nhưng chưa đăng ký bảo hộ'},
-        {val:500, label:'Đã đăng ký bằng sáng chế / quy trình độc quyền / trade secret'},
-      ],
-      options_en: [
-        {val:0,   label:'No IP, idea easily replicable'},
-        {val:250, label:'Technical advantage but not formally protected'},
-        {val:500, label:'Patent filed / proprietary process / trade secret'},
-      ]},
+    { id: 'early_adopters', type: 'text',
+      title_vn: '③ Những người dùng đầu tiên (Early Adopters) của bạn là ai — những người sẵn sàng trả tiền hoặc dùng thử ngay?',
+      title_en: '③ Who are your Early Adopters — those ready to pay or trial immediately?',
+      placeholder_vn: 'VD: 10 chủ quán cafe đã đăng ký beta, sẵn sàng trả 500K/tháng',
+      placeholder_en: 'e.g. 10 cafe owners already signed up for beta, willing to pay 500K/month',
+      hint_vn: 'Early Adopters là nhóm xác nhận giả thuyết kinh doanh — quan trọng nhất để tính Traction trong Berkus.',
+      hint_en: 'Early Adopters validate your business hypothesis — critical for Berkus Traction factor.' },
 
-    { id: 'idea_traction', type: 'select',
-      title_vn: 'Traction hiện tại — đã có khách hàng trả tiền chưa?',
-      title_en: 'Current traction — any paying customers yet?',
-      hint_vn: 'Berkus Factor 5 — Traction: bằng chứng thị trường thực tế mạnh nhất',
-      hint_en: 'Berkus Factor 5 — Traction: strongest real-world market evidence',
-      options_vn: [
-        {val:0,   label:'Chưa có — chỉ là ý tưởng / prototype'},
-        {val:250, label:'Có 1–10 người dùng thử / beta tester'},
-        {val:500, label:'Có khách hàng trả tiền đều đặn, doanh thu > 0'},
-      ],
-      options_en: [
-        {val:0,   label:'None — idea / prototype stage only'},
-        {val:250, label:'1–10 trial users / beta testers'},
-        {val:500, label:'Paying customers, revenue > 0'},
-      ]},
+    /* ── NHÓM 2: Vấn đề ── */
+    { id: 'top_problems', type: 'text',
+      title_vn: '④ Đâu là 1–3 vấn đề lớn nhất và nhức nhối nhất của khách hàng?',
+      title_en: '④ What are the 1–3 biggest and most pressing problems your customers face?',
+      placeholder_vn: 'VD: 1) Mất 3h/ngày nhập liệu  2) Thiếu hàng do sai sót  3) Không có báo cáo real-time',
+      placeholder_en: 'e.g. 1) 3hrs/day manual entry  2) Stock-outs from errors  3) No real-time reports',
+      hint_vn: 'Lean Canvas — Problem: dùng số liệu cụ thể nếu có. Ví dụ: thời gian lãng phí, chi phí phát sinh.',
+      hint_en: 'Lean Canvas — Problem: use specific numbers if possible. e.g. wasted hours, extra costs.' },
 
-    { id: 'pain_level', type: 'select',
-      title_vn: 'Mức độ "nỗi đau" mà sản phẩm giải quyết cho khách hàng?',
-      title_en: 'How critical is the pain point your product solves?',
-      hint_vn: 'Dùng cho Scorecard Method — ảnh hưởng trực tiếp đến multiplier tổng hợp',
-      hint_en: 'Used in Scorecard Method — directly affects the composite multiplier',
-      options_vn: [
-        {val:'vitamin',    label:'Vitamin (Nice-to-have) — tiện ích bổ sung, không có cũng được'},
-        {val:'painkiller', label:'Painkiller (Must-have) — giải quyết nỗi đau nhức nhối trực tiếp'},
-        {val:'antibiotic', label:'Antibiotic (Critical) — giải quyết bài toán sống còn, bắt buộc dùng'},
-      ],
-      options_en: [
-        {val:'vitamin',    label:'Vitamin (Nice-to-have) — supplementary, can live without it'},
-        {val:'painkiller', label:'Painkiller (Must-have) — solves a direct, pressing pain'},
-        {val:'antibiotic', label:'Antibiotic (Critical) — mission-critical, mandatory solution'},
-      ]},
+    { id: 'existing_solution', type: 'text',
+      title_vn: '⑤ Trước khi có sản phẩm của bạn, khách hàng đang dùng giải pháp gì để tự giải quyết vấn đề?',
+      title_en: '⑤ Before your product, what solution are customers using to deal with this problem?',
+      placeholder_vn: 'VD: Dùng Excel thủ công, thuê kế toán riêng, dùng phần mềm cũ từ 2015',
+      placeholder_en: 'e.g. Manual Excel, hiring a dedicated accountant, using legacy software from 2015',
+      hint_vn: 'Biết giải pháp thay thế hiện tại giúp xác định switching cost và barrier to adoption.',
+      hint_en: 'Knowing current alternatives helps identify switching cost and adoption barriers.' },
 
-    { id: 'moat_level', type: 'select',
-      title_vn: 'Lợi thế cạnh tranh / Rào cản phòng thủ (Economic Moat)?',
-      title_en: 'Competitive advantage / Defensive moat?',
-      hint_vn: 'Dùng trong Scorecard và Cost-to-Duplicate Method',
-      hint_en: 'Used in Scorecard and Cost-to-Duplicate Method',
-      options_vn: [
-        {val:'low',    label:'Thấp — có thể bị sao chép trong 1–3 tháng'},
-        {val:'medium', label:'Trung bình — có quy trình / cộng đồng người dùng nhất định'},
-        {val:'high',   label:'Cao — bằng sáng chế, AI độc quyền, Network Effect mạnh'},
-      ],
-      options_en: [
-        {val:'low',    label:'Low — easily replicated in 1–3 months'},
-        {val:'medium', label:'Medium — some process / user community advantage'},
-        {val:'high',   label:'High — patent, proprietary AI, or strong network effects'},
-      ]},
+    /* ── NHÓM 3: Giải pháp (Solution) ── */
+    { id: 'mvp_feature', type: 'text',
+      title_vn: '⑥ Tính năng thiết yếu nhất (MVP) bạn cần xây dựng để giải quyết các vấn đề trên là gì?',
+      title_en: '⑥ What is the single most essential feature (MVP) needed to solve the above problems?',
+      placeholder_vn: 'VD: Tự động nhập liệu từ hoá đơn bằng AI OCR, báo cáo tồn kho theo thời gian thực',
+      placeholder_en: 'e.g. AI OCR auto-invoice entry, real-time inventory reporting dashboard',
+      hint_vn: 'Lean Canvas — Solution: MVP là tập hợp tối thiểu tính năng đủ để thuyết phục Early Adopter dùng thử.',
+      hint_en: 'Lean Canvas — Solution: MVP is the minimum feature set to convince Early Adopters to trial.' },
 
-    { id: 'cost_invested', type: 'number',
-      title_vn: 'Tổng vốn đã đầu tư vào dự án đến nay (triệu VNĐ)?',
-      title_en: 'Total capital invested into the project so far (million VND)?',
-      placeholder_vn: 'VD: 500 (= 500 triệu VNĐ ~ $20K)',
-      placeholder_en: 'e.g. 500 (= 500 million VND ~ $20K)',
-      hint_vn: 'Dùng cho Cost-to-Duplicate Method. Gồm: lương nhóm, server, marketing, R&D, pháp lý...',
-      hint_en: 'Used for Cost-to-Duplicate Method. Includes: team salaries, servers, marketing, R&D, legal...' },
+    { id: 'pain_solution', type: 'text',
+      title_vn: '⑦ Sản phẩm của bạn giải quyết nỗi đau của khách hàng như thế nào?',
+      title_en: '⑦ How exactly does your product solve the customer pain points?',
+      placeholder_vn: 'VD: Giảm 80% thời gian nhập liệu, cảnh báo tồn kho sắp hết theo ngưỡng tự động',
+      placeholder_en: 'e.g. Reduces 80% data entry time, auto-alerts when stock hits reorder threshold',
+      hint_vn: 'Kết nối trực tiếp từng tính năng với từng nỗi đau. Dùng số đo được nếu có.',
+      hint_en: 'Map each feature directly to each pain point. Use measurable outcomes where possible.' },
 
-    { id: 'revenue_year5', type: 'number',
-      title_vn: 'Doanh thu kỳ vọng tại năm thứ 5 (tỷ VNĐ)?',
-      title_en: 'Expected revenue in Year 5 (billion VND)?',
-      placeholder_vn: 'VD: 50 (= 50 tỷ VNĐ ~ $2M)',
-      placeholder_en: 'e.g. 50 (= 50 billion VND ~ $2M)',
-      hint_vn: 'Dùng cho VC Method — tính ngược từ Exit Value. Ước tính lạc quan nhưng có cơ sở.',
-      hint_en: 'Used in VC Method — back-calculated from Exit Value. Optimistic but grounded estimate.' },
-
-    { id: 'exit_multiple', type: 'select',
-      title_vn: 'Bội số định giá ngành khi Exit/IPO (Revenue Multiple)?',
-      title_en: 'Industry revenue multiple at Exit/IPO?',
-      hint_vn: 'VC Method: Exit Value = Doanh thu năm 5 × Multiple ngành. Tham chiếu: SaaS 5-8×, F&B 3×, Fintech 10-15×',
-      hint_en: 'VC Method: Exit Value = Year-5 Revenue × Industry Multiple. Ref: SaaS 5-8×, F&B 3×, Fintech 10-15×',
-      options_vn: [
-        {val:3,  label:'3× — Ngành truyền thống (F&B, Bán lẻ, Dịch vụ)'},
-        {val:5,  label:'5× — Công nghệ phần mềm, EdTech, HealthTech'},
-        {val:8,  label:'8× — SaaS / Marketplace tăng trưởng cao'},
-        {val:12, label:'12× — AI / DeepTech / FinTech đột phá'},
-      ],
-      options_en: [
-        {val:3,  label:'3× — Traditional (F&B, Retail, Services)'},
-        {val:5,  label:'5× — Software, EdTech, HealthTech'},
-        {val:8,  label:'8× — High-growth SaaS / Marketplace'},
-        {val:12, label:'12× — AI / DeepTech / FinTech disruptors'},
-      ]},
-
-    { id: 'investor_roi', type: 'select',
-      title_vn: 'ROI kỳ vọng của nhà đầu tư (lợi nhuận hoàn vốn)?',
-      title_en: 'Expected investor ROI target?',
-      hint_vn: 'Angel/Seed VN thường kỳ vọng 10–20× trong 5 năm. ROI cao hơn → định giá hiện tại thấp hơn.',
-      hint_en: 'VN Angel/Seed investors typically expect 10–20× in 5 years. Higher ROI = lower current valuation.',
-      options_vn: [
-        {val:10, label:'10× — Angel/Seed, thị trường ổn định'},
-        {val:15, label:'15× — Series A tiêu chuẩn, tăng trưởng tốt'},
-        {val:20, label:'20× — VC chuyên nghiệp, thị trường cạnh tranh cao'},
-      ],
-      options_en: [
-        {val:10, label:'10× — Angel/Seed stage, stable market'},
-        {val:15, label:'15× — Standard Series A, good growth'},
-        {val:20, label:'20× — Professional VC, highly competitive market'},
-      ]},
-
-    { id: 'bm_type', type: 'sector2tier',
-      title_vn: 'Lĩnh vực & Mô hình kinh doanh của dự án?',
-      title_en: 'Business sector & model of your project?',
-      hint_vn: 'Chọn ngành → AI benchmark đúng. Nếu không có trong danh sách → chọn Khác → mô tả → AI tự nhận diện',
-      hint_en: 'Select sector → AI applies correct benchmark. Not listed → choose Other → AI auto-classifies' },
-
-    { id: 'customer_segment', type: 'text',
-      title_vn: '① LEAN CANVAS — Phân khúc KH: Ai là người THỰC SỰ trả tiền?',
-      title_en: '① LEAN CANVAS — Customer Segments: Who actually pays you?',
-      placeholder_vn: 'VD: SME ngành F&B, 20–100 NV, đang dùng Excel để quản lý kho...',
-      placeholder_en: 'e.g. SMEs in F&B, 20-100 staff, currently using Excel for inventory...',
-      hint_vn: 'Cụ thể: ngành, quy mô, hành vi hiện tại. Càng chi tiết AI phân tích càng chính xác.',
-      hint_en: 'Be specific: sector, size, current behavior. More detail = sharper AI analysis.' },
-
-    { id: 'problem', type: 'text',
-      title_vn: '② LEAN CANVAS — Vấn đề: 3 nỗi đau lớn nhất khách hàng đang gặp?',
-      title_en: '② LEAN CANVAS — Problem: Top 3 pain points your customers face?',
-      placeholder_vn: 'VD: 1) Mất 3h/ngày nhập liệu thủ công  2) Sai sót gây thiếu hàng  3) Không có báo cáo real-time',
-      placeholder_en: 'e.g. 1) 3hrs/day manual entry  2) Errors cause stockouts  3) No real-time reports',
-      hint_vn: 'Dùng số liệu cụ thể nếu có: thời gian lãng phí, chi phí phát sinh, tỷ lệ lỗi...',
-      hint_en: 'Use specific numbers if possible: wasted time, extra cost, error rates...' },
-
+    /* ── NHÓM 4: Giá trị độc nhất (UVP) ── */
     { id: 'uvp', type: 'text',
-      title_vn: '③ LEAN CANVAS — Giá trị độc nhất (UVP): Tại sao chọn bạn thay vì đối thủ?',
-      title_en: '③ LEAN CANVAS — Unique Value Proposition: Why choose you over competitors?',
-      placeholder_vn: 'VD: Tự động hoá 80% nhập liệu, tiết kiệm 2.5h/ngày, không cần IT, triển khai trong 1 ngày',
-      placeholder_en: 'e.g. Automates 80% data entry, saves 2.5hrs/day, no IT needed, deploys in 1 day',
-      hint_vn: 'Công thức: [Làm gì] + [Cho ai] + [Lợi ích đo được] + [Không cần / Không như đối thủ]',
-      hint_en: 'Formula: [What] + [For whom] + [Measurable benefit] + [Unlike competitors]' },
+      title_vn: '⑧ Thông điệp nào ngắn gọn, súc tích nhất nói lên lợi ích cốt lõi bạn mang lại?',
+      title_en: '⑧ What is the clearest, most compelling message about your core benefit?',
+      placeholder_vn: 'VD: "Tự động hoá kho hàng F&B — tiết kiệm 2.5h/ngày, không cần IT, chạy trong 1 ngày"',
+      placeholder_en: 'e.g. "F&B inventory automation — saves 2.5hrs/day, no IT needed, live in 1 day"',
+      hint_vn: 'Lean Canvas — UVP: công thức [Làm gì] + [Cho ai] + [Lợi ích đo được] + [Không cần/Khác đối thủ].',
+      hint_en: 'Lean Canvas — UVP formula: [What] + [For whom] + [Measurable benefit] + [Unlike competitors].' },
 
+    { id: 'why_choose', type: 'text',
+      title_vn: '⑨ Lý do gì khiến khách hàng chọn sản phẩm của bạn thay vì đối thủ?',
+      title_en: '⑨ Why would customers choose your product over competitors?',
+      placeholder_vn: 'VD: Tích hợp trực tiếp với máy POS hiện có, không cần nhập tay, giá 1/3 thị trường',
+      placeholder_en: 'e.g. Direct POS integration, zero manual entry, 1/3 the market price',
+      hint_vn: 'Tập trung vào lợi thế khác biệt thực sự — không phải "làm tốt hơn" mà "khác hoàn toàn".',
+      hint_en: 'Focus on true differentiation — not "doing better" but "fundamentally different".' },
+
+    /* ── NHÓM 5: Lợi thế không thể sao chép (Unfair Advantage) ── */
     { id: 'unfair_advantage', type: 'text',
-      title_vn: '④ LEAN CANVAS — Lợi thế không thể sao chép (Unfair Advantage)?',
-      title_en: '④ LEAN CANVAS — Unfair Advantage: What cannot be easily copied?',
-      placeholder_vn: 'VD: 10 năm kinh nghiệm ngành F&B + 500 KH beta + patent thuật toán tối ưu kho hàng',
-      placeholder_en: 'e.g. 10yr F&B experience + 500 beta customers + warehouse algorithm patent',
-      hint_vn: 'Đây là yếu tố bảo vệ dài hạn. Không phải "làm tốt hơn" mà là "không ai làm được".',
-      hint_en: 'This is your long-term protection — not "doing better" but "uniquely positioned".' },
+      title_vn: '⑩ Lợi thế nào của bạn mà đối thủ không thể dễ dàng sao chép hoặc mua được?',
+      title_en: '⑩ What advantage do you have that competitors cannot easily copy or buy?',
+      placeholder_vn: 'VD: 10 năm kinh nghiệm F&B + 500 KH beta + patent thuật toán tối ưu tồn kho',
+      placeholder_en: 'e.g. 10yr F&B experience + 500 beta customers + inventory optimization patent',
+      hint_vn: 'Ví dụ: đội ngũ chuyên gia độc quyền, công nghệ đã đăng ký sáng chế, tệp KH lớn có sẵn.',
+      hint_en: 'e.g. Exclusive expert team, patented technology, large existing customer base.' },
 
+    /* ── NHÓM 6: Kênh tiếp cận (Channels) ── */
+    { id: 'channels_reach', type: 'text',
+      title_vn: '⑪ Bạn sẽ tiếp cận các phân khúc khách hàng của mình bằng cách nào?',
+      title_en: '⑪ How will you reach your customer segments?',
+      placeholder_vn: 'VD: LinkedIn Ads B2B, hội chợ ngành F&B, referral từ nhà phân phối thiết bị bếp',
+      placeholder_en: 'e.g. B2B LinkedIn Ads, F&B industry trade shows, referrals from kitchen equipment distributors',
+      hint_vn: 'Lean Canvas — Channels: liệt kê kênh chính và kênh thay thế. Kênh nào có CAC thấp nhất?',
+      hint_en: 'Lean Canvas — Channels: list primary and backup channels. Which has lowest CAC?' },
+
+    { id: 'most_effective_channel', type: 'text',
+      title_vn: '⑫ Kênh nào là hiệu quả nhất để đưa sản phẩm đến tay người dùng?',
+      title_en: '⑫ Which channel is most effective at getting your product to users?',
+      placeholder_vn: 'VD: Demo trực tiếp tại quán của chủ — tỷ lệ chuyển đổi 40%, CAC ~500K',
+      placeholder_en: 'e.g. In-person demo at owner\'s location — 40% conversion rate, CAC ~500K VND',
+      hint_vn: 'Kênh hiệu quả = tỷ lệ chuyển đổi cao + CAC thấp + có thể scale. Ưu tiên kênh này.',
+      hint_en: 'Most effective channel = high conversion + low CAC + scalable. Prioritize this.' },
+
+    /* ── NHÓM 7: Dòng doanh thu (Revenue Streams) ── */
+    { id: 'revenue_model', type: 'text',
+      title_vn: '⑬ Khách hàng sẵn sàng trả tiền cho sản phẩm của bạn bằng cách nào?',
+      title_en: '⑬ How are customers willing to pay for your product?',
+      placeholder_vn: 'VD: Thuê bao tháng 499K/tháng/quán, gói năm 4.5 triệu, setup fee 1 triệu',
+      placeholder_en: 'e.g. Monthly subscription 499K/location, annual plan 4.5M, one-time setup 1M',
+      hint_vn: 'Lean Canvas — Revenue Streams: thuê bao, bán đứt, phí hoa hồng, freemium, dự án...',
+      hint_en: 'Lean Canvas — Revenue Streams: subscription, one-time, commission, freemium, project...' },
+
+    { id: 'pricing_revenue_plan', type: 'text',
+      title_vn: '⑭ Mô hình định giá và dự kiến doanh thu của bạn là bao nhiêu?',
+      title_en: '⑭ What is your pricing model and projected revenue?',
+      placeholder_vn: 'VD: 100 KH × 499K/tháng = 50 triệu/tháng. Năm 1: 600 triệu, Năm 2: 2 tỷ',
+      placeholder_en: 'e.g. 100 customers × 499K/month = 50M/month. Year 1: 600M, Year 2: 2B VND',
+      hint_vn: 'Dùng để tính VC Method (back-from-exit). Dự báo có cơ sở từ thị trường thực tế.',
+      hint_en: 'Used for VC Method (back-from-exit). Ground projections in real market evidence.' },
+
+    /* ── NHÓM 8: Cơ cấu chi phí (Cost Structure) ── */
+    { id: 'cost_structure', type: 'text',
+      title_vn: '⑮ Tất cả các chi phí cố định và biến đổi khi vận hành dự án là gì?',
+      title_en: '⑮ What are all fixed and variable costs to operate this project?',
+      placeholder_vn: 'VD: Lương team 4 người: 60 triệu/tháng; server AWS: 5 triệu; marketing: 20 triệu',
+      placeholder_en: 'e.g. 4-person team salary: 60M/month; AWS server: 5M; marketing: 20M/month',
+      hint_vn: 'Lean Canvas — Cost Structure: chi phí cố định (fixed) + biến đổi (variable). Ghi rõ đơn vị.',
+      hint_en: 'Lean Canvas — Cost Structure: fixed + variable costs. Always state the unit clearly.' },
+
+    /* ── NHÓM 9: Chỉ số đo lường (Key Metrics) ── */
+    { id: 'key_metrics', type: 'text',
+      title_vn: '⑯ Con số nào cho thấy doanh nghiệp của bạn đang hoạt động tốt?',
+      title_en: '⑯ What numbers show your business is performing well?',
+      placeholder_vn: 'VD: MAU, tỷ lệ chuyển đổi, retention 3 tháng, NPS, số KH trả tiền tháng mới nhất',
+      placeholder_en: 'e.g. MAU, conversion rate, 3-month retention, NPS, paying customers last month',
+      hint_vn: 'Lean Canvas — Key Metrics: chọn 3–5 chỉ số NORTH STAR phản ánh sức khoẻ thực của DN.',
+      hint_en: 'Lean Canvas — Key Metrics: pick 3–5 NORTH STAR metrics that reflect true business health.' },
+
+    /* ── Funding (Berkus multiplier) ── */
     { id: 'funding_raised_billion', type: 'number',
-      title_vn: 'Đã gọi được vốn bên ngoài bao nhiêu? (tỷ VNĐ, để 0 nếu chưa)',
-      title_en: 'External funding raised so far? (billion VND, enter 0 if none)',
-      placeholder_vn: 'VD: 2.5 (= 2.5 tỷ VNĐ ~ $100K)',
-      placeholder_en: 'e.g. 2.5 (= 2.5 billion VND ~ $100K)',
+      title_vn: '⑰ Đã gọi được vốn bên ngoài bao nhiêu? (tỷ VNĐ — để 0 nếu chưa)',
+      title_en: '⑰ External funding raised so far? (billion VND — enter 0 if none)',
+      placeholder_vn: 'VD: 2.5 (= 2.5 tỷ VNĐ ≈ $100K)',
+      placeholder_en: 'e.g. 2.5 (= 2.5 billion VND ≈ $100K)',
       hint_vn: 'Nếu đã có funding: Funding Valuation = Vốn gọi × 3. Kết hợp Berkus 60% + Funding Val 40%.',
-      hint_en: 'If funded: Funding Valuation = Capital raised × 3. Combined: Berkus 60% + Funding Val 40%.' },
+      hint_en: 'If funded: Funding Valuation = Capital raised × 3. Blended: Berkus 60% + Funding Val 40%.' },
   ],
 
-  /* ════════════════════════════════════════════════════
-     STARTUP / MVP / EARLY REVENUE
+  /* ════════════════════════════════════════════════════════════════
+     KHỞI NGHIỆP / STARTUP / MVP
+     Lean Canvas 9 ô + Ekips & Founders + Investor Policy
      PP: Berkus + Scorecard + VC Method + Cost-to-Dup + P/S
-     Có doanh thu sơ khởi, đang tăng trưởng nhanh
-  ════════════════════════════════════════════════════ */
+  ════════════════════════════════════════════════════════════════ */
   startup: [
-    { id: 'revenue', type: 'number',
-      title_vn: 'Doanh thu 12 tháng gần nhất (triệu VNĐ)?',
-      title_en: 'Revenue last 12 months (million VND)?',
-      placeholder_vn: 'VD: 500 (= 500 triệu VNĐ ~ $20K/năm)',
-      placeholder_en: 'e.g. 500 (= 500 million VND ~ $20K/year)',
-      hint_vn: 'Dùng LTM (Last Twelve Months). Nếu chưa có doanh thu thì nhập 0.',
-      hint_en: 'Use LTM (Last Twelve Months). Enter 0 if pre-revenue.' },
 
-    { id: 'mom_growth', type: 'number',
-      title_vn: 'Tốc độ tăng trưởng MoM trung bình (% / tháng)?',
-      title_en: 'Average Month-over-Month growth rate (% / month)?',
-      placeholder_vn: 'VD: 15 (= 15%/tháng)',
-      placeholder_en: 'e.g. 15 (= 15% per month)',
-      hint_vn: 'MoM growth rate là chỉ số quan trọng nhất của startup giai đoạn đầu. 10%+ là xuất sắc.',
-      hint_en: 'MoM growth rate is the #1 metric for early-stage startups. 10%+ is excellent.' },
+    /* ── NHÓM 1: Phân khúc khách hàng ── */
+    { id: 'customer_segment_pain', type: 'text',
+      title_vn: '① Ai là người đang gặp rắc rối lớn nhất mà bạn muốn giải quyết?',
+      title_en: '① Who faces the biggest problem you want to solve?',
+      placeholder_vn: 'VD: Nhà bán hàng online có 100–500 đơn/ngày đang dùng 3 app riêng lẻ không kết nối',
+      placeholder_en: 'e.g. Online sellers with 100–500 orders/day using 3 disconnected apps',
+      hint_vn: 'Mô tả cụ thể nhất có thể: ngành, quy mô, pain point chính đang gặp.',
+      hint_en: 'Be as specific as possible: sector, scale, the main pain they currently face.' },
 
-    { id: 'biz_model', type: 'select',
-      title_vn: 'Mô hình doanh thu chính của startup?',
-      title_en: 'Primary revenue model of your startup?',
-      hint_vn: 'Mô hình doanh thu ảnh hưởng đến multiple định giá và phương pháp áp dụng',
-      hint_en: 'Revenue model affects applicable valuation multiple and methods',
-      options_vn: [
-        {val:'saas',        label:'SaaS / Subscription — thu phí định kỳ (tháng/năm)'},
-        {val:'marketplace', label:'Marketplace / Platform — thu phí giao dịch (take rate)'},
-        {val:'one_time',    label:'Bán sản phẩm / dịch vụ một lần'},
-        {val:'freemium',    label:'Freemium → Premium conversion'},
-        {val:'project',     label:'Dịch vụ theo dự án / hợp đồng'},
-        {val:'franchise',   label:'Nhượng quyền / Franchise'},
-      ],
-      options_en: [
-        {val:'saas',        label:'SaaS / Subscription — recurring monthly/annual fees'},
-        {val:'marketplace', label:'Marketplace / Platform — transaction fee (take rate)'},
-        {val:'one_time',    label:'One-time product / service sale'},
-        {val:'freemium',    label:'Freemium → Premium conversion'},
-        {val:'project',     label:'Project-based / contract services'},
-        {val:'franchise',   label:'Franchise model'},
-      ]},
+    { id: 'customer_potential', type: 'text',
+      title_vn: '② Khách hàng tiềm năng của bạn là ai?',
+      title_en: '② Who are your potential customers?',
+      placeholder_vn: 'VD: SME thương mại điện tử 10–50 nhân viên, doanh thu 5–50 tỷ/năm, thị trường VN',
+      placeholder_en: 'e.g. E-commerce SMEs 10–50 staff, revenue 5–50B VND/year, Vietnam market',
+      hint_vn: 'Nhân khẩu học, địa lý, quy mô doanh nghiệp, khả năng & sẵn sàng chi trả.',
+      hint_en: 'Demographics, geography, company size, payment capacity & willingness.' },
 
-    { id: 'active_users', type: 'number',
-      title_vn: 'Số người dùng / khách hàng đang hoạt động hiện tại?',
-      title_en: 'Current active users / customers?',
-      placeholder_vn: 'VD: 250 (người dùng hoạt động tháng gần nhất)',
-      placeholder_en: 'e.g. 250 (active users in last month)',
-      hint_vn: 'DAU/MAU ratio và retention rate là signal chất lượng tăng trưởng.',
-      hint_en: 'DAU/MAU ratio and retention rate signal growth quality.' },
+    { id: 'early_adopters', type: 'text',
+      title_vn: '③ Những người dùng đầu tiên (Early Adopters) của bạn là ai — người sẵn sàng trả tiền hoặc dùng thử ngay?',
+      title_en: '③ Who are your Early Adopters — those ready to pay or trial right now?',
+      placeholder_vn: 'VD: 25 seller Shopee/Lazada đã dùng thử, 8 người chuyển sang trả phí sau 14 ngày',
+      placeholder_en: 'e.g. 25 Shopee/Lazada sellers trialed, 8 converted to paid after 14-day trial',
+      hint_vn: 'Traction thực tế từ Early Adopters là bằng chứng market fit mạnh nhất.',
+      hint_en: 'Real traction from Early Adopters is the strongest market fit evidence.' },
 
-    { id: 'team_structure', type: 'select',
-      title_vn: 'Cấu trúc đội ngũ sáng lập (Hustler–Hacker–Hipster)?',
-      title_en: 'Founding team structure (Hustler–Hacker–Hipster)?',
-      hint_vn: 'Hustler = Kinh doanh/Sales, Hacker = Kỹ thuật, Hipster = Design/UX/Product',
-      hint_en: 'Hustler = Business/Sales, Hacker = Engineering, Hipster = Design/UX/Product',
-      options_vn: [
-        {val:0.6,  label:'Solo founder — 1 người đảm nhận tất cả'},
-        {val:0.85, label:'Có Hustler (biz) + Hacker (tech) — 2 người'},
-        {val:1.0,  label:'Đủ 3 vai trò Hustler + Hacker + Hipster'},
-        {val:1.2,  label:'Đủ 3 vai trò + có advisor/mentor ngành có uy tín'},
-      ],
-      options_en: [
-        {val:0.6,  label:'Solo founder — one person does everything'},
-        {val:0.85, label:'Hustler (biz) + Hacker (tech) — 2 co-founders'},
-        {val:1.0,  label:'Full Hustler + Hacker + Hipster'},
-        {val:1.2,  label:'Full team + credible industry advisors/mentors'},
-      ]},
+    /* ── NHÓM 2: Vấn đề ── */
+    { id: 'top_problems', type: 'text',
+      title_vn: '④ Đâu là 1–3 vấn đề lớn nhất và nhức nhối nhất của khách hàng?',
+      title_en: '④ What are the 1–3 biggest, most pressing problems your customers face?',
+      placeholder_vn: 'VD: 1) Xử lý đơn chậm → huỷ đơn  2) Thiếu hàng real-time  3) Báo cáo mất 2 ngày',
+      placeholder_en: 'e.g. 1) Slow order processing → cancellations  2) No real-time stock  3) Reports take 2 days',
+      hint_vn: 'Dùng dữ liệu thực từ phỏng vấn KH nếu có. Số liệu > cảm nhận chủ quan.',
+      hint_en: 'Use real data from customer interviews where possible. Data > subjective feeling.' },
 
-    { id: 'founder_track', type: 'select',
-      title_vn: 'Track record của founding team?',
-      title_en: 'Founding team track record?',
-      hint_vn: 'Serial founder có exit trước nhận premium đáng kể từ nhà đầu tư',
-      hint_en: 'Serial founders with prior exits command significant investor premiums',
-      options_vn: [
-        {val:0.8, label:'First-time founder, chưa có kinh nghiệm startup'},
-        {val:1.0, label:'Có kinh nghiệm industry 3-5 năm, lần đầu làm startup'},
-        {val:1.2, label:'Từng làm startup trước (dù chưa exit thành công)'},
-        {val:1.5, label:'Serial founder — đã từng exit / IPO thành công'},
-      ],
-      options_en: [
-        {val:0.8, label:'First-time founder, no startup experience'},
-        {val:1.0, label:'3-5 years industry exp, first startup'},
-        {val:1.2, label:'Prior startup experience (even without successful exit)'},
-        {val:1.5, label:'Serial founder — prior successful exit / IPO'},
-      ]},
+    { id: 'existing_solution', type: 'text',
+      title_vn: '⑤ Trước khi có startup của bạn, khách hàng đang dùng giải pháp gì?',
+      title_en: '⑤ Before your startup, what solution are customers using?',
+      placeholder_vn: 'VD: Kết hợp Sapo + Google Sheet + nhân viên kho thủ công — tốn 2 FTE + sai sót cao',
+      placeholder_en: 'e.g. Sapo + Google Sheets + manual warehouse staff — costs 2 FTE + high error rate',
+      hint_vn: 'Đây là giải pháp thay thế (alternatives) — cần hiểu để tính switching cost.',
+      hint_en: 'These are alternatives — understanding them helps calculate switching cost.' },
 
-    { id: 'pain_level', type: 'select',
-      title_vn: 'Mức độ "nỗi đau" mà startup giải quyết?',
-      title_en: 'Severity of the pain point your startup solves?',
-      options_vn: [
-        {val:'vitamin',    label:'Vitamin — tiện ích bổ sung, nice-to-have'},
-        {val:'painkiller', label:'Painkiller — must-have, giải quyết nỗi đau trực tiếp'},
-        {val:'antibiotic', label:'Antibiotic — critical, bắt buộc phải có để tồn tại'},
-      ],
-      options_en: [
-        {val:'vitamin',    label:'Vitamin — supplementary, nice-to-have'},
-        {val:'painkiller', label:'Painkiller — must-have, solves direct pain'},
-        {val:'antibiotic', label:'Antibiotic — critical, mandatory for survival'},
-      ]},
+    /* ── NHÓM 3: Giải pháp ── */
+    { id: 'mvp_feature', type: 'text',
+      title_vn: '⑥ Tính năng thiết yếu nhất (MVP) để giải quyết các vấn đề trên là gì?',
+      title_en: '⑥ What is the single most essential feature (MVP) to solve the above problems?',
+      placeholder_vn: 'VD: Đồng bộ đơn hàng real-time từ 5 sàn TMĐT, tự cập nhật tồn kho, cảnh báo sắp hết',
+      placeholder_en: 'e.g. Real-time order sync from 5 marketplaces, auto stock update, low-stock alerts',
+      hint_vn: 'MVP phải đủ để một Early Adopter sẵn sàng trả tiền — không hơn, không kém.',
+      hint_en: 'MVP must be sufficient for one Early Adopter to pay — no more, no less.' },
 
-    { id: 'moat_level', type: 'select',
-      title_vn: 'Lợi thế cạnh tranh / Economic Moat hiện tại?',
-      title_en: 'Current competitive advantage / Economic Moat?',
-      options_vn: [
-        {val:'low',    label:'Thấp — dễ bị sao chép trong 1–3 tháng'},
-        {val:'medium', label:'Trung bình — có switching cost hoặc network effect nhỏ'},
-        {val:'high',   label:'Cao — patent / proprietary data / network effect mạnh'},
-      ],
-      options_en: [
-        {val:'low',    label:'Low — easily replicated in 1–3 months'},
-        {val:'medium', label:'Medium — switching cost or minor network effect'},
-        {val:'high',   label:'High — patent / proprietary data / strong network effect'},
-      ]},
+    { id: 'pain_solution', type: 'text',
+      title_vn: '⑦ Sản phẩm của bạn giải quyết nỗi đau của khách hàng như thế nào?',
+      title_en: '⑦ How exactly does your product solve the customer pain points?',
+      placeholder_vn: 'VD: Giảm 70% thời gian xử lý đơn, sai sót tồn kho từ 15% xuống còn <2%',
+      placeholder_en: 'e.g. Reduces order processing time 70%, inventory error from 15% to <2%',
+      hint_vn: 'Kết nối cụ thể từng tính năng với từng pain point. Luôn dùng số đo được.',
+      hint_en: 'Map each feature to each pain point. Always use measurable metrics.' },
 
-    { id: 'cost_invested', type: 'number',
-      title_vn: 'Tổng vốn đã đầu tư vào startup (triệu VNĐ)?',
-      title_en: 'Total capital invested into startup (million VND)?',
-      placeholder_vn: 'VD: 2000 (= 2 tỷ VNĐ)',
-      placeholder_en: 'e.g. 2000 (= 2 billion VND)',
-      hint_vn: 'Cost-to-Duplicate Method: chi phí để xây lại từ đầu. Gồm: tech, team, marketing, pháp lý.',
-      hint_en: 'Cost-to-Duplicate Method: cost to rebuild from scratch. Includes: tech, team, marketing, legal.' },
+    /* ── NHÓM 4: UVP ── */
+    { id: 'uvp', type: 'text',
+      title_vn: '⑧ Thông điệp ngắn gọn nhất nói lên lợi ích cốt lõi bạn mang lại là gì?',
+      title_en: '⑧ What is your clearest message about the core benefit you deliver?',
+      placeholder_vn: 'VD: "Kho hàng đa sàn tự động — tiết kiệm 70% thao tác, 0 sai sót, từ 299K/tháng"',
+      placeholder_en: 'e.g. "Multi-marketplace automation — 70% less manual work, 0 errors, from 299K/month"',
+      hint_vn: 'UVP phải trả lời: Tôi giúp [ai] [làm gì] để họ [đạt được gì], khác [đối thủ] ở [điểm gì].',
+      hint_en: 'UVP must answer: I help [who] [do what] to [achieve what], unlike [competitor] because [differentiator].' },
 
-    { id: 'revenue_year5', type: 'number',
-      title_vn: 'Doanh thu kỳ vọng tại năm thứ 5 (tỷ VNĐ)?',
-      title_en: 'Expected revenue at Year 5 (billion VND)?',
-      placeholder_vn: 'VD: 100 (= 100 tỷ VNĐ ~ $4M)',
-      placeholder_en: 'e.g. 100 (= 100 billion VND ~ $4M)',
-      hint_vn: 'VC Method: Exit Value = Rev×5 × Exit Multiple. Dự báo có cơ sở từ growth rate hiện tại.',
-      hint_en: 'VC Method: Exit Value = Rev×5 × Exit Multiple. Base on current growth trajectory.' },
+    { id: 'why_choose', type: 'text',
+      title_vn: '⑨ Lý do gì khiến khách hàng chọn bạn thay vì đối thủ hiện tại?',
+      title_en: '⑨ Why would customers choose you over existing competitors?',
+      placeholder_vn: 'VD: Tích hợp native Shopee/Lazada/TikTok Shop, không cần code, hỗ trợ 24/7 tiếng Việt',
+      placeholder_en: 'e.g. Native Shopee/Lazada/TikTok Shop integration, no-code, 24/7 Vietnamese support',
+      hint_vn: 'Tập trung vào switching trigger — điều gì khiến họ quyết định chuyển sang ngay hôm nay?',
+      hint_en: 'Focus on switching trigger — what makes them decide to switch today?' },
 
-    { id: 'exit_multiple', type: 'select',
-      title_vn: 'Bội số định giá ngành khi Exit/IPO?',
-      title_en: 'Industry valuation multiple at Exit/IPO?',
-      options_vn: [
-        {val:3,  label:'3× Revenue — F&B, Bán lẻ, Dịch vụ truyền thống'},
-        {val:5,  label:'5× Revenue — Phần mềm, EdTech, HealthTech'},
-        {val:8,  label:'8× Revenue — SaaS / Marketplace tăng trưởng cao'},
-        {val:12, label:'12× Revenue — AI / Fintech / DeepTech đột phá'},
-      ],
-      options_en: [
-        {val:3,  label:'3× Revenue — F&B, Retail, Traditional Services'},
-        {val:5,  label:'5× Revenue — Software, EdTech, HealthTech'},
-        {val:8,  label:'8× Revenue — High-growth SaaS / Marketplace'},
-        {val:12, label:'12× Revenue — AI / Fintech / DeepTech disruptors'},
-      ]},
+    /* ── NHÓM 5: Unfair Advantage ── */
+    { id: 'unfair_advantage', type: 'text',
+      title_vn: '⑩ Lợi thế nào của bạn mà đối thủ không thể dễ dàng sao chép hoặc mua được?',
+      title_en: '⑩ What do you have that competitors cannot easily replicate or acquire?',
+      placeholder_vn: 'VD: Partnership độc quyền với Shopee VN, thuật toán forecast tồn kho độc quyền, tệp 2,000 KH beta',
+      placeholder_en: 'e.g. Exclusive Shopee VN partnership, proprietary demand forecast algorithm, 2,000 beta customers',
+      hint_vn: 'Lợi thế không sao chép được: IP, data độc quyền, network effect, brand trust, team chuyên sâu.',
+      hint_en: 'Uncopyable advantages: IP, proprietary data, network effect, brand trust, deep domain team.' },
 
-    { id: 'investor_roi', type: 'select',
-      title_vn: 'ROI kỳ vọng của nhà đầu tư VC/Angel?',
-      title_en: 'Target ROI for VC/Angel investors?',
-      options_vn: [
-        {val:10, label:'10× — Angel/Seed stage, rủi ro thấp'},
-        {val:15, label:'15× — Series A tiêu chuẩn'},
-        {val:20, label:'20× — VC chuyên nghiệp, early stage'},
-      ],
-      options_en: [
-        {val:10, label:'10× — Angel/Seed, lower risk profile'},
-        {val:15, label:'15× — Standard Series A'},
-        {val:20, label:'20× — Professional VC, early stage'},
-      ]},
+    /* ── NHÓM 6: Channels ── */
+    { id: 'channels_reach', type: 'text',
+      title_vn: '⑪ Bạn sẽ tiếp cận khách hàng của mình bằng cách nào?',
+      title_en: '⑪ How will you reach your target customers?',
+      placeholder_vn: 'VD: Outbound B2B sales (cold call seller lớn), referral từ đối tác logistics, content SEO',
+      placeholder_en: 'e.g. B2B outbound sales (cold call large sellers), logistics partner referrals, SEO content',
+      hint_vn: 'Liệt kê top 3 kênh, ưu tiên kênh có CAC thấp nhất và có thể scale nhanh nhất.',
+      hint_en: 'List top 3 channels, prioritize lowest CAC and fastest-to-scale channel.' },
 
+    { id: 'most_effective_channel', type: 'text',
+      title_vn: '⑫ Kênh nào hiệu quả nhất để đưa sản phẩm đến tay người dùng?',
+      title_en: '⑫ Which channel is most effective at getting the product to users?',
+      placeholder_vn: 'VD: Product-led growth qua free trial 14 ngày — conversion rate 32%, viral coefficient 1.2',
+      placeholder_en: 'e.g. Product-led growth via 14-day free trial — 32% conversion, viral coefficient 1.2',
+      hint_vn: 'Chỉ số quan trọng: conversion rate, CAC, LTV:CAC ratio, time-to-convert.',
+      hint_en: 'Key metrics: conversion rate, CAC, LTV:CAC ratio, time-to-convert.' },
+
+    /* ── NHÓM 7: Revenue Streams ── */
+    { id: 'revenue_model', type: 'text',
+      title_vn: '⑬ Khách hàng sẵn sàng trả tiền cho startup của bạn bằng cách nào?',
+      title_en: '⑬ How are customers willing to pay for your startup?',
+      placeholder_vn: 'VD: SaaS tháng 299K–999K/tháng; gói năm giảm 20%; add-on API cho enterprise',
+      placeholder_en: 'e.g. SaaS monthly 299K–999K/month; annual plan 20% off; enterprise API add-on',
+      hint_vn: 'Mô hình định giá: thuê bao, one-time, usage-based, freemium, hybrid. Ghi rõ mức giá từng tier.',
+      hint_en: 'Pricing model: subscription, one-time, usage-based, freemium, hybrid. List prices per tier.' },
+
+    { id: 'pricing_revenue_plan', type: 'text',
+      title_vn: '⑭ Dự kiến doanh thu và mô hình định giá như thế nào?',
+      title_en: '⑭ What is your revenue projection and pricing model?',
+      placeholder_vn: 'VD: Năm 1: 200 KH × 500K TB = 100 triệu/tháng → 1.2 tỷ/năm. Năm 3: 5 tỷ/năm',
+      placeholder_en: 'e.g. Year 1: 200 customers × 500K avg = 100M/month → 1.2B/year. Year 3: 5B/year',
+      hint_vn: 'Dùng để tính VC Method. Dự báo từ tốc độ MoM hiện tại × thị trường có thể chiếm.',
+      hint_en: 'Used for VC Method. Project from current MoM rate × addressable market share.' },
+
+    /* ── NHÓM 8: Cost Structure ── */
+    { id: 'cost_structure', type: 'text',
+      title_vn: '⑮ Tất cả chi phí cố định và biến đổi khi vận hành startup là gì?',
+      title_en: '⑮ What are all fixed and variable costs to run your startup?',
+      placeholder_vn: 'VD: Tech team 5 người: 120 triệu/tháng; AWS: 15 triệu; Sales team: 80 triệu; Marketing: 50 triệu',
+      placeholder_en: 'e.g. 5-person tech team: 120M/month; AWS: 15M; Sales team: 80M; Marketing: 50M/month',
+      hint_vn: 'Phân chia rõ: Fixed cost (lương, server) vs Variable cost (marketing, commission). Tính Burn Rate.',
+      hint_en: 'Clearly split: Fixed (salary, server) vs Variable (marketing, commission). Calculate Burn Rate.' },
+
+    /* ── NHÓM 9: Key Metrics ── */
+    { id: 'key_metrics', type: 'text',
+      title_vn: '⑯ Con số nào cho thấy startup của bạn đang hoạt động tốt?',
+      title_en: '⑯ What numbers show your startup is performing well?',
+      placeholder_vn: 'VD: MRR 85 triệu (+15%MoM), Churn 3%/tháng, LTV/CAC = 4.2, NPS = 52',
+      placeholder_en: 'e.g. MRR 85M (+15%MoM), Churn 3%/month, LTV/CAC = 4.2, NPS = 52',
+      hint_vn: 'NORTH STAR metric + 3–4 chỉ số hỗ trợ. Ưu tiên chỉ số phản ánh product-market fit.',
+      hint_en: 'NORTH STAR metric + 3–4 supporting metrics. Prioritize metrics showing product-market fit.' },
+
+    /* ── NHÓM 10: Ekips & Founders ── */
+    { id: 'team_founders', type: 'text',
+      title_vn: '⑰ Đội ngũ sáng lập (Ekips & Founders) — ai là ai, kinh nghiệm gì?',
+      title_en: '⑰ Founding Team (Ekips & Founders) — who are they and what\'s their background?',
+      placeholder_vn: 'VD: CEO: 8 năm e-commerce Lazada; CTO: ex-Google, patent AI; CMO: từng scale brand 0→50 tỷ',
+      placeholder_en: 'e.g. CEO: 8yr Lazada e-commerce; CTO: ex-Google, AI patent; CMO: scaled brand 0→50B VND',
+      hint_vn: 'Hustler (Kinh doanh) + Hacker (Kỹ thuật) + Hipster (Design/Product). Bao gồm advisor uy tín nếu có.',
+      hint_en: 'Hustler (Business) + Hacker (Engineering) + Hipster (Design/Product). Include credible advisors.' },
+
+    /* ── NHÓM 11: Cơ chế nhà đầu tư ── */
+    { id: 'investor_policy', type: 'text',
+      title_vn: '⑱ Cơ chế nhà đầu tư — chính sách quyền lợi nhà đầu tư nhận được là gì?',
+      title_en: '⑱ Investor mechanism — what rights and benefits do investors receive?',
+      placeholder_vn: 'VD: Cổ phần phổ thông 10%, dividend từ năm 3, board seat, anti-dilution clause, tag-along',
+      placeholder_en: 'e.g. 10% ordinary shares, dividends from Year 3, board seat, anti-dilution, tag-along rights',
+      hint_vn: 'Bao gồm: loại cổ phần, quyền biểu quyết, dividend policy, information rights, vesting schedule.',
+      hint_en: 'Include: share class, voting rights, dividend policy, information rights, vesting schedule.' },
+
+    /* ── NHÓM 12: Exit timeline ── */
+    { id: 'exit_timeline', type: 'text',
+      title_vn: '⑲ Khi nào thì nhà đầu tư được thoái vốn?',
+      title_en: '⑲ When can investors exit?',
+      placeholder_vn: 'VD: Năm 4–5 qua M&A hoặc Series B; hoặc buyback bởi founder nếu không IPO được',
+      placeholder_en: 'e.g. Year 4–5 via M&A or Series B; or founder buyback if IPO not achieved',
+      hint_vn: 'Exit route: IPO, M&A, secondary sale, founder buyback. Kèm IRR target nếu có.',
+      hint_en: 'Exit routes: IPO, M&A, secondary sale, founder buyback. Include target IRR if available.' },
+
+    /* ── Funding ── */
     { id: 'funding_raised_billion', type: 'number',
-      title_vn: 'Đã gọi được vốn bên ngoài bao nhiêu? (tỷ VNĐ)',
-      title_en: 'External funding raised so far? (billion VND)',
-      placeholder_vn: 'VD: 5 (= 5 tỷ ~ $200K). Nhập 0 nếu bootstrapped.',
-      placeholder_en: 'e.g. 5 (= 5 billion ~ $200K). Enter 0 if bootstrapped.',
-      hint_vn: 'Có funding từ VC/Angel uy tín là tín hiệu định giá market-validated.',
-      hint_en: 'Funding from credible VC/Angel is a market-validated valuation signal.' },
-
-    { id: 'bm_type', type: 'sector2tier',
-      title_vn: 'Lĩnh vực & Mô hình kinh doanh của startup?',
-      title_en: 'Business sector & model?',
-      hint_vn: 'Chọn ngành để hệ thống áp benchmark P/S và GMV múltiple phù hợp.',
-      hint_en: 'Select sector to apply the correct P/S and GMV multiples.' },
-
-    { id: 'tam_billion', type: 'number',
-      title_vn: 'Quy mô thị trường mục tiêu TAM (tỷ VNĐ)?',
-      title_en: 'Total Addressable Market TAM (billion VND)?',
-      placeholder_vn: 'VD: 10000 (= 10 nghìn tỷ ~ $400M)',
-      placeholder_en: 'e.g. 10000 (= 10,000 billion ~ $400M)',
-      hint_vn: 'TAM = cơ hội nếu chiếm 100% thị trường. SAM/SOM để pitch investor.',
-      hint_en: 'TAM = opportunity if capturing 100% of market. SAM/SOM for investor pitches.' },
+      title_vn: '⑳ Đã gọi được vốn bên ngoài bao nhiêu? (tỷ VNĐ — để 0 nếu bootstrapped)',
+      title_en: '⑳ External funding raised so far? (billion VND — enter 0 if bootstrapped)',
+      placeholder_vn: 'VD: 5 (= 5 tỷ VNĐ ≈ $200K)',
+      placeholder_en: 'e.g. 5 (= 5 billion VND ≈ $200K)',
+      hint_vn: 'Funding từ VC/Angel uy tín là tín hiệu market-validated valuation. Có funding: Val = Vốn × 3.',
+      hint_en: 'Funding from credible VC/Angel is a market-validated signal. If funded: Val = Capital × 3.' },
   ],
 
-  /* ════════════════════════════════════════════════════
-     SME — DOANH NGHIỆP VỪA VÀ NHỎ
-     PP: P/E + P/S + P/B + Gordon DDM + FCFE + EV/EBITDA
-     Doanh thu ổn định, có BCTC, đang hoạt động hiệu quả
-  ════════════════════════════════════════════════════ */
+  /* ════════════════════════════════════════════════════════════════
+     SMEs — DOANH NGHIỆP VỪA VÀ NHỎ (đến $5M)
+     8 câu số liệu tài chính chuẩn → P/E · P/S · P/B · Gordon DDM
+     Mức độ minh bạch BCTC Tier A/B/C theo TT36/2024/TT-BTC
+  ════════════════════════════════════════════════════════════════ */
   sme: [
+
+    /* Câu 1/8 — Ngành */
     { id: 'bm_type', type: 'sector2tier',
-      title_vn: 'Ngành hoạt động & Mô hình kinh doanh chính?',
-      title_en: 'Primary industry sector & business model?',
-      hint_vn: 'Quyết định hệ số ngành (P/E, P/S, P/B) từ HOSE/HNX áp dụng. BĐS → chuyển GlobalValuate.',
-      hint_en: 'Determines sector multiples (P/E, P/S, P/B) from HOSE/HNX. Real estate → GlobalValuate.' },
+      title_vn: 'Câu 1/8 — Doanh nghiệp của anh/chị đang hoạt động trong ngành gì?',
+      title_en: 'Q 1/8 — What industry sector does your business operate in?',
+      hint_vn: 'Chọn ngành → hệ thống áp hệ số P/E, P/S, P/B chuẩn HOSE/HNX. BĐS → chuyển sang GlobalValuate.',
+      hint_en: 'Select sector → system applies HOSE/HNX benchmarked P/E, P/S, P/B. Real estate → GlobalValuate.' },
 
+    /* Câu 2/8 — Mô hình kinh doanh */
     { id: 'biz_model', type: 'select',
-      title_vn: 'Mô hình kinh doanh cụ thể?',
-      title_en: 'Specific business model?',
-      hint_vn: 'Ảnh hưởng đến trọng số phương pháp định giá. SaaS → ưu tiên P/S; Marketplace → GMV.',
-      hint_en: 'Affects valuation method weights. SaaS → P/S priority; Marketplace → GMV.',
+      title_vn: 'Câu 2/8 — Mô hình kinh doanh của doanh nghiệp thuộc nhóm nào dưới đây?',
+      title_en: 'Q 2/8 — Which business model best describes your company?',
+      hint_vn: 'Mô hình KD ảnh hưởng đến trọng số định giá. Franchise/F&B → P/S tăng 50%. SaaS → P/S ưu tiên.',
+      hint_en: 'Business model affects valuation weights. Franchise/F&B → P/S weight increases to 50%. SaaS → P/S priority.',
       options_vn: [
-        {val:'fb_chain',    label:'Chuỗi F&B / Bán lẻ — mô hình chuỗi nhân rộng'},
-        {val:'saas',        label:'SaaS / Phần mềm thuê bao — doanh thu recurring'},
-        {val:'manufacturing', label:'Sản xuất truyền thống — tài sản nặng'},
-        {val:'marketplace', label:'Marketplace / Nền tảng kết nối — thu phí giao dịch'},
-        {val:'trading',     label:'Thương mại / Phân phối — biên thấp, vòng quay cao'},
-        {val:'service',     label:'Dịch vụ chuyên môn / Tư vấn / Dự án'},
-        {val:'franchise',   label:'Franchise / Nhượng quyền thương hiệu'},
-        {val:'other',       label:'Mô hình khác'},
+        {val:'fb_chain',      label:'1. Chuỗi F&B / Bán lẻ'},
+        {val:'saas',          label:'2. SaaS / Phần mềm thuê bao'},
+        {val:'manufacturing', label:'3. Sản xuất truyền thống'},
+        {val:'burn_growth',   label:'4. Startup tăng trưởng đốt vốn'},
+        {val:'marketplace',   label:'5. Marketplace / Nền tảng kết nối'},
+        {val:'trading',       label:'6. Thương mại / Phân phối'},
+        {val:'service',       label:'7. Dịch vụ chuyên môn'},
+        {val:'franchise',     label:'8. Franchise / Nhượng quyền'},
       ],
       options_en: [
-        {val:'fb_chain',      label:'F&B Chain / Retail — scalable chain model'},
-        {val:'saas',          label:'SaaS / Subscription Software — recurring revenue'},
-        {val:'manufacturing', label:'Traditional Manufacturing — asset-heavy'},
-        {val:'marketplace',   label:'Marketplace / Platform — transaction fee model'},
-        {val:'trading',       label:'Trading / Distribution — low margin, high turnover'},
-        {val:'service',       label:'Professional Services / Consulting / Project-based'},
-        {val:'franchise',     label:'Franchise / Brand licensing'},
-        {val:'other',         label:'Other business model'},
+        {val:'fb_chain',      label:'1. F&B Chain / Retail Chain'},
+        {val:'saas',          label:'2. SaaS / Subscription Software'},
+        {val:'manufacturing', label:'3. Traditional Manufacturing'},
+        {val:'burn_growth',   label:'4. Growth-stage Startup (burning capital)'},
+        {val:'marketplace',   label:'5. Marketplace / Connecting Platform'},
+        {val:'trading',       label:'6. Trading / Distribution'},
+        {val:'service',       label:'7. Professional Services'},
+        {val:'franchise',     label:'8. Franchise / Brand Licensing'},
       ]},
 
+    /* Câu 3/8 — Minh bạch BCTC */
     { id: 'bctc_transparency', type: 'select',
-      title_vn: 'Mức độ minh bạch Báo cáo Tài chính (BCTC)?',
-      title_en: 'Financial Statement transparency level?',
-      hint_vn: 'TT36/2024: Mức độ minh bạch BCTC ảnh hưởng trực tiếp đến hệ số chiết khấu định giá. Tier A=100%, B=50%, C=25%.',
-      hint_en: 'TT36/2024: Financial transparency directly affects valuation discount factor. Tier A=100%, B=50%, C=25%.',
+      title_vn: 'Câu 3/8 — Mức độ minh bạch của Báo cáo Tài chính (BCTC) hiện tại thuộc nhóm nào?',
+      title_en: 'Q 3/8 — What is the current financial statement transparency level?',
+      hint_vn: 'TT36/2024/TT-BTC: Tier A = 100% giá trị | Tier B = 50% | Tier C = 25% (chiết khấu 75%).',
+      hint_en: 'TT36/2024/TT-BTC: Tier A = 100% value | Tier B = 50% | Tier C = 25% (75% discount).',
       options_vn: [
-        {val:'A', label:'A — Kiểm toán độc lập / Minh bạch cao (100% giá trị)'},
-        {val:'B', label:'B — Sổ sách nội bộ, tương đối rõ ràng (50% giá trị)'},
-        {val:'C', label:'C — Số liệu sơ bộ, chưa đầy đủ (25% giá trị)'},
+        {val:'A', label:'A — Có kiểm toán độc lập / Sổ sách đầy đủ / Minh bạch cao (100% giá trị)'},
+        {val:'B', label:'B — Có số liệu nội bộ tương đối rõ nhưng chưa kiểm toán (50% giá trị)'},
+        {val:'C', label:'C — Số liệu quản trị sơ bộ / Chưa đầy đủ / Dòng tiền khó kiểm chứng (25% giá trị)'},
       ],
       options_en: [
-        {val:'A', label:'A — Independently audited / High transparency (100% value)'},
-        {val:'B', label:'B — Internal books, reasonably clear (50% value)'},
-        {val:'C', label:'C — Preliminary / Incomplete data (25% value)'},
+        {val:'A', label:'A — Independently audited / Complete books / High transparency (100% value)'},
+        {val:'B', label:'B — Internal figures reasonably clear, not yet audited (50% value)'},
+        {val:'C', label:'C — Preliminary management data / Incomplete / Cash flow hard to verify (25% value)'},
       ]},
 
+    /* Câu 4/8 — Doanh thu */
     { id: 'revenue', type: 'number',
-      title_vn: 'Doanh thu thuần 12 tháng gần nhất (triệu VNĐ)?',
-      title_en: 'Net revenue last 12 months (million VND)?',
-      placeholder_vn: 'VD: 25000 (= 25 tỷ VNĐ ~ $1M)',
-      placeholder_en: 'e.g. 25000 (= 25 billion VND ~ $1M)',
-      hint_vn: 'Dùng cho P/S Multiple. Doanh thu thuần sau chiết khấu, hoàn hàng.',
-      hint_en: 'Used for P/S Multiple. Net revenue after discounts and returns.' },
+      title_vn: 'Câu 4/8 — Doanh thu 12 tháng gần nhất của doanh nghiệp là bao nhiêu? (triệu VNĐ)',
+      title_en: 'Q 4/8 — What is your business revenue over the last 12 months? (million VND)',
+      placeholder_vn: 'VD: 12000 (= 12 tỷ VNĐ) hoặc nhập 850 (= 850 triệu). Ghi rõ đơn vị nếu dùng USD.',
+      placeholder_en: 'e.g. 12000 (= 12 billion VND) or 850 (= 850 million). Note unit if using USD.',
+      hint_vn: 'Dùng cho P/S Multiple. Doanh thu thuần LTM (Last Twelve Months) — sau chiết khấu và hoàn hàng.',
+      hint_en: 'Used for P/S Multiple. Net LTM (Last Twelve Months) revenue — after discounts and returns.' },
 
+    /* Câu 5/8 — Lợi nhuận ròng */
     { id: 'net_profit', type: 'number',
-      title_vn: 'Lợi nhuận ròng sau thuế TNDN (triệu VNĐ)?',
-      title_en: 'Net profit after corporate income tax (million VND)?',
-      placeholder_vn: 'VD: 3000 (= 3 tỷ VNĐ). Nhập số âm nếu lỗ: -500',
-      placeholder_en: 'e.g. 3000 (= 3 billion VND). Enter negative if loss: -500',
-      hint_vn: 'Dùng cho P/E và Gordon DDM. Nếu âm → P/E = 0, trọng số tự động dịch sang P/S, P/B.',
-      hint_en: 'Used for P/E and Gordon DDM. If negative → P/E = 0, weight auto-shifts to P/S, P/B.' },
+      title_vn: 'Câu 5/8 — Lợi nhuận ròng sau thuế 12 tháng gần nhất là bao nhiêu? (triệu VNĐ)',
+      title_en: 'Q 5/8 — What is your net profit after tax over the last 12 months? (million VND)',
+      placeholder_vn: 'VD: 2000 (= 2 tỷ). Nhập số âm nếu lỗ: -500 (= lỗ 500 triệu)',
+      placeholder_en: 'e.g. 2000 (= 2 billion). Enter negative if loss: -500 (= 500M loss)',
+      hint_vn: 'Dùng cho P/E và Gordon DDM. Nếu âm → P/E tự động = 0, trọng số dịch sang P/S và P/B.',
+      hint_en: 'Used for P/E and Gordon DDM. If negative → P/E auto = 0, weight shifts to P/S and P/B.' },
 
+    /* Câu 6/8 — Vốn chủ sở hữu */
     { id: 'equity', type: 'number',
-      title_vn: 'Vốn chủ sở hữu / Book Value (triệu VNĐ)?',
-      title_en: 'Equity / Book Value (million VND)?',
-      placeholder_vn: 'VD: 15000 (= 15 tỷ VNĐ)',
-      placeholder_en: 'e.g. 15000 (= 15 billion VND)',
-      hint_vn: 'VCSH từ Bảng Cân đối kế toán. Dùng cho P/B Multiple.',
-      hint_en: 'Shareholders equity from Balance Sheet. Used for P/B Multiple.' },
+      title_vn: 'Câu 6/8 — Giá trị vốn chủ sở hữu hiện tại (Book Value / Equity) là bao nhiêu? (triệu VNĐ)',
+      title_en: 'Q 6/8 — What is the current book value of equity? (million VND)',
+      placeholder_vn: 'VD: 10000 (= 10 tỷ). Lấy theo sổ sách kế toán hoặc ước tính nội bộ gần nhất.',
+      placeholder_en: 'e.g. 10000 (= 10 billion). Use accounting books or most recent internal estimate.',
+      hint_vn: 'Vốn chủ sở hữu từ Bảng CĐKT (Equity = Tổng tài sản − Tổng nợ phải trả). Dùng cho P/B.',
+      hint_en: 'Shareholders equity from Balance Sheet (Equity = Total Assets − Total Liabilities). Used for P/B.' },
 
+    /* Câu 7/8 — Cổ phần */
     { id: 'total_shares', type: 'number',
-      title_vn: 'Số cổ phần lưu hành (cổ phần)? (optional)',
-      title_en: 'Total shares outstanding? (optional)',
-      placeholder_vn: 'VD: 1000000 (= 1 triệu cổ phần)',
-      placeholder_en: 'e.g. 1000000 (= 1 million shares)',
-      hint_vn: 'Dùng để tính giá trị mỗi cổ phần. Để trống nếu chưa xác định.',
-      hint_en: 'Used to calculate value per share. Leave blank if not yet determined.' },
+      title_vn: 'Câu 7/8 — Hiện doanh nghiệp có bao nhiêu cổ phần / cổ phiếu đang lưu hành? (cổ phần)',
+      title_en: 'Q 7/8 — How many shares are currently outstanding?',
+      placeholder_vn: 'VD: 2000000 (= 2 triệu cổ phần) hoặc 500000 (= 500K cổ phần)',
+      placeholder_en: 'e.g. 2000000 (= 2 million shares) or 500000 (= 500K shares)',
+      hint_vn: 'Dùng để tính Giá trị mỗi cổ phần = Equity Value / Số cổ phần lưu hành. Để 0 nếu chưa xác định.',
+      hint_en: 'Used to calculate Value per Share = Equity Value / Shares outstanding. Enter 0 if undetermined.' },
 
+    /* Câu 8/8 — Cổ tức */
     { id: 'dividend_pct', type: 'number',
-      title_vn: 'Tỷ lệ chi trả cổ tức (% lợi nhuận ròng)? (optional)',
-      title_en: 'Dividend payout ratio (% of net profit)? (optional)',
-      placeholder_vn: 'VD: 30 (= chi 30% LNST làm cổ tức)',
-      placeholder_en: 'e.g. 30 (= pay out 30% of net profit as dividends)',
-      hint_vn: 'Gordon DDM: D0 = LNST × payout ratio. Để 0 nếu không chia cổ tức.',
-      hint_en: 'Gordon DDM: D0 = Net profit × payout ratio. Enter 0 if no dividends.' },
-
-    { id: 'ebitda', type: 'number',
-      title_vn: 'EBITDA ước tính (triệu VNĐ)? (optional)',
-      title_en: 'Estimated EBITDA (million VND)? (optional)',
-      placeholder_vn: 'VD: 5000 (= 5 tỷ VNĐ). EBITDA = LNST + Thuế + Lãi vay + Khấu hao',
-      placeholder_en: 'e.g. 5000 (= 5 billion VND). EBITDA = Net profit + Tax + Interest + D&A',
-      hint_vn: 'Dùng cho EV/EBITDA cross-check. Quan trọng với SME có vay nợ đáng kể.',
-      hint_en: 'Used for EV/EBITDA cross-check. Important for SMEs with significant debt.' },
-
-    { id: 'total_debt', type: 'number',
-      title_vn: 'Tổng nợ vay có lãi suất (triệu VNĐ)? (optional)',
-      title_en: 'Total interest-bearing debt (million VND)? (optional)',
-      placeholder_vn: 'VD: 10000 (= 10 tỷ VNĐ)',
-      placeholder_en: 'e.g. 10000 (= 10 billion VND)',
-      hint_vn: 'Nợ ngân hàng + trái phiếu + thuê tài chính. KHÔNG tính nợ thương mại (Accounts Payable).',
-      hint_en: 'Bank loans + bonds + finance leases. Exclude trade payables (Accounts Payable).' },
-
-    { id: 'cash', type: 'number',
-      title_vn: 'Tiền mặt & tương đương tiền (triệu VNĐ)? (optional)',
-      title_en: 'Cash & cash equivalents (million VND)? (optional)',
-      placeholder_vn: 'VD: 3000 (= 3 tỷ VNĐ)',
-      placeholder_en: 'e.g. 3000 (= 3 billion VND)',
-      hint_vn: 'Net Debt = Tổng nợ vay − Tiền mặt. Dùng để tính Equity Value từ Enterprise Value.',
-      hint_en: 'Net Debt = Total debt − Cash. Used to derive Equity Value from Enterprise Value.' },
+      title_vn: 'Câu 8/8 — Tỷ lệ cổ tức tiền mặt trung bình doanh nghiệp chi trả hằng năm là bao nhiêu? (% LNST)',
+      title_en: 'Q 8/8 — What is the average annual cash dividend payout ratio? (% of net profit)',
+      placeholder_vn: 'VD: 10 (= chi 10% LNST làm cổ tức). Nhập 0 nếu không chia cổ tức.',
+      placeholder_en: 'e.g. 10 (= pay 10% of net profit as dividends). Enter 0 if no dividends paid.',
+      hint_vn: 'Gordon DDM: D₀ = LNST × payout ratio. GGM không bị chiết khấu transparency — phản ánh dòng tiền thật.',
+      hint_en: 'Gordon DDM: D₀ = Net profit × payout ratio. GGM bypasses transparency discount — reflects real cash yield.' },
   ],
 
-  /* ════════════════════════════════════════════════════
+  /* ════════════════════════════════════════════════════════════════
      ENTERPRISE — DOANH NGHIỆP LỚN (>$5M)
-     PP: DCF/FCFF 5 năm + Terminal Value + EV/EBITDA + P/E + P/B
+     9 câu tài chính chuyên sâu → DCF/FCFF + WACC + EV/EBITDA
      Chuẩn M&A VN — TT36/2024/TT-BTC
-  ════════════════════════════════════════════════════ */
+  ════════════════════════════════════════════════════════════════ */
   enterprise: [
-    { id: 'bm_type', type: 'sector2tier',
-      title_vn: 'Ngành hoạt động & Mô hình kinh doanh?',
-      title_en: 'Industry sector & business model?',
-      hint_vn: 'Quyết định WACC, beta ngành, và phương pháp định giá ưu tiên theo TT36/2024.',
-      hint_en: 'Determines WACC, sector beta, and priority valuation methods per TT36/2024.' },
 
-    { id: 'bctc_transparency', type: 'select',
-      title_vn: 'Mức độ kiểm toán BCTC?',
-      title_en: 'Financial statement audit level?',
-      hint_vn: 'TT36/2024: yêu cầu BCTC kiểm toán cho định giá chính thức M&A/IPO.',
-      hint_en: 'TT36/2024: requires audited FS for official M&A/IPO valuation.',
+    /* Câu 1/8 — Ngành */
+    { id: 'bm_type', type: 'sector2tier',
+      title_vn: 'Câu 1/8 — Doanh nghiệp của anh/chị đang hoạt động trong ngành gì?',
+      title_en: 'Q 1/8 — What industry sector does your business operate in?',
+      hint_vn: 'Quyết định WACC benchmark, beta ngành, và phương pháp định giá ưu tiên theo TT36/2024.',
+      hint_en: 'Determines WACC benchmark, sector beta, and priority valuation methods per TT36/2024.' },
+
+    /* Câu 2/8 — Mô hình kinh doanh */
+    { id: 'biz_model', type: 'select',
+      title_vn: 'Câu 2/8 — Mô hình kinh doanh của doanh nghiệp thuộc nhóm nào dưới đây?',
+      title_en: 'Q 2/8 — Which business model best describes your enterprise?',
+      hint_vn: 'Mô hình KD ảnh hưởng đến trọng số EV/EBITDA vs DCF và benchmark multiple áp dụng.',
+      hint_en: 'Business model affects EV/EBITDA vs DCF weighting and applicable benchmark multiples.',
       options_vn: [
-        {val:'A', label:'A — Kiểm toán Big4 / Top10 (100% tin cậy)'},
-        {val:'B', label:'B — Kiểm toán công ty địa phương (75% tin cậy)'},
-        {val:'C', label:'C — Chưa kiểm toán / Tự lập (50% tin cậy)'},
+        {val:'fb_chain',      label:'1. Chuỗi F&B / Bán lẻ'},
+        {val:'saas',          label:'2. SaaS / Phần mềm thuê bao'},
+        {val:'manufacturing', label:'3. Sản xuất truyền thống'},
+        {val:'burn_growth',   label:'4. Startup tăng trưởng đốt vốn'},
+        {val:'marketplace',   label:'5. Marketplace / Nền tảng kết nối'},
+        {val:'trading',       label:'6. Thương mại / Phân phối'},
+        {val:'service',       label:'7. Dịch vụ chuyên môn'},
+        {val:'franchise',     label:'8. Franchise / Nhượng quyền'},
       ],
       options_en: [
-        {val:'A', label:'A — Big4 / Top10 audited (100% reliability)'},
-        {val:'B', label:'B — Local firm audited (75% reliability)'},
-        {val:'C', label:'C — Unaudited / Self-prepared (50% reliability)'},
+        {val:'fb_chain',      label:'1. F&B Chain / Retail Chain'},
+        {val:'saas',          label:'2. SaaS / Subscription Software'},
+        {val:'manufacturing', label:'3. Traditional Manufacturing'},
+        {val:'burn_growth',   label:'4. Growth-stage Company (heavy investment)'},
+        {val:'marketplace',   label:'5. Marketplace / Connecting Platform'},
+        {val:'trading',       label:'6. Trading / Distribution'},
+        {val:'service',       label:'7. Professional Services'},
+        {val:'franchise',     label:'8. Franchise / Brand Licensing'},
       ]},
 
-    { id: 'ebitda', type: 'number',
-      title_vn: 'EBITDA năm gần nhất (tỷ VNĐ)?',
-      title_en: 'EBITDA most recent year (billion VND)?',
-      placeholder_vn: 'VD: 50 (= 50 tỷ VNĐ ~ $2M)',
-      placeholder_en: 'e.g. 50 (= 50 billion VND ~ $2M)',
-      hint_vn: 'EBITDA = LNST + Thuế TNDN + Chi phí lãi vay + Khấu hao & Phân bổ. Dùng cho EV/EBITDA.',
-      hint_en: 'EBITDA = Net income + CIT + Interest expense + D&A. Used for EV/EBITDA cross-check.' },
+    /* Câu 3/8 — Minh bạch BCTC */
+    { id: 'bctc_transparency', type: 'select',
+      title_vn: 'Câu 3/8 — Mức độ minh bạch của Báo cáo Tài chính (BCTC) hiện tại thuộc nhóm nào?',
+      title_en: 'Q 3/8 — What is the current financial statement transparency level?',
+      hint_vn: 'TT36/2024: Enterprise M&A yêu cầu BCTC kiểm toán cho định giá chính thức. Tier ảnh hưởng hệ số tin cậy.',
+      hint_en: 'TT36/2024: Enterprise M&A requires audited FS for official valuation. Tier affects reliability factor.',
+      options_vn: [
+        {val:'A', label:'A — Có kiểm toán độc lập / Sổ sách đầy đủ / Minh bạch cao'},
+        {val:'B', label:'B — Có số liệu nội bộ tương đối rõ nhưng chưa kiểm toán'},
+        {val:'C', label:'C — Số liệu quản trị sơ bộ / Chưa đầy đủ / Dòng tiền khó kiểm chứng'},
+      ],
+      options_en: [
+        {val:'A', label:'A — Independently audited / Complete books / High transparency'},
+        {val:'B', label:'B — Internal figures reasonably clear, not yet audited'},
+        {val:'C', label:'C — Preliminary management data / Incomplete / Cash flow hard to verify'},
+      ]},
 
-    { id: 'fcf_year1', type: 'number',
-      title_vn: 'FCFF năm hiện tại — Dòng tiền tự do DN (tỷ VNĐ)?',
-      title_en: 'Current year FCFF — Free Cash Flow to Firm (billion VND)?',
-      placeholder_vn: 'VD: 30 (= 30 tỷ VNĐ). FCFF = EBIT×(1-thuế) + Khấu hao − CapEx − ΔVLĐ',
-      placeholder_en: 'e.g. 30 (= 30 billion VND). FCFF = EBIT×(1-tax) + D&A − CapEx − ΔWCR',
-      hint_vn: 'Nền tảng của DCF FCFF. Nếu FCFF âm thì dùng năm tới ước tính khi DN đạt breakeven.',
-      hint_en: 'Core input for DCF FCFF. If negative, use next-year estimate when firm reaches breakeven.' },
+    /* Câu 4/8 — Doanh thu */
+    { id: 'revenue', type: 'number',
+      title_vn: 'Câu 4/8 — Doanh thu 12 tháng gần nhất của doanh nghiệp là bao nhiêu? (tỷ VNĐ)',
+      title_en: 'Q 4/8 — What is your business revenue over the last 12 months? (billion VND)',
+      placeholder_vn: 'VD: 150 (= 150 tỷ VNĐ ≈ $6M). Doanh thu thuần LTM.',
+      placeholder_en: 'e.g. 150 (= 150 billion VND ≈ $6M). Net LTM revenue.',
+      hint_vn: 'Doanh thu thuần LTM — dùng cho P/S và cross-check EV/Revenue.',
+      hint_en: 'Net LTM revenue — used for P/S and EV/Revenue cross-check.' },
 
-    { id: 'growth_rate', type: 'number',
-      title_vn: 'Tốc độ tăng trưởng FCFF dự báo 5 năm tới (%/năm)?',
-      title_en: 'Projected FCFF growth rate next 5 years (%/year)?',
-      placeholder_vn: 'VD: 15 (= 15%/năm). Tăng trưởng kép trong giai đoạn dự báo.',
-      placeholder_en: 'e.g. 15 (= 15% per year). CAGR over forecast period.',
-      hint_vn: 'Nên bảo thủ: GDP+5% là hợp lý. >30% cần có bằng chứng backlog/hợp đồng rõ ràng.',
-      hint_en: 'Be conservative: GDP+5% is reasonable. >30% requires clear backlog/contract evidence.' },
+    /* Câu 5/8 — Lợi nhuận ròng */
+    { id: 'net_profit', type: 'number',
+      title_vn: 'Câu 5/8 — Lợi nhuận ròng sau thuế 12 tháng gần nhất là bao nhiêu? (tỷ VNĐ)',
+      title_en: 'Q 5/8 — What is your net profit after tax over the last 12 months? (billion VND)',
+      placeholder_vn: 'VD: 25 (= 25 tỷ VNĐ). Nhập số âm nếu lỗ: -10',
+      placeholder_en: 'e.g. 25 (= 25 billion VND). Enter negative if loss: -10',
+      hint_vn: 'Dùng cho P/E và Gordon DDM. Nếu âm → P/E = 0, trọng số dịch sang DCF và P/S.',
+      hint_en: 'Used for P/E and Gordon DDM. If negative → P/E = 0, weight shifts to DCF and P/S.' },
 
-    { id: 'wacc', type: 'number',
-      title_vn: 'WACC — Chi phí vốn bình quân gia quyền (%)?',
-      title_en: 'WACC — Weighted Average Cost of Capital (%)?',
-      placeholder_vn: 'VD: 12.5 (= 12.5%). Hub tự tính theo ngành nếu để trống.',
-      placeholder_en: 'e.g. 12.5 (= 12.5%). Hub auto-calculates by sector if left blank.',
-      hint_vn: 'WACC = Ke×E/(D+E) + Kd×(1-t)×D/(D+E). Hub cung cấp benchmark WACC theo ngành.',
-      hint_en: 'WACC = Ke×E/(D+E) + Kd×(1-t)×D/(D+E). Hub provides sector WACC benchmarks.' },
+    /* Câu 6/8 — Vốn chủ sở hữu */
+    { id: 'equity', type: 'number',
+      title_vn: 'Câu 6/8 — Giá trị vốn chủ sở hữu hiện tại (Book Value / Equity) là bao nhiêu? (tỷ VNĐ)',
+      title_en: 'Q 6/8 — What is the current book value of equity? (billion VND)',
+      placeholder_vn: 'VD: 80 (= 80 tỷ VNĐ ≈ $3.2M). Lấy từ Bảng CĐKT gần nhất.',
+      placeholder_en: 'e.g. 80 (= 80 billion VND ≈ $3.2M). From most recent Balance Sheet.',
+      hint_vn: 'Equity = Tổng tài sản − Tổng nợ phải trả. Dùng cho P/B và tính WACC weights.',
+      hint_en: 'Equity = Total Assets − Total Liabilities. Used for P/B and WACC weight calculation.' },
 
-    { id: 'total_debt', type: 'number',
-      title_vn: 'Tổng nợ vay có lãi suất (tỷ VNĐ)?',
-      title_en: 'Total interest-bearing debt (billion VND)?',
-      placeholder_vn: 'VD: 200 (= 200 tỷ VNĐ ~ $8M)',
-      placeholder_en: 'e.g. 200 (= 200 billion VND ~ $8M)',
-      hint_vn: 'Nợ vay ngân hàng + Trái phiếu DN + Thuê tài chính. Dùng để tính Net Debt.',
-      hint_en: 'Bank loans + Corporate bonds + Finance leases. Used to calculate Net Debt.' },
-
-    { id: 'cash', type: 'number',
-      title_vn: 'Tiền mặt & Đầu tư tài chính ngắn hạn (tỷ VNĐ)?',
-      title_en: 'Cash & Short-term financial investments (billion VND)?',
-      placeholder_vn: 'VD: 50 (= 50 tỷ VNĐ)',
-      placeholder_en: 'e.g. 50 (= 50 billion VND)',
-      hint_vn: 'Equity Value = Enterprise Value − Net Debt. Net Debt = Nợ vay − Tiền mặt.',
-      hint_en: 'Equity Value = Enterprise Value − Net Debt. Net Debt = Debt − Cash.' },
-
-    { id: 'capex', type: 'number',
-      title_vn: 'Chi đầu tư TSCĐ — CapEx trung bình năm (tỷ VNĐ)?',
-      title_en: 'Average annual Capital Expenditure — CapEx (billion VND)?',
-      placeholder_vn: 'VD: 20 (= 20 tỷ VNĐ/năm)',
-      placeholder_en: 'e.g. 20 (= 20 billion VND/year)',
-      hint_vn: 'CapEx = Mua sắm TSCĐ. Dùng trong tính FCFF. Lấy TB 3 năm gần nhất.',
-      hint_en: 'CapEx = PP&E purchases. Used in FCFF calculation. Use 3-year average.' },
-
+    /* Câu 7/8 — Cổ phần */
     { id: 'total_shares_ent', type: 'number',
-      title_vn: 'Số cổ phần lưu hành (cổ phần)? (optional)',
-      title_en: 'Shares outstanding? (optional)',
-      placeholder_vn: 'VD: 50000000 (= 50 triệu cổ phần)',
-      placeholder_en: 'e.g. 50000000 (= 50 million shares)',
-      hint_vn: 'Dùng để tính Equity Value per share (giá trị mỗi cổ phần).',
-      hint_en: 'Used to calculate Equity Value per share.' },
+      title_vn: 'Câu 7/8 — Hiện doanh nghiệp có bao nhiêu cổ phần / cổ phiếu đang lưu hành?',
+      title_en: 'Q 7/8 — How many shares are currently outstanding?',
+      placeholder_vn: 'VD: 50000000 (= 50 triệu cổ phần). Để 0 nếu chưa xác định.',
+      placeholder_en: 'e.g. 50000000 (= 50 million shares). Enter 0 if not yet determined.',
+      hint_vn: 'Dùng để tính Equity Value per share = Equity Value / Số cổ phần lưu hành.',
+      hint_en: 'Used to calculate Equity Value per share = Equity Value / Shares outstanding.' },
+
+    /* Câu 8/8 — Cổ tức */
+    { id: 'dividend_pct', type: 'number',
+      title_vn: 'Câu 8/8 — Tỷ lệ cổ tức tiền mặt trung bình doanh nghiệp chi trả hằng năm là bao nhiêu? (% LNST)',
+      title_en: 'Q 8/8 — What is the average annual cash dividend payout ratio? (% of net profit)',
+      placeholder_vn: 'VD: 30 (= chi 30% LNST làm cổ tức). Nhập 0 nếu không chia cổ tức.',
+      placeholder_en: 'e.g. 30 (= pay 30% of net profit as dividends). Enter 0 if no dividends.',
+      hint_vn: 'Gordon DDM: D₀ = LNST × payout ratio. GGM không áp chiết khấu transparency — phản ánh dòng tiền thật.',
+      hint_en: 'Gordon DDM: D₀ = Net profit × payout ratio. GGM bypasses transparency discount — real cash yield.' },
+
+    /* Câu 9/9 — Khấu hao (Enterprise only) */
+    { id: 'depreciation', type: 'number',
+      title_vn: 'Câu 9/9 — Khấu hao & phân bổ tài sản (D&A) trung bình năm là bao nhiêu? (tỷ VNĐ)',
+      title_en: 'Q 9/9 — What is the average annual Depreciation & Amortization (D&A)? (billion VND)',
+      placeholder_vn: 'VD: 15 (= 15 tỷ VNĐ/năm). EBITDA = LNST + Thuế + Lãi vay + Khấu hao.',
+      placeholder_en: 'e.g. 15 (= 15 billion VND/year). EBITDA = Net profit + Tax + Interest + D&A.',
+      hint_vn: 'Dùng để tính EBITDA → EV/EBITDA cross-check. Lấy trung bình 3 năm gần nhất nếu có.',
+      hint_en: 'Used to compute EBITDA → EV/EBITDA cross-check. Use 3-year average if available.' },
   ],
 };
 
