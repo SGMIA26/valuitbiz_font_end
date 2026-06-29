@@ -2803,15 +2803,23 @@ const POLAR_URL = 'https://buy.polar.sh/polar_cl_etwFklJEGOIVHd4uTnwBxo3xjG2BR2e
         '</div>' +
       '</div>' +
       '<div class="sg-inputs">' +
+        '<div class="sg-why-box">' +
+          '<strong>Tại sao cần nhập hệ số ngành?</strong> ' +
+          'Doanh nghiệp chưa niêm yết không có giá thị trường. ValuitBiz dùng hệ số trung bình các DN cùng ngành trên HOSE/HNX làm chuẩn so sánh — phương pháp Comparable Company Analysis chuẩn M&A quốc tế, được TT36/2024/TT-BTC công nhận.' +
+        '</div>' +
         '<div class="sg-input-row">' +
           '<div><label class="sg-label">' + t.pe + '<span class="sg-source-tag">Simplize</span></label>' +
-            '<input type="number" id="market_pe" class="sg-input" min="0" max="200" step="0.01" placeholder="Hub: 18" oninput="sgInputUpdate(this)"></div>' +
+            '<input type="number" id="market_pe" class="sg-input" min="0" max="200" step="0.01" placeholder="Hub: 18" oninput="sgInputUpdate(this)">' +
+            '<span class="sg-hint">Simplize → cột P/E</span></div>' +
           '<div><label class="sg-label">' + t.pb + '<span class="sg-source-tag">Simplize</span></label>' +
-            '<input type="number" id="market_pb" class="sg-input" min="0" max="50" step="0.01" placeholder="Hub: 3.0" oninput="sgInputUpdate(this)"></div>' +
-          '<div><label class="sg-label">' + t.ps + '<span class="sg-source-tag">Simplize</span></label>' +
-            '<input type="number" id="market_ps" class="sg-input" min="0" max="50" step="0.01" placeholder="Hub: 2.0" oninput="sgInputUpdate(this)"></div>' +
+            '<input type="number" id="market_pb" class="sg-input" min="0" max="50" step="0.01" placeholder="Hub: 3.0" oninput="sgInputUpdate(this)">' +
+            '<span class="sg-hint">Simplize → cột P/B</span></div>' +
+          '<div><label class="sg-label">P/S ngành (tự tính)<span class="sg-source-tag">Simplize</span></label>' +
+            '<input type="number" id="market_ps" class="sg-input" min="0" max="50" step="0.01" placeholder="Hub: 2.0" oninput="sgInputUpdate(this)">' +
+            '<span class="sg-hint">P/S = Vốn hóa ngành ÷ Doanh thu ngành. Vốn hóa = tổng giá trị thị trường tất cả cổ phiếu ngành đó trên sàn — xem cột Vốn hóa trên Simplize. Tham chiếu: F&B ~1.8, Tech ~4.5, Sản xuất ~1.0</span></div>' +
           '<div><label class="sg-label">EV/EBITDA<span class="sg-source-tag">Cafef</span></label>' +
-            '<input type="number" id="market_ev_ebitda" class="sg-input" min="0" max="100" step="0.1" placeholder="Hub: 12" oninput="sgInputUpdate(this)"></div>' +
+            '<input type="number" id="market_ev_ebitda" class="sg-input" min="0" max="100" step="0.1" placeholder="Hub: 12" oninput="sgInputUpdate(this)">' +
+            '<span class="sg-hint">EV/EBITDA = Giá trị DN ÷ Lợi nhuận trước thuế lãi vay khấu hao. Xem tại <a href="https://cafef.vn/thi-truong-chung-khoan/phan-tich-nganh.chn" target="_blank" class="sg-hint-link">cafef.vn → phân tích ngành ↗</a>. Tham chiếu: F&B ~14, Tech ~22, Sản xuất ~9</span></div>' +
         '</div>' +
         '<div class="sg-cite-row">' +
           '<div><label class="sg-label">' + t.source + '</label>' +
@@ -4859,6 +4867,11 @@ const POLAR_URL = 'https://buy.polar.sh/polar_cl_etwFklJEGOIVHd4uTnwBxo3xjG2BR2e
     .sg-status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:rgba(255,255,255,0.25);}
     .sg-status-dot.live{background:#81C784;}
     .sg-status-dot.partial{background:var(--amber-400);}
+    .sg-why-box{background:rgba(240,168,48,0.06);border:1px solid rgba(240,168,48,0.18);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:0.74rem;color:rgba(255,255,255,0.70);line-height:1.5;}
+    .sg-why-box strong{color:var(--amber-300);}
+    .sg-hint{display:block;font-size:0.65rem;color:rgba(255,255,255,0.38);margin-top:4px;line-height:1.4;}
+    .sg-hint-link{color:rgba(240,168,48,0.75);text-decoration:underline;}
+    .sg-hint-link:hover{color:var(--amber-300);}
     @media(max-width:600px){.sg-input-row{grid-template-columns:1fr 1fr;}}
     /* ===== END SIMPLIZE BLOCK ===== */
 
